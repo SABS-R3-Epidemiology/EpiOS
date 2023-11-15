@@ -16,7 +16,7 @@ def get_version():
     import os
     import sys
 
-    sys.path.append(os.path.abspath('abm_model'))
+    sys.path.append(os.path.abspath('sampling'))
     from version_info import VERSION as version
     sys.path.pop()
 
@@ -65,8 +65,7 @@ setup(
         'numpy',
         'matplotlib',
         'pandas',
-        'scipy',
-	'epiabm @ git+https://github.com/SABS-R3-Epidemiology/epiabm.git#egg=epiabm-latest'
+        'scipy'
     ],
     extras_require={
         'docs': [
