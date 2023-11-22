@@ -10,6 +10,37 @@ class HouseholdLimits():
         self.minicell = minicell
         self.ids = ids
 
+    # function to sort samples into a multi-dim list by household
+    def sort_samples_by_household(self, samples):
+
+        last_item = samples[len(samples) - 1]
+        last_household = int(last_item[4])
+
+        sorted_samples = []
+        sample_index = 0
+        household_samples = []
+        previous_household = 0
+
+        for s in samples:
+
+            current_household = int(s[4])
+
+            if current_household != previous_household:
+
+                previous_household = current_household
+                sorted_samples.append(household_samples)
+                household_samples = []
+            
+            household_samples.append(s)
+
+            sample_index += 1
+            
+        sorted_samples.append(household_samples)
+        print(sorted_samples)
+            
+
+
+# Main functions
 
     # function to get max number of people sampled per household
     def get_max_number(self, h):
@@ -100,12 +131,11 @@ class HouseholdLimits():
 
             # increment household number
             household_num += 1
-                
-        # display the ids to be sampled from   
-        print(id_samples)
+
+        return id_samples
 
 
-
+# Testing
 
 # the current method used for the household limiting sampling
 #household_cap = ["cap_number", 3] 
@@ -124,4 +154,8 @@ ids = ["0.0.0.0","0.0.0.1","0.0.0.2",
 
 Test = HouseholdLimits(household_cap, cell, minicell, ids)
 
-Test.get_sample_ids()
+sample_ids = Test.get_sample_ids()
+
+#print(sample_ids)
+
+Test.sort_samples_by_household(sample_ids)
