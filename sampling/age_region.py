@@ -131,24 +131,34 @@ class Sampler():
         for i in range(n):
             rand = np.random.rand()
             for j in range(len(threshold)):
-                if rand > threshold[j]: # There is a break at the end of this if statement, so the program will 
+                if rand > threshold[j]: # There is a break at the end of this if statement, so the program will stop when it first exceed any barrier
+
+                    # locate its position of age/region group
                     pos_age = j % len_age
                     pos_region = math.floor(j / len_age)
+
+                    # Use the above function to test whether it is going to hit the cap
                     if self.bool_exceed(current_age[pos_age], current_region[pos_region], current_block[pos_region, pos_age], cap_age[pos_age], cap_region[pos_region], cap_block[pos_region, pos_age]):
+                        # This means it does not hit the cap
                         res[j] += 1
                         current_age[pos_age] += 1
                         current_region[pos_region] += 1
                         current_block[pos_age, pos_region] += 1
                     else:
+                        # This means it hits the cap
                         res[j] += 1
                         current_age[pos_age] += 1
                         current_region[pos_region] += 1
                         prob = prob.reshape((-1, len_age))
+
+                        # This is testing whether it hits block cap
                         if current_block[pos_region, pos_age] + 1 > cap_block[pos_region, pos_age]:
+                            # reduce the corresponding prob to 0, and distribute its prob to the rest of blocks
                             prob_exceed = prob[pos_region, pos_age]
                             prob[pos_region, pos_age] = 0
                             prob = prob / (1 - prob_exceed)
                             prob = prob.reshape((1, -1))
+                            # Since the prob changes, need to calculate the threshold again
                             threshold = []
                             for k in len(prob):
                                 try:
@@ -156,7 +166,10 @@ class Sampler():
                                 except:
                                     threshold.append(0)
                             prob = prob.reshape((-1, len_age))
+                        
+                        # Testing whether it hits age cap
                         if current_age[pos_age] + 1 > cap_age[pos_age]:
+                            # Similarly, reduce all prob for this age group to 0, and re-distribute
                             prob_exceed = prob[:, pos_age].sum()
                             np.delete(prob, pos_age, 1)
                             np.delete(cap_block, pos_age, 1)
@@ -170,7 +183,10 @@ class Sampler():
                                 except:
                                     threshold.append(0)
                             prob = prob.reshape((-1, len_age))
+
+                        # Testing whether it hits region cap
                         if current_region[pos_region] + 1 > cap_region[pos_region]:
+                            # Similar to the above
                             prob_exceed = prob[pos_region, :].sum()
                             np.delete(prob, pos_region, 0)
                             np.delete(cap_block, pos_region, 0)
@@ -201,12 +217,20 @@ class Sampler():
         '''
         res = []
         df = self.data
+
+        # Get the age and region data
         age_dist = self.get_age_dist()
         region_dist = self.get_region_dist()
+
+        # Assume age and region are two independent variables, calculate the prob for a people in a specific age-region group
         ar_dist = np.array(age_dist) * np.array(region_dist).reshape((-1, 1))
         ar_dist = ar_dist.reshape((1, -1))
+
+        # We use the multinomial distribution to draw the samples, use the above multinomial_draw function to achieve it
         size = sample_size
         num_sample, cap = self.multinomial_draw(size, ar_dist)
+
+        # This is for non-responders, we may want some additional samples from due to this
         if additional_sample is None:
             num_sample = num_sample.reshape((len(region_dist), -1))
         else:
@@ -214,6 +238,10 @@ class Sampler():
             num_sample = np.array([min(elements) for elements in zip(cap, num_sample)])
         # Additional sample needs to be in the shape of (num_region, num_age)
         # With additional samples, need to be careful for post-processing
+
+        # After we have the information of how many people we should draw from each age-region group, 
+        # Draw them using np.choice, which means completely at random
+        # Then generate a list of IDs of the samples
         for i in range(len(num_sample)):
             for j in range(len(num_sample[0])):
                 if j != len(num_sample[0]) - 1:
