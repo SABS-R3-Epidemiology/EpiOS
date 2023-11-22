@@ -10,7 +10,7 @@ class NonResponder(Sampler):
         super().__init__(geoinfo, data)
         self.nonRespRate = nonRespRate
 
-    def select_group(self, sampling_percentage=0.1, proportion=0.01, threshold=None):
+    def additional_sample(self, sampling_percentage=0.1, proportion=0.01, threshold=None):
         df = self.data
         n = len(self.data)
         nonRespRate = self.nonRespRate.copy()
@@ -44,3 +44,12 @@ class NonResponder(Sampler):
         for i in res:
             additional_sample[i] = round(0.1 * cap_block[i])
         return additional_sample
+    
+    def new_idea_postprocessing(self, p, pre_result, symptomatic_profile):
+        non_symp = pd.concat([pre_result[pre_result['Status'] == 'S'], pre_result[pre_result['Status'] == 'E'], pre_result[pre_result['Status'] == 'I_asymp']], ignore_index=True)
+        t = self.data.time
+        non_symp_rate = symptomatic_profile['S'][t] + symptomatic_profile['E'][t] + symptomatic_profile['I_asymp'][t]
+        # Assume in symptomatic profile, the values are percentages already
+        total_C = len(non_symp) / non_symp_rate
+        if total_C < pre_result.num_respond:
+            

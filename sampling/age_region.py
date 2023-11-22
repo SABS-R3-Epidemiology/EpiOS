@@ -141,6 +141,7 @@ class Sampler():
             num_sample = num_sample.reshape((len(region_dist), -1)) + additional_sample
             num_sample = np.array([min(elements) for elements in zip(cap, num_sample)])
         # Additional sample needs to be in the shape of (num_region, num_age)
+        # With additional samples, need to be careful for post-processing
         for i in range(len(num_sample)):
             for j in range(len(num_sample[0])):
                 if j != len(num_sample[0]) - 1:
