@@ -1,0 +1,4 @@
+matplotlib
+numpy>=1.8
+pandas
+pandas>=1.4;python_version>="3.8"

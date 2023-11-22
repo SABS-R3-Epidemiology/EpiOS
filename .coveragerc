@@ -1,0 +1,7 @@
+[run]
+source = sampling
+omit =
+    sampling/tests/*
+    sampling/version_info.py
+    sampling/__init__.py
+    sampling/run_tests.py
