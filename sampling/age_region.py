@@ -13,7 +13,7 @@ class Sampler():
         Input:
         geoinfo_path(str): should be the path to the csv file include the geo-information
         data(DataFrame): should be the extracted data to be sampled from the Epiabm
-        
+
         '''
         self.geoinfo = pd.read_csv(geoinfo_path)
         self.data = data
@@ -166,7 +166,7 @@ class Sampler():
                                 except:
                                     threshold.append(0)
                             prob = prob.reshape((-1, len_age))
-                        
+
                         # Testing whether it hits age cap
                         if current_age[pos_age] + 1 > cap_age[pos_age]:
                             # Similarly, reduce all prob for this age group to 0, and re-distribute
@@ -253,5 +253,5 @@ class Sampler():
                     ite = ite[ite['age'] >= j * 5]
                 ite_sample = list(ite['ID'])
                 choice = np.random.choice(np.arange(len(ite_sample)), size=num_sample[i, j], replace=False)
-                res.append(ite_sample[choice])
+                res += ite_sample[choice]
         return res
