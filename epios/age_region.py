@@ -88,13 +88,6 @@ class Sampler():
         # The following block trasform the probability to a list of barriers between 0 and 1
         # So we can use np.rand to generate a random number between 0 and 1 to compare with the barriers to determine which group it is
         df = self.data
-        threshold = []
-        for i in range(len(prob)):
-            try:
-                threshold.append(threshold[-1] + prob[i - 1])
-            except:
-                threshold.append(0)
-        threshold.append(1)
 
         # The following code generate the cap for each age-region group, since there is a maximum the number of people in one age group in a region
         # The cap list will have shape (number of region, number of age groups)
@@ -111,8 +104,6 @@ class Sampler():
             else:
                 ite = ite[ite['age'] >= pos_age * 5]
             cap_block.append(len(ite))
-        cap_block = np.array(cap_block).reshape((-1, len_age))
-        res_cap_block = cap_block.copy()
 
         # Since we do not want too many samples from the same age/region group, so we set a total cap for each age/region
         prob = prob.reshape((-1, len_age))
@@ -128,12 +119,30 @@ class Sampler():
         cap_region = [cap_region, list(np.arange(len(cap_region)))]
         prob = prob.reshape((1, -1))[0]
 
+        # Pre-process the prob, remove the prob for the age-region group with cap 0
+        index_0 = []
+        for i in range(len(cap_block)):
+            if cap_block[i] == 0:
+                index_0.append(i)
+        for i in index_0:
+            prob_exceed = prob[i]
+            prob[i] = 0
+            prob = prob / (1 - prob_exceed)
+        threshold = []
+        for i in range(len(prob)):
+            try:
+                threshold.append(threshold[-1] + prob[i - 1])
+            except:
+                threshold.append(0)
+        threshold.append(1)
+        cap_block = np.array(cap_block).reshape((-1, len_age))
+        res_cap_block = cap_block.copy()
+
         # Set the age/region/block counter to record whether any cap is reached
         res = [0] * len(prob)
         current_age = [0] * len_age
         current_region = [0] * len(cap_region[0])
         current_block = np.array([[0] * len_age] * len(cap_region[0]))
-        c = 0
         np.random.seed(1)
 
         # We start the draw from here, we run the following code for each sample to determine which age/region group it is
@@ -163,7 +172,6 @@ class Sampler():
 
                         # This is testing whether it hits block cap
                         if current_block[pos_region, pos_age] + 1 > cap_block[pos_region, pos_age]:
-                            print(j)
                             # reduce the corresponding prob to 0, and distribute its prob to the rest of blocks
                             prob_exceed = prob[pos_region, pos_age]
                             prob[pos_region, pos_age] = 0
@@ -184,7 +192,6 @@ class Sampler():
 
                         # Testing whether it hits age cap
                         if current_age[pos_age] + 1 > cap_age[0][pos_age]:
-                            c += 1
                             # Similarly, reduce all prob for this age group to 0, and re-distribute
                             prob_exceed = prob[:, pos_age].sum()
                             prob = np.delete(prob, pos_age, 1)
@@ -209,7 +216,6 @@ class Sampler():
 
                         # Testing whether it hits region cap
                         if current_region[pos_region] + 1 > cap_region[0][pos_region]:
-                            c += 1
                             # Similar to the above
                             prob_exceed = prob[pos_region, :].sum()
                             prob = np.delete(prob, pos_region, 0)
@@ -231,8 +237,7 @@ class Sampler():
                                 threshold.append(1)
                             prob = prob.reshape((-1, len_age))
                     break
-        c = set(c)
-        return res, res_cap_block, c
+        return res, res_cap_block
 
     def sample(self, sample_size: int, additional_sample: list=None):
         '''
@@ -284,9 +289,6 @@ class Sampler():
                     ite = df[df['cell'] == i]
                     ite = ite[ite['age'] >= j * 5]
                 ite_sample = list(ite['ID'])
-                print(ite_sample)
-                print(num_sample[i, j])
-                print(j)
                 choice = np.random.choice(np.arange(len(ite_sample)), size=num_sample[i, j], replace=False)
                 for k in choice:
                     res.append(ite_sample[k])
