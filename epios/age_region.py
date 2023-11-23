@@ -110,12 +110,18 @@ class Sampler():
         cap_age = []
         cap_region = []
         for i in range(np.shape(prob)[1]):
-            cap_age.append(n * prob[:, i].sum() + 1 * n)
-            # cap_age.append(n * prob[:, i].sum() + 0.01 * n)
+            if i != np.shape(prob)[1] - 1:
+                ite = df[df['age'] >= i * 5]
+                ite = ite[ite['age'] < i * 5 + 5]
+                max_num_age = len(ite)
+                cap_age.append(min(n * prob[:, i].sum() + 0.01 * n, max_num_age))
+            else:
+                ite = df[df['age'] >= i * 5]
+                max_num_age = len(ite)
+                cap_age.append(min(n * prob[:, i].sum() + 0.01 * n, max_num_age))
         cap_age = [cap_age, list(np.arange(len(cap_age)))]
         for i in range(np.shape(prob)[0]):
-            cap_region.append(n * prob[i, :].sum() + 5 * n)
-            # cap_region.append(min(n * prob[i, :].sum() + 0.005 * n, self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
+            cap_region.append(min(n * prob[i, :].sum() + 0.005 * n, self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
         cap_region = [cap_region, list(np.arange(len(cap_region)))]
         prob = prob.reshape((1, -1))[0]
 
