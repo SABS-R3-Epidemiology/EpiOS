@@ -40,7 +40,8 @@ class DataProcess():
             cell_num = int(person_id[0:pos_dot[0]])
             microcell_num = int(person_id[pos_dot[0] + 1:pos_dot[1]])
             household_num = int(person_id[pos_dot[1] + 1:pos_dot[2]])
-            population_info = population_info.append({'ID': person_id, 'age': row['age'], 'cell': cell_num, 'microcell': microcell_num, 'household': household_num})
+            new_row = pd.DataFrame({'ID': person_id, 'age': row['age'], 'cell': cell_num, 'microcell': microcell_num, 'household': household_num}, index=[0])
+            population_info = pd.concat([population_info, new_row], ignore_index=True)
             key = person_id[0:pos_dot[-1]]
             try:
                 household_info[key] += 1
@@ -49,7 +50,7 @@ class DataProcess():
         population_info.to_csv(path + 'data.csv', index=False)
 
         household_df = pd.DataFrame(columns=['cell', 'microcell', 'household', 'Susceptible'])
-        for key, value in household_num.items():
+        for key, value in household_info.items():
             pos_dot = []
             for i in range(len(key)):
                 if key[i] == '.':
@@ -57,7 +58,8 @@ class DataProcess():
             cell_num = int(key[0:pos_dot[0]])
             microcell_num = int(key[pos_dot[0] + 1:pos_dot[1]])
             household_num = int(key[pos_dot[1] + 1:])
-            household_df.append({'cell': cell_num, 'microcell': microcell_num, 'household': household_num, 'Susceptible': value})
+            new_row = pd.DataFrame({'cell': cell_num, 'microcell': microcell_num, 'household': household_num, 'Susceptible': value}, index=[0])
+            household_df = pd.concat([household_df, new_row], ignore_index=True)
         household_df.to_csv(path + 'microcells.csv', index=False)
 
         age_dist = list(np.array(count_age) / population_size)
