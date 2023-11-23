@@ -6,7 +6,7 @@ import math
 
 class Sampler():
 
-    def __init__(self, geoinfo_path: str, ageinfo_path:str, data: pd.DataFrame):
+    def __init__(self, geoinfo_path='./input/microcells.csv', ageinfo_path='./input/pop_dist.json', data_path='./input/data.csv'):
         '''
         Contain all necessary information about the population
         ------------
@@ -17,7 +17,7 @@ class Sampler():
         '''
         self.geoinfo = pd.read_csv(geoinfo_path)
         self.ageinfo = ageinfo_path
-        self.data = data
+        self.data = pd.read_csv(data_path)
 
     def get_age_dist(self):
         '''
