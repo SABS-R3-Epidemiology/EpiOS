@@ -25,9 +25,6 @@ class TestDataProcess(TestCase):
 
         self.expected_age_dist = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
         self.expected_region_dist = [5 / 6, 1 / 6]
-        # self.expected_json = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
-        # self.expected_df_microcell = pd.DataFrame({'cell': [0, 0, 0, 0, 1], 'microcell': [0, 0, 1, 2, 0], 'household': [0, 1, 0, 0, 0], 'Susceptible': [2, 1, 1, 1, 1]})
-        # self.expected_df_population = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0', '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60], 'cell': [0, 0, 0, 0, 0, 1], 'microcell': [0, 0, 0, 1, 2, 0], 'household': [0, 0, 1, 0, 0, 0]})
 
     def test_get_age_dist(self):
         self.assertEqual(self.sampler.get_age_dist(), self.expected_age_dist)
