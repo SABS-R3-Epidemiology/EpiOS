@@ -61,6 +61,16 @@ class TestDataProcess(TestCase):
         except:
             self.fail('not draw as expected')
 
+    def test_sample(self):
+        np.random.seed(1)
+        self.assertEqual(self.sampler.sample(len(self.sampler.data)), ['0.0.0.0', '0.2.0.0', '0.1.0.0',
+                                                                       '0.0.1.0', '0.0.0.1', '1.0.0.0'])
+        np.random.seed(1)
+        additional_sample = np.zeros((len(self.sampler.get_region_dist()), len(self.sampler.get_age_dist())))
+        additional_sample[0, 0] = 1
+        self.assertEqual(self.sampler.sample(len(self.sampler.data), additional_sample),
+                         ['0.0.0.0', '0.2.0.0', '0.1.0.0', '0.0.1.0', '0.0.0.1', '1.0.0.0'])
+
     def tearDown(self) -> None:
         if os.path.exists(self.path):
             if os.path.exists(self.path + 'pop_dist.json'):

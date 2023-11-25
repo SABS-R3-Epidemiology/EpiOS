@@ -305,7 +305,10 @@ class Sampler():
             num_sample = num_sample.reshape((len(region_dist), -1))
         else:
             num_sample = num_sample.reshape((len(region_dist), -1)) + additional_sample
+            num_sample = num_sample.reshape((1, -1))[0]
+            cap = cap.reshape((1, -1))[0]
             num_sample = np.array([min(elements) for elements in zip(cap, num_sample)])
+            num_sample = num_sample.reshape((len(region_dist), -1))
         # Additional sample needs to be in the shape of (num_region, num_age)
         # With additional samples, need to be careful for post-processing
 
