@@ -6,7 +6,8 @@ import math
 
 class Sampler():
 
-    def __init__(self, geoinfo_path='./input/microcells.csv', ageinfo_path='./input/pop_dist.json', data_path='./input/data.csv'):
+    def __init__(self, geoinfo_path='./input/microcells.csv',
+                 ageinfo_path='./input/pop_dist.json', data_path='./input/data.csv'):
         '''
         Contain all necessary information about the population
         ------------
@@ -49,7 +50,8 @@ class Sampler():
             dist.append(df[df['cell'] == i]['Susceptible'].sum() / n)
         return dist
 
-    def bool_exceed(self, current_age: int, current_region: int, current_block: int, cap_age: float, cap_region: float, cap_block: int):
+    def bool_exceed(self, current_age: int, current_region: int,
+                    current_block: int, cap_age: float, cap_region: float, cap_block: int):
         '''
         Return a boolean value to tell whether the sampling is going to exceed any cap
         --------
@@ -86,13 +88,15 @@ class Sampler():
 
         '''
         # The following block trasform the probability to a list of barriers between 0 and 1
-        # So we can use np.rand to generate a random number between 0 and 1 to compare with the barriers to determine which group it is
+        # So we can use np.rand to generate a random number between 0 and 1 to
+        # compare with the barriers to determine which group it is
         df = self.data
         prob = np.array(prob)
         if n > len(df):
             raise ValueError('Sample size should not be greater than population size')
 
-        # The following code generate the cap for each age-region group, since there is a maximum the number of people in one age group in a region
+        # The following code generate the cap for each age-region group, since
+        # there is a maximum the number of people in one age group in a region
         # The cap list will have shape (number of region, number of age groups)
         cap_block = []
         len_age = len(self.get_age_dist())
@@ -108,7 +112,8 @@ class Sampler():
                 ite = ite[ite['age'] >= pos_age * 5]
             cap_block.append(len(ite))
 
-        # Since we do not want too many samples from the same age/region group, so we set a total cap for each age/region
+        # Since we do not want too many samples from the same age/region group,
+        # so we set a total cap for each age/region
         prob = prob.reshape((-1, len_age))
         cap_age = []
         cap_region = []
@@ -124,7 +129,8 @@ class Sampler():
                 cap_age.append(min(n * prob[:, i].sum() + 0.01 * n, max_num_age))
         cap_age = [cap_age, list(np.arange(len(cap_age)))]
         for i in range(np.shape(prob)[0]):
-            cap_region.append(min(n * prob[i, :].sum() + 0.005 * n, self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
+            cap_region.append(min(n * prob[i, :].sum() + 0.005 * n,
+                                  self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
         cap_region = [cap_region, list(np.arange(len(cap_region)))]
         prob = prob.reshape((1, -1))[0]
 
@@ -154,18 +160,22 @@ class Sampler():
         current_block = np.array([[0] * len_age] * len(cap_region[0]))
         np.random.seed(1)
 
-        # We start the draw from here, we run the following code for each sample to determine which age/region group it is
+        # We start the draw from here, we run the following code for each sample
+        # to determine which age/region group it is
         for i in range(n):
             rand = np.random.rand()
             for j in range(len(threshold)):
-                if rand < threshold[j]:  # There is a break at the end of this if statement, so the program will stop when it first exceed any barrier
+                if rand < threshold[j]:  # There is a break at the end of this if statement,
+                                         # so the program will stop when it first exceed any barrier
                     # locate its position of age/region group
                     j += -1
                     pos_age = j % len_age
                     pos_region = math.floor(j / len_age)
 
                     # Use the above function to test whether it is going to hit the cap
-                    if self.bool_exceed(current_age[pos_age], current_region[pos_region], current_block[pos_region, pos_age], cap_age[0][pos_age], cap_region[0][pos_region], cap_block[pos_region, pos_age]):
+                    if self.bool_exceed(current_age[pos_age], current_region[pos_region],
+                                        current_block[pos_region, pos_age], cap_age[0][pos_age],
+                                        cap_region[0][pos_region], cap_block[pos_region, pos_age]):
                         # This means it does not hit the cap
                         res[int(cap_region[1][pos_region] * record_age + cap_age[1][pos_age])] += 1
                         current_age[pos_age] += 1
@@ -263,7 +273,8 @@ class Sampler():
         ---------
         Input:
         sample_size(int): the size of sample
-        additional_sample(list): list of integers indicating the number of additional samples drawn from each age-region group
+        additional_sample(list): list of integers indicating the number of additional
+        samples drawn from each age-region group
 
         Output:
         res: a list of strings, each string is the ID of the sampled person
@@ -276,11 +287,13 @@ class Sampler():
         age_dist = self.get_age_dist()
         region_dist = self.get_region_dist()
 
-        # Assume age and region are two independent variables, calculate the prob for a people in a specific age-region group
+        # Assume age and region are two independent variables, calculate the prob
+        # for a people in a specific age-region group
         ar_dist = np.array(age_dist) * np.array(region_dist).reshape((-1, 1))
         ar_dist = ar_dist.reshape((1, -1))[0]
 
-        # We use the multinomial distribution to draw the samples, use the above multinomial_draw function to achieve it
+        # We use the multinomial distribution to draw the samples, use the above
+        # multinomial_draw function to achieve it
         size = sample_size
         num_sample, cap = self.multinomial_draw(size, ar_dist)
         num_sample = np.array(num_sample)

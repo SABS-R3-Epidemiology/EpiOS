@@ -11,11 +11,22 @@ class TestDataProcess(TestCase):
 
     def setUp(self) -> None:
         self.path = './testing_dataprocess/'
-        self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0', '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60]})
+        self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
+                                         '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60]})
         self.processor = DataProcess(self.data)
-        self.expected_json = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
-        self.expected_df_microcell = pd.DataFrame({'cell': [0, 0, 0, 0, 1], 'microcell': [0, 0, 1, 2, 0], 'household': [0, 1, 0, 0, 0], 'Susceptible': [2, 1, 1, 1, 1]})
-        self.expected_df_population = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0', '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60], 'cell': [0, 0, 0, 0, 0, 1], 'microcell': [0, 0, 0, 1, 2, 0], 'household': [0, 0, 1, 0, 0, 0]})
+        self.expected_json = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0,
+                              1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
+        self.expected_df_microcell = pd.DataFrame({'cell': [0, 0, 0, 0, 1],
+                                                   'microcell': [0, 0, 1, 2, 0],
+                                                   'household': [0, 1, 0, 0, 0],
+                                                   'Susceptible': [2, 1, 1, 1, 1]})
+        self.expected_df_population = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1',
+                                                           '0.0.1.0', '0.1.0.0',
+                                                           '0.2.0.0', '1.0.0.0'],
+                                                    'age': [1, 81, 45, 33, 20, 60],
+                                                    'cell': [0, 0, 0, 0, 0, 1],
+                                                    'microcell': [0, 0, 0, 1, 2, 0],
+                                                    'household': [0, 0, 1, 0, 0, 0]})
 
     def test_data_process(self):
         try:

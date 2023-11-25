@@ -17,13 +17,18 @@ class TestDataProcess(TestCase):
             os.mkdir(self.path[2:-1])
         except:
             raise KeyError('Directory already exists, terminated not to overwrite anything!')
-        self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0', '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60]})
+        self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+                                         '0.1.0.0', '0.2.0.0', '1.0.0.0'],
+                                  'age': [1, 81, 45, 33, 20, 60]})
         self.processor = DataProcess(self.data)
         self.processor.pre_process(path=self.path)
 
-        self.sampler = Sampler(geoinfo_path=self.path + 'microcells.csv', ageinfo_path=self.path + 'pop_dist.json', data_path=self.path + 'data.csv')
+        self.sampler = Sampler(geoinfo_path=self.path + 'microcells.csv',
+                               ageinfo_path=self.path + 'pop_dist.json',
+                               data_path=self.path + 'data.csv')
 
-        self.expected_age_dist = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
+        self.expected_age_dist = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0,
+                                  0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
         self.expected_region_dist = [5 / 6, 1 / 6]
 
     def test_get_age_dist(self):

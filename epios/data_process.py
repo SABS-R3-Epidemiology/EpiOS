@@ -8,7 +8,8 @@ class DataProcess():
 
     def __init__(self, data: pd.DataFrame):
         '''
-        .data attribute contains the DataFrame with two columns. The first column contains IDs, the second one contains ages
+        .data attribute contains the DataFrame with two columns. The first column
+        contains IDs, the second one contains ages
 
         '''
         self.data = data
@@ -44,7 +45,8 @@ class DataProcess():
             cell_num = int(person_id[0:pos_dot[0]])
             microcell_num = int(person_id[pos_dot[0] + 1:pos_dot[1]])
             household_num = int(person_id[pos_dot[1] + 1:pos_dot[2]])
-            new_row = pd.DataFrame({'ID': person_id, 'age': row['age'], 'cell': cell_num, 'microcell': microcell_num, 'household': household_num}, index=[0])
+            new_row = pd.DataFrame({'ID': person_id, 'age': row['age'], 'cell': cell_num,
+                                    'microcell': microcell_num, 'household': household_num}, index=[0])
             population_info = pd.concat([population_info, new_row], ignore_index=True)
             key = person_id[0:pos_dot[-1]]
             try:
@@ -62,7 +64,8 @@ class DataProcess():
             cell_num = int(key[0:pos_dot[0]])
             microcell_num = int(key[pos_dot[0] + 1:pos_dot[1]])
             household_num = int(key[pos_dot[1] + 1:])
-            new_row = pd.DataFrame({'cell': cell_num, 'microcell': microcell_num, 'household': household_num, 'Susceptible': value}, index=[0])
+            new_row = pd.DataFrame({'cell': cell_num, 'microcell': microcell_num,
+                                    'household': household_num, 'Susceptible': value}, index=[0])
             household_df = pd.concat([household_df, new_row], ignore_index=True)
         household_df.to_csv(path + 'microcells.csv', index=False)
 
