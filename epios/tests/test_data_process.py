@@ -10,6 +10,11 @@ from pandas.testing import assert_frame_equal
 class TestDataProcess(TestCase):
 
     def setUp(self) -> None:
+        '''
+        Set up the testing files
+        This function includes input data and expected result
+
+        '''
         self.path = './testing_dataprocess/'
         self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
                                          '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60]})
@@ -52,6 +57,10 @@ class TestDataProcess(TestCase):
             self.fail('data.csv is not generated as expected')
 
     def tearDown(self) -> None:
+        '''
+        Clean up everything created
+
+        '''
         if os.path.exists(self.path):
             if os.path.exists(self.path + 'pop_dist.json'):
                 os.remove(self.path + 'pop_dist.json')

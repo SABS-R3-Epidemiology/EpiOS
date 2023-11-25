@@ -11,6 +11,12 @@ import os
 class TestDataProcess(TestCase):
 
     def setUp(self) -> None:
+        '''
+        Set up the unit test data
+        Firstly use the DataProcess class to generate input files
+        Secondly construct the NonResponder class
+
+        '''
         self.path = './testing_nonresponders/'
         try:
             os.mkdir(self.path[2:-1])
@@ -46,6 +52,10 @@ class TestDataProcess(TestCase):
             self.fail('additional samples not generated as expected')
 
     def tearDown(self) -> None:
+        '''
+        Clean everything created
+
+        '''
         if os.path.exists(self.path):
             if os.path.exists(self.path + 'pop_dist.json'):
                 os.remove(self.path + 'pop_dist.json')

@@ -12,6 +12,14 @@ from numpy.testing import assert_array_equal
 class TestDataProcess(TestCase):
 
     def setUp(self) -> None:
+        '''
+        This function set up the testing environment
+        Firstly use the DataProcess class to generate input for Sampler
+        Secondly construct the Sampler class
+
+        This function include some of the expected results
+
+        '''
         self.path = './testing_ageregion/'
         try:
             os.mkdir(self.path[2:-1])
@@ -72,6 +80,10 @@ class TestDataProcess(TestCase):
                          ['0.0.0.0', '0.2.0.0', '0.1.0.0', '0.0.1.0', '0.0.0.1', '1.0.0.0'])
 
     def tearDown(self) -> None:
+        '''
+        Clean up everything created
+
+        '''
         if os.path.exists(self.path):
             if os.path.exists(self.path + 'pop_dist.json'):
                 os.remove(self.path + 'pop_dist.json')
