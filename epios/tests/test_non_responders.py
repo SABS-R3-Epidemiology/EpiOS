@@ -23,9 +23,9 @@ class TestDataProcess(TestCase):
         self.processor.pre_process(path=self.path)
 
         self.nonresponder = NonResponder(nonRespRate=[1] + [0] * (17 * 2 - 1),
-                                    geoinfo_path=self.path + 'microcells.csv',
-                                    ageinfo_path=self.path + 'pop_dist.json',
-                                    data_path=self.path + 'data.csv')
+                                         geoinfo_path=self.path + 'microcells.csv',
+                                         ageinfo_path=self.path + 'pop_dist.json',
+                                         data_path=self.path + 'data.csv')
 
     def test__init__(self):
         with self.assertRaises(ValueError):
