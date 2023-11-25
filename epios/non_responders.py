@@ -1,6 +1,6 @@
 # import pandas as pd
 import numpy as np
-from epios.age_region import Sampler
+from age_region import Sampler
 import math
 
 
