@@ -157,8 +157,7 @@ class Sampler():
         res = [0] * len(prob)
         current_age = [0] * len_age
         current_region = [0] * len(cap_region[0])
-        current_block = np.array([[0] * len_age] * len(cap_region[0]))
-        np.random.seed(1)
+        current_block = np.zeros((len(cap_region[0]), len_age))
 
         # We start the draw from here, we run the following code for each sample
         # to determine which age/region group it is
@@ -304,6 +303,7 @@ class Sampler():
         if additional_sample is None:
             num_sample = num_sample.reshape((len(region_dist), -1))
         else:
+            additional_sample = np.array(additional_sample)
             num_sample = num_sample.reshape((len(region_dist), -1)) + additional_sample
             num_sample = num_sample.reshape((1, -1))[0]
             cap = cap.reshape((1, -1))[0]
