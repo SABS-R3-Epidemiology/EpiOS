@@ -1,7 +1,7 @@
 import pandas as pd
 import unittest
 from unittest import TestCase
-from epios import DataProcess
+from data_process import DataProcess
 import os
 import json
 from pandas.testing import assert_frame_equal

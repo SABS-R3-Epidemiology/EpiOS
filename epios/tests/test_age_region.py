@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import unittest
 from unittest import TestCase
-from epios import DataProcess
-from epios import Sampler
+from data_process import DataProcess
+from age_region import Sampler
 import os
 from numpy.testing import assert_array_equal
 # from pandas.testing import assert_frame_equal

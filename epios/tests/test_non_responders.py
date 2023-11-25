@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import unittest
 from unittest import TestCase
-from epios import NonResponder
-from epios import DataProcess
+from non_responders import NonResponder
+from data_process import DataProcess
 from numpy.testing import assert_array_equal
 import os
 
