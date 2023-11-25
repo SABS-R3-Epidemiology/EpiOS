@@ -1,7 +1,7 @@
 [run]
-source = sampling
+source = epios
 omit =
-    sampling/tests/*
-    sampling/version_info.py
-    sampling/__init__.py
-    sampling/run_tests.py
+    epios/tests/*
+    epios/version_info.py
+    epios/__init__.py
+    epios/run_tests.py
