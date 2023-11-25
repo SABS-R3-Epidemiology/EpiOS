@@ -165,9 +165,11 @@ class Sampler():
         for i in range(n):
             rand = np.random.rand()
             for j in range(len(threshold)):
-                if rand < threshold[j]:  # There is a break at the end of this if statement,
-                                         # so the program will stop when it first exceed any barrier
-                    # locate its position of age/region group
+                if rand < threshold[j]:
+                    # There is a break at the end of this if statement,
+                    # so the program will stop when it first exceed any barrier
+
+                    # Locate its position of age/region group
                     j += -1
                     pos_age = j % len_age
                     pos_region = math.floor(j / len_age)
@@ -267,7 +269,7 @@ class Sampler():
                     break
         return res, res_cap_block
 
-    def sample(self, sample_size: int, additional_sample: list=None):
+    def sample(self, sample_size: int, additional_sample: list = None):
         '''
         Given a sample size, and the additional sample, should return a list of people's IDs drawn from the population
         ---------
