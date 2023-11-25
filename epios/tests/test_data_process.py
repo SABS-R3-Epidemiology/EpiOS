@@ -10,7 +10,7 @@ from pandas.testing import assert_frame_equal
 class TestDataProcess(TestCase):
 
     def setUp(self) -> None:
-        self.path = './testing_files/'
+        self.path = './testing_dataprocess/'
         self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0', '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60]})
         self.processor = DataProcess(self.data)
         self.expected_json = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]

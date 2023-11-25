@@ -88,6 +88,9 @@ class Sampler():
         # The following block trasform the probability to a list of barriers between 0 and 1
         # So we can use np.rand to generate a random number between 0 and 1 to compare with the barriers to determine which group it is
         df = self.data
+        prob = np.array(prob)
+        if n > len(df):
+            raise ValueError('Sample size should not be greater than population size')
 
         # The following code generate the cap for each age-region group, since there is a maximum the number of people in one age group in a region
         # The cap list will have shape (number of region, number of age groups)
@@ -180,6 +183,8 @@ class Sampler():
                         if current_block[pos_region, pos_age] + 1 > cap_block[pos_region, pos_age]:
                             # reduce the corresponding prob to 0, and distribute its prob to the rest of blocks
                             prob_exceed = prob[pos_region, pos_age]
+                            if prob_exceed == 1:
+                                raise KeyError('Probability provided not supported for the sample size')
                             prob[pos_region, pos_age] = 0
                             prob = prob / (1 - prob_exceed)
                             prob = prob.reshape((1, -1))[0]
@@ -190,16 +195,19 @@ class Sampler():
                                     threshold.append(threshold[-1] + prob[k - 1])
                                 except:
                                     threshold.append(0)
-                            if threshold[-1] >= 1:
-                                threshold.append(threshold[-1])
-                            else:
-                                threshold.append(1)
+                            if len(threshold) > 0:
+                                if threshold[-1] >= 1:
+                                    threshold.append(threshold[-1])
+                                else:
+                                    threshold.append(1)
                             prob = prob.reshape((-1, len_age))
 
                         # Testing whether it hits age cap
                         if current_age[pos_age] + 1 > cap_age[0][pos_age]:
                             # Similarly, reduce all prob for this age group to 0, and re-distribute
                             prob_exceed = prob[:, pos_age].sum()
+                            if prob_exceed == 1:
+                                raise KeyError('Probability provided not supported for the sample size')
                             prob = np.delete(prob, pos_age, 1)
                             cap_block = np.delete(cap_block, pos_age, 1)
                             current_block = np.delete(current_block, pos_age, 1)
@@ -214,16 +222,19 @@ class Sampler():
                                     threshold.append(threshold[-1] + prob[k - 1])
                                 except:
                                     threshold.append(0)
-                            if threshold[-1] >= 1:
-                                threshold.append(threshold[-1])
-                            else:
-                                threshold.append(1)
+                            if len(threshold) > 0:
+                                if threshold[-1] >= 1:
+                                    threshold.append(threshold[-1])
+                                else:
+                                    threshold.append(1)
                             prob = prob.reshape((-1, len_age))
 
                         # Testing whether it hits region cap
                         if current_region[pos_region] + 1 > cap_region[0][pos_region]:
                             # Similar to the above
                             prob_exceed = prob[pos_region, :].sum()
+                            if prob_exceed == 1:
+                                raise KeyError('Probability provided not supported for the sample size')
                             prob = np.delete(prob, pos_region, 0)
                             cap_block = np.delete(cap_block, pos_region, 0)
                             current_block = np.delete(current_block, pos_region, 0)
@@ -237,10 +248,11 @@ class Sampler():
                                     threshold.append(threshold[-1] + prob[k - 1])
                                 except:
                                     threshold.append(0)
-                            if threshold[-1] >= 1:
-                                threshold.append(threshold[-1])
-                            else:
-                                threshold.append(1)
+                            if len(threshold) > 0:
+                                if threshold[-1] >= 1:
+                                    threshold.append(threshold[-1])
+                                else:
+                                    threshold.append(1)
                             prob = prob.reshape((-1, len_age))
                     break
         return res, res_cap_block
