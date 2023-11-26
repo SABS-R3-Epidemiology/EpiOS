@@ -30,7 +30,6 @@ class TestDataProcess(TestCase):
                                   'age': [1, 81, 45, 33, 20, 60]})
         self.processor = DataProcess(self.data)
         self.processor.pre_process(path=self.path)
-
         self.sampler = Sampler(geoinfo_path=self.path + 'microcells.csv',
                                ageinfo_path=self.path + 'pop_dist.json',
                                data_path=self.path + 'data.csv')
@@ -69,7 +68,7 @@ class TestDataProcess(TestCase):
         except:
             self.fail('not draw as expected')
 
-    def test_sample(self):
+    def test_sample1(self):
         np.random.seed(1)
         self.assertEqual(self.sampler.sample(len(self.sampler.data)), ['0.0.0.0', '0.2.0.0', '0.1.0.0',
                                                                        '0.0.1.0', '0.0.0.1', '1.0.0.0'])
@@ -78,6 +77,19 @@ class TestDataProcess(TestCase):
         additional_sample[0, 0] = 1
         self.assertEqual(self.sampler.sample(len(self.sampler.data), additional_sample),
                          ['0.0.0.0', '0.2.0.0', '0.1.0.0', '0.0.1.0', '0.0.0.1', '1.0.0.0'])
+
+    def test_sample2(self):
+        self.data1 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+                                         '0.1.0.0', '0.2.0.0', '1.0.0.0'],
+                                  'age': [1, 2, 45, 33, 20, 60]})
+        self.processor1 = DataProcess(self.data1)
+        self.processor1.pre_process(path=self.path)
+        self.sampler1 = Sampler(geoinfo_path=self.path + 'microcells.csv',
+                               ageinfo_path=self.path + 'pop_dist.json',
+                               data_path=self.path + 'data.csv')
+        np.random.seed(1)
+        self.assertEqual(self.sampler1.sample(len(self.sampler1.data)), ['0.0.0.1', '0.0.0.0', '0.2.0.0',
+                                                                         '0.1.0.0', '0.0.1.0', '1.0.0.0'])
 
     def tearDown(self) -> None:
         '''
