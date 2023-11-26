@@ -80,13 +80,13 @@ class TestDataProcess(TestCase):
 
     def test_sample2(self):
         self.data1 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
-                                         '0.1.0.0', '0.2.0.0', '1.0.0.0'],
+                                          '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                   'age': [1, 2, 45, 33, 20, 60]})
         self.processor1 = DataProcess(self.data1)
         self.processor1.pre_process(path=self.path)
         self.sampler1 = Sampler(geoinfo_path=self.path + 'microcells.csv',
-                               ageinfo_path=self.path + 'pop_dist.json',
-                               data_path=self.path + 'data.csv')
+                                ageinfo_path=self.path + 'pop_dist.json',
+                                data_path=self.path + 'data.csv')
         np.random.seed(1)
         self.assertEqual(self.sampler1.sample(len(self.sampler1.data)), ['0.0.0.1', '0.0.0.0', '0.2.0.0',
                                                                          '0.1.0.0', '0.0.1.0', '1.0.0.0'])
