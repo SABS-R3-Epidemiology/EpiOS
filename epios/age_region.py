@@ -126,10 +126,10 @@ class Sampler():
             else:
                 ite = df[df['age'] >= i * 5]
                 max_num_age = len(ite)
-                cap_age.append(min(n * prob[:, i].sum() + 0.01 * n, max_num_age))
+                cap_age.append(min(max(n * prob[:, i].sum() + 0.01 * n, 1), max_num_age))
         cap_age = [cap_age, list(np.arange(len(cap_age)))]
         for i in range(np.shape(prob)[0]):
-            cap_region.append(min(n * prob[i, :].sum() + 0.005 * n,
+            cap_region.append(min(max(n * prob[i, :].sum() + 0.005 * n, 1),
                                   self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
         cap_region = [cap_region, list(np.arange(len(cap_region)))]
         prob = prob.reshape((1, -1))[0]
@@ -194,8 +194,9 @@ class Sampler():
                         if current_block[pos_region, pos_age] + 1 > cap_block[pos_region, pos_age]:
                             # reduce the corresponding prob to 0, and distribute its prob to the rest of blocks
                             prob_exceed = prob[pos_region, pos_age]
-                            if prob_exceed == 1:
-                                raise KeyError('Probability provided not supported for the sample size')
+                            if i < len(df) - 1:
+                                if prob_exceed == prob.sum():
+                                    raise KeyError('Probability provided not supported for the sample size')
                             prob[pos_region, pos_age] = 0
                             prob = prob / (1 - prob_exceed)
                             prob = prob.reshape((1, -1))[0]
@@ -206,19 +207,25 @@ class Sampler():
                                     threshold.append(threshold[-1] + prob[k - 1])
                                 except:
                                     threshold.append(0)
-                            if len(threshold) > 0:
-                                if threshold[-1] >= 1:
-                                    threshold.append(threshold[-1])
-                                else:
-                                    threshold.append(1)
+                            if threshold[-1] < 1:
+                                threshold.append(1)
                             prob = prob.reshape((-1, len_age))
 
                         # Testing whether it hits age cap
                         if current_age[pos_age] + 1 > cap_age[0][pos_age]:
                             # Similarly, reduce all prob for this age group to 0, and re-distribute
                             prob_exceed = prob[:, pos_age].sum()
-                            if prob_exceed == 1:
-                                raise KeyError('Probability provided not supported for the sample size')
+                            # if i < len(df) - 1:
+                            #     if prob_exceed == prob.sum():
+                            #         raise KeyError('Probability provided not supported for the sample size')
+                            # These can be commented out since will be very unlikely to trigger
+                            # Trigger this -> sum of prob of age group = 1 and reach the bound
+                            # -> cannot be the bound in first arg of max above, since n * 1 + 0.01 * n > n
+                            # -> the second arg means reach block cap for each age first
+                            # -> dealt by the above if statement
+                            # Note: problems may exist if prob.sum() < 1
+                            # But, this error should be at least greater than 0.01 to influence this
+                            # which is almost impossible
                             prob = np.delete(prob, pos_age, 1)
                             cap_block = np.delete(cap_block, pos_age, 1)
                             current_block = np.delete(current_block, pos_age, 1)
@@ -234,18 +241,19 @@ class Sampler():
                                 except:
                                     threshold.append(0)
                             if len(threshold) > 0:
-                                if threshold[-1] >= 1:
-                                    threshold.append(threshold[-1])
-                                else:
+                                if threshold[-1] < 1:
                                     threshold.append(1)
-                            prob = prob.reshape((-1, len_age))
+                            if len_age > 0:
+                                prob = prob.reshape((-1, len_age))
 
                         # Testing whether it hits region cap
                         if current_region[pos_region] + 1 > cap_region[0][pos_region]:
                             # Similar to the above
                             prob_exceed = prob[pos_region, :].sum()
-                            if prob_exceed == 1:
-                                raise KeyError('Probability provided not supported for the sample size')
+                            # if i < len(df) - 1:
+                            #     if prob_exceed == prob.sum():
+                            #         raise KeyError('Probability provided not supported for the sample size')
+                            # See explaination above
                             prob = np.delete(prob, pos_region, 0)
                             cap_block = np.delete(cap_block, pos_region, 0)
                             current_block = np.delete(current_block, pos_region, 0)
@@ -260,11 +268,10 @@ class Sampler():
                                 except:
                                     threshold.append(0)
                             if len(threshold) > 0:
-                                if threshold[-1] >= 1:
-                                    threshold.append(threshold[-1])
-                                else:
+                                if threshold[-1] < 1:
                                     threshold.append(1)
-                            prob = prob.reshape((-1, len_age))
+                            if len_age > 0:
+                                prob = prob.reshape((-1, len_age))
                     break
         return res, res_cap_block
 

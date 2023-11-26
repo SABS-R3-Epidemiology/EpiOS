@@ -1,12 +1,12 @@
 # import pandas as pd
 import numpy as np
-from epios.age_region import Sampler
+from epios import Sampler
 import math
 
 
 class NonResponder(Sampler):
 
-    def __init__(self, nonRespRate, geoinfo_path='./input/microcells.csv',
+    def __init__(self, nonRespRate: list, geoinfo_path='./input/microcells.csv',
                  ageinfo_path='./input/pop_dist.json', data_path='./input/data.csv'):
         '''
         This class inherited from Sampler class
