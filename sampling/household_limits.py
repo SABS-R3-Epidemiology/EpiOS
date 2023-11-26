@@ -1,3 +1,7 @@
+"""
+
+"""
+
 import random
 import numpy as np
 
@@ -34,7 +38,7 @@ class HouseholdLimits():
             household_samples.append(s)
 
             sample_index += 1
-            
+
         sorted_samples.append(household_samples)
         print(sorted_samples)
             
