@@ -336,3 +336,39 @@ class Sampler():
                 for k in choice:
                     res.append(ite_sample[k])
         return res
+
+    # def optimise_draw(self):
+    #     import mip
+
+    #     # Example data
+    #     Q = [[1, 0], [0, 1]]  # Quadratic coefficients
+    #     c = [-1, -1]          # Linear coefficients
+    #     A_ineq = [[1, 0], [0, 1]]  # Inequality constraint coefficients
+    #     b_ineq = [2, 2]            # Inequality constraint bounds
+    #     A_eq = [[1, 1]]            # Equality constraint coefficients
+    #     b_eq = [3]                 # Equality constraint bounds
+
+    #     # Create a new model
+    #     m = mip.Model()
+
+    #     # Add variables
+    #     x = [m.add_var(var_type=mip.INTEGER) for i in range(len(c))]
+
+    #     # Set the objective
+    #     m.objective = mip.minimize(mip.xsum(Q[i][j] * x[i] * x[j] for i in range(len(x)) for j in range(len(x)))
+    #                                + mip.xsum(c[i] * x[i] for i in range(len(x))))
+
+    #     # Add inequality constraints
+    #     for i in range(len(A_ineq)):
+    #         m += mip.xsum(A_ineq[i][j] * x[j] for j in range(len(x))) <= b_ineq[i]
+
+    #     # Add equality constraints
+    #     for i in range(len(A_eq)):
+    #         m += mip.xsum(A_eq[i][j] * x[j] for j in range(len(x))) == b_eq[i]
+
+    #     # Optimize the model
+    #     m.optimize()
+
+    #     # Get the solution
+    #     solution = [v.x for v in x]
+    #     print("Solution:", solution)
