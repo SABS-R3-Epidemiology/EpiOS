@@ -9,16 +9,16 @@ def person_allowed(sample, choice, threshold):
     """
     
     # get the household of the person
-    choice_household = choice[0:4]
+    choice_household = choice[0:5]
 
     # list of samples only showing first three numbers, e.g. "0.0.0" or "0.2.1"
-    sample = [s[0:4] for s in sample]
+    sample = [s[0:5] for s in sample]
 
     # get number of times that household is in sample list
-    sample_count = sample.count(choice) 
+    sample_count = sample.count(choice_household) 
 
     # if adding this sample would exceed threshold then reject
-    if sample_count > threshold:
+    if sample_count >= threshold:
 
         return False
 
@@ -29,3 +29,22 @@ def person_allowed(sample, choice, threshold):
     
 
 
+
+###### Test
+
+sample = ["0.0.0.0","0.0.0.1","0.0.0.2","0.0.0.3",
+       "0.0.1.0","0.0.1.1",
+       "0.0.2.0",
+       "0.0.3.0","0.0.3.1","0.0.3.2","0.0.3.3","0.0.3.4",
+       "0.1.0.0","0.1.0.1","0.1.0.2",
+       "0.1.1.0","0.1.1.1",
+       "2.0.0.0","2.0.0.1","2.0.0.2",
+       "2.0.1.0","2.0.1.1",
+       "2.1.0.0","2.1.0.1","2.1.0.2"]
+
+choice = "0.0.0.4"
+threshold = 4
+
+boolean = person_allowed(sample, choice, threshold)
+
+print(boolean)
