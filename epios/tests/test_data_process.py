@@ -17,7 +17,7 @@ class TestDataProcess(TestCase):
         '''
         self.path = './testing_dataprocess/'
         self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
-                                         '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60]})
+                                         '0.2.0.0', '1.0.0.0'], 'age': [1, 101, 45, 33, 20, 60]})
         self.processor = DataProcess(self.data)
         self.expected_json = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0,
                               1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
@@ -28,7 +28,7 @@ class TestDataProcess(TestCase):
         self.expected_df_population = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1',
                                                            '0.0.1.0', '0.1.0.0',
                                                            '0.2.0.0', '1.0.0.0'],
-                                                    'age': [1, 81, 45, 33, 20, 60],
+                                                    'age': [1, 101, 45, 33, 20, 60],
                                                     'cell': [0, 0, 0, 0, 0, 1],
                                                     'microcell': [0, 0, 0, 1, 2, 0],
                                                     'household': [0, 0, 1, 0, 0, 0]})

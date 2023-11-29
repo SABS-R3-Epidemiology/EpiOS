@@ -36,7 +36,10 @@ class DataProcess():
         count_age = [0] * num_age_group
         for index, row in df.iterrows():
             ind_age = math.floor(row['age'] / 5)
-            count_age[ind_age] += 1
+            if ind_age < num_age_group - 1:
+                count_age[ind_age] += 1
+            else:
+                count_age[-1] += 1
             person_id = row['ID']
             pos_dot = []
             for i in range(len(person_id)):
