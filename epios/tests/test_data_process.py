@@ -37,7 +37,7 @@ class TestDataProcess(TestCase):
         try:
             os.mkdir(self.path[2:-1])
         except FileExistsError:
-            raise KeyError('Directory already exists, terminated not to overwrite anything!')
+            raise FileExistsError('Directory already exists, terminated not to overwrite anything!')
         self.processor.pre_process(path=self.path)
         self.assertTrue(os.path.exists(self.path + 'pop_dist.json'))
         self.assertTrue(os.path.exists(self.path + 'data.csv'))

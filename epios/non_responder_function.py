@@ -35,12 +35,12 @@ def additional_nonresponder(data, nonRespID: list, num_region_group: int, num_ag
 
     nonRespNum = [0] * (num_age_group * num_region_group)
     for i in nonRespID:
-        age = df[df['ID'] == i]['age'][0]
+        age = df[df['ID'] == i]['age'].values[0]
         if math.floor(age / 5) < num_age_group - 1:
-            age_group_pos = math.floor(df[df['ID'] == i]['age'][0] / 5)
+            age_group_pos = math.floor(age / 5)
         else:
             age_group_pos = num_age_group - 1
-        region_group_pos = df[df['ID'] == i]['cell'][0]
+        region_group_pos = df[df['ID'] == i]['cell'].values[0]
         pos_nonRespRate = region_group_pos * num_age_group + age_group_pos
         nonRespNum[pos_nonRespRate] += 1
 

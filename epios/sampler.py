@@ -1,4 +1,4 @@
-from data_process import DataProcess
+from epios.data_process import DataProcess
 import numpy as np
 import pandas as pd
 
@@ -45,5 +45,8 @@ class Sampler(DataProcess):
         if sample_size > population_size:
             raise ValueError('Sample size should <= population size')
         choice = np.random.choice(np.arange(population_size), size=sample_size, replace=False)
-        res = list(self.data['ID'])[choice]
+        res = []
+        sample = list(self.data['ID'])
+        for i in choice:
+            res.append(sample[i])
         return res
