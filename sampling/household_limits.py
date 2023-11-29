@@ -39,6 +39,25 @@ class HouseholdLimits():
 
     def cap_by_household2(self, ids, household_cap=2):
 
+        def check_household_cap(household_counter, household_cap, new_sample):
+
+            if household_counter > household_cap:
+
+                    num_samples = household_cap
+                    
+            else:
+
+                num_samples = household_counter
+
+            households_sample = random.sample(current_households, num_samples)
+
+            for h in households_sample:
+
+                new_sample.append(h)
+            
+            return new_sample
+
+
         # sort ids into order of household, minicell then cell
         ids.sort()
 
@@ -49,7 +68,6 @@ class HouseholdLimits():
         previous_household = int(first_id[4])
         previous_minicell = int(first_id[2])
         previous_cell = int(first_id[0])
-
 
         household_counter = 0
 
@@ -65,20 +83,7 @@ class HouseholdLimits():
 
             else:
 
-                if household_counter > household_cap:
-
-                    num_samples = household_cap
-                    
-                else:
-
-                    num_samples = household_counter
-
-                #print(current_households)
-                households_sample = random.sample(current_households, num_samples)
-
-                for h in households_sample:
-
-                    new_sample.append(h)
+                check_household_cap(household_counter, household_cap, new_sample)
 
                 current_households = []
                 household_counter = 1
@@ -89,22 +94,7 @@ class HouseholdLimits():
 
             current_households.append(s)
 
-        if household_counter > household_cap:
-        
-            num_samples = household_cap
-            
-        else:
-        
-            num_samples = household_counter
-        
-        #print(current_households)
-        households_sample = random.sample(current_households, num_samples)
-        
-        for h in households_sample:
-        
-            new_sample.append(h)
-
-
+        new_sample = check_household_cap(household_counter, household_cap, new_sample)
 
         new_sample.sort()
         
