@@ -1,4 +1,4 @@
-from data_process import DataProcess
+from .data_process import DataProcess
 import numpy as np
 import pandas as pd
 
