@@ -84,6 +84,19 @@ class TestDataProcess(TestCase):
         self.assertEqual(self.sampler1.sample(len(self.sampler1.data)), ['0.0.0.1', '0.0.0.0', '0.2.0.0',
                                                                          '0.1.0.0', '0.0.1.0', '1.0.0.0'])
 
+    def test_sample3(self):
+        self.data2 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
+                                          '0.0.0.3', '0.0.0.4', '0.0.0.5'],
+                                  'age': [1, 2, 2, 2, 1, 0]})
+        self.sampler2 = SamplerAgeRegion(data=self.data2, data_store_path=self.path,
+                                         geoinfo_path=self.path + 'microcells.csv',
+                                         ageinfo_path=self.path + 'pop_dist.json')
+        np.random.seed(1)
+        self.assertEqual(self.sampler2.sample(4, household_criterion=True, household_threshold=4),
+                         ['0.0.0.0', '0.0.0.1', '0.0.0.3', '0.0.0.2'])
+        with self.assertRaises(ValueError):
+            self.sampler2.sample(len(self.sampler2.data), household_criterion=True, household_threshold=1)
+
     def tearDown(self) -> None:
         '''
         Clean up everything created

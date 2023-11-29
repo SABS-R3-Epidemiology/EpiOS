@@ -277,7 +277,8 @@ class SamplerAgeRegion(Sampler):
                     break
         return res, res_cap_block
 
-    def sample(self, sample_size: int, additional_sample: list = None):
+    def sample(self, sample_size: int, additional_sample: list = None,
+               household_criterion=False, household_threshold: int = 3):
         '''
         Given a sample size, and the additional sample, should return a list of people's IDs drawn from the population
         ---------
@@ -334,9 +335,23 @@ class SamplerAgeRegion(Sampler):
                     ite = df[df['cell'] == i]
                     ite = ite[ite['age'] >= j * 5]
                 ite_sample = list(ite['ID'])
-                choice = np.random.choice(np.arange(len(ite_sample)), size=num_sample[i, j], replace=False)
-                for k in choice:
-                    res.append(ite_sample[k])
+                if household_criterion:
+                    count = 0
+                    while count < num_sample[i, j]:
+                        if ite_sample:
+                            pass
+                        else:
+                            raise ValueError('Household threshold is too low, not enough household to generate samples')
+                        choice_ind = np.random.choice(np.arange(len(ite_sample)), size=1)[0]
+                        choice = ite_sample[choice_ind]
+                        if self.person_allowed(res, choice, threshold=household_threshold):
+                            res.append(choice)
+                            count += 1
+                        ite_sample.pop(ite_sample.index(choice))
+                else:
+                    choice = np.random.choice(np.arange(len(ite_sample)), size=num_sample[i, j], replace=False)
+                    for k in choice:
+                        res.append(ite_sample[k])
         return res
 
     # def optimise_draw(self):

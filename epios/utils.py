@@ -7,15 +7,15 @@ def person_allowed(sample, choice, threshold):
         choice (str): string id of the person being sampled
         threshold (int): the cap on the number of people sampled per household
     """
-    
+
     # get the household of the person
-    choice_household = choice[0:5]
+    choice_household = '.'.join(choice.split('.')[:-1])
 
     # list of samples only showing first three numbers, e.g. "0.0.0" or "0.2.1"
-    sample = [s[0:5] for s in sample]
+    sample = ['.'.join(s.split('.')[:-1]) for s in sample]
 
     # get number of times that household is in sample list
-    sample_count = sample.count(choice_household) 
+    sample_count = sample.count(choice_household)
 
     # if adding this sample would exceed threshold then reject
     if sample_count >= threshold:
@@ -26,11 +26,9 @@ def person_allowed(sample, choice, threshold):
     else:
 
         return True
-    
 
+# Test
 
-
-###### Test
 
 """ sample = ["0.0.0.0","0.0.0.1","0.0.0.2","0.0.0.3",
        "0.0.1.0","0.0.1.1",
