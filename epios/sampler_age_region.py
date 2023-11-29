@@ -1,4 +1,4 @@
-from .sampler import Sampler
+from sampler import Sampler
 import pandas as pd
 import numpy as np
 import json
@@ -7,8 +7,8 @@ import math
 
 class SamplerAgeRegion(Sampler):
 
-    def __init__(self, data=None, geoinfo_path='./input/microcells.csv',
-                 ageinfo_path='./input/pop_dist.json', data_path='./input/data.csv'):
+    def __init__(self, data=None, data_store_path='./input/', num_age_group=17, geoinfo_path='./input/microcells.csv',
+                 ageinfo_path='./input/pop_dist.json', data_path=None):
         '''
         Contain all necessary information about the population
         ------------
@@ -17,7 +17,8 @@ class SamplerAgeRegion(Sampler):
         data(DataFrame): should be the extracted data to be sampled from the Epiabm
 
         '''
-        super().__init__(data_path=data_path, data=data)
+        super().__init__(data_path=data_path, data=data, data_store_path=data_store_path,
+                         num_age_group=num_age_group)
         self.geoinfo = pd.read_csv(geoinfo_path)
         self.ageinfo = ageinfo_path
 

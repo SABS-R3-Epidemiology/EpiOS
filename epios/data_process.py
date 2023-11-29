@@ -6,13 +6,14 @@ import json
 
 class DataProcess():
 
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data: pd.DataFrame, path: str = './input/', num_age_group=17):
         '''
         .data attribute contains the DataFrame with two columns. The first column
         contains IDs, the second one contains ages
 
         '''
         self.data = data
+        self.pre_process(path=path, num_age_group=num_age_group)
 
     def pre_process(self, path='./input/', num_age_group=17):
         '''
