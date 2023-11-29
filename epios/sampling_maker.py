@@ -1,5 +1,4 @@
 import pandas
-from pyEpiabm.property.infection_status import InfectionStatus
 from epios import NonResponder, Sampler
 from numpy.random import binomial
 
