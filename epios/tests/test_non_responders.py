@@ -27,11 +27,11 @@ class TestDataProcess(TestCase):
         expected_res[0, 0] = 1
         try:
             assert_array_equal(np.array(additional_nonresponder(self.data, ['0.0.0.0'], 2, 17, 1, 1)), expected_res)
-        except:
+        except AssertionError:
             self.fail('additional samples not generated as expected')
         try:
             assert_array_equal(np.array(additional_nonresponder(self.data, ['0.0.0.0'], 2, 17, 1, 0, 1)), expected_res)
-        except:
+        except AssertionError:
             self.fail('additional samples not generated as expected')
 
 

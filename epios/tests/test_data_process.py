@@ -36,7 +36,7 @@ class TestDataProcess(TestCase):
     def test_data_process(self):
         try:
             os.mkdir(self.path[2:-1])
-        except:
+        except FileExistsError:
             raise KeyError('Directory already exists, terminated not to overwrite anything!')
         self.processor.pre_process(path=self.path)
         self.assertTrue(os.path.exists(self.path + 'pop_dist.json'))
@@ -48,12 +48,12 @@ class TestDataProcess(TestCase):
         df_microcell = pd.read_csv(self.path + 'microcells.csv')
         try:
             assert_frame_equal(df_microcell, self.expected_df_microcell)
-        except:
+        except AssertionError:
             self.fail('microcells.csv is not generated as expected')
         df_population = pd.read_csv(self.path + 'data.csv')
         try:
             assert_frame_equal(df_population, self.expected_df_population)
-        except:
+        except AssertionError:
             self.fail('data.csv is not generated as expected')
 
     def tearDown(self) -> None:

@@ -147,7 +147,7 @@ class Sampler():
         for i in range(len(prob)):
             try:
                 threshold.append(threshold[-1] + prob[i - 1])
-            except:
+            except IndexError:
                 threshold.append(0)
         threshold.append(1)
         cap_block = np.array(cap_block).reshape((-1, len_age))
@@ -205,7 +205,7 @@ class Sampler():
                             for k in range(len(prob)):
                                 try:
                                     threshold.append(threshold[-1] + prob[k - 1])
-                                except:
+                                except IndexError:
                                     threshold.append(0)
                             if threshold[-1] < 1:
                                 threshold.append(1)
@@ -238,7 +238,7 @@ class Sampler():
                             for k in range(len(prob)):
                                 try:
                                     threshold.append(threshold[-1] + prob[k - 1])
-                                except:
+                                except IndexError:
                                     threshold.append(0)
                             if len(threshold) > 0:
                                 if threshold[-1] < 1:
@@ -265,7 +265,7 @@ class Sampler():
                             for k in range(len(prob)):
                                 try:
                                     threshold.append(threshold[-1] + prob[k - 1])
-                                except:
+                                except IndexError:
                                     threshold.append(0)
                             if len(threshold) > 0:
                                 if threshold[-1] < 1:

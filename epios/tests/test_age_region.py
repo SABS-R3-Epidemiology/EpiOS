@@ -23,7 +23,7 @@ class TestDataProcess(TestCase):
         self.path = './testing_ageregion/'
         try:
             os.mkdir(self.path[2:-1])
-        except:
+        except FileExistsError:
             raise KeyError('Directory already exists, terminated not to overwrite anything!')
         self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                          '0.1.0.0', '0.2.0.0', '1.0.0.0'],
@@ -65,7 +65,7 @@ class TestDataProcess(TestCase):
         res, cap = self.sampler.multinomial_draw(len(self.sampler.data), ar_dist)
         try:
             assert_array_equal(res, np.array(cap).reshape((1, -1))[0])
-        except:
+        except AssertionError:
             self.fail('not draw as expected')
 
     def test_sample1(self):

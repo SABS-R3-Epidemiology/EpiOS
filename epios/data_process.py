@@ -41,20 +41,17 @@ class DataProcess():
             else:
                 count_age[-1] += 1
             person_id = row['ID']
-            pos_dot = []
-            for i in range(len(person_id)):
-                if person_id[i] == '.':
-                    pos_dot.append(i)
-            cell_num = int(person_id[0:pos_dot[0]])
-            microcell_num = int(person_id[pos_dot[0] + 1:pos_dot[1]])
-            household_num = int(person_id[pos_dot[1] + 1:pos_dot[2]])
+            splitted_id = person_id.split('.')
+            cell_num = int(splitted_id[0])
+            microcell_num = int(splitted_id[1])
+            household_num = int(splitted_id[2])
             new_row = pd.DataFrame({'ID': person_id, 'age': row['age'], 'cell': cell_num,
                                     'microcell': microcell_num, 'household': household_num}, index=[0])
             population_info = pd.concat([population_info, new_row], ignore_index=True)
-            key = person_id[0:pos_dot[-1]]
+            key = '.'.join(splitted_id[:-1])
             try:
                 household_info[key] += 1
-            except:
+            except KeyError:
                 household_info[key] = 1
         population_info.to_csv(path + 'data.csv', index=False)
 
