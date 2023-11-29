@@ -14,6 +14,105 @@ class HouseholdLimits():
         self.minicell = minicell
         self.ids = ids
 
+
+    def cap_by_household(self, ids):
+
+        new_list = []
+
+        household_cap = 2
+
+        household_counter = []
+
+        for i in ids:
+
+            id_cell = int(i[0])
+            id_minicell = int(i[2])
+            id_household = int(i[4])
+
+            household_counter[id_household] += 1
+
+            if household_counter[id_household] <= household_cap:
+
+                new_list.append(i)
+
+
+
+    def cap_by_household2(self, ids, household_cap=2):
+
+        # sort ids into order of household, minicell then cell
+        ids.sort()
+
+        new_sample = []
+        current_households = []
+
+        first_id = ids[0]
+        previous_household = int(first_id[4])
+        previous_minicell = int(first_id[2])
+        previous_cell = int(first_id[0])
+
+
+        household_counter = 0
+
+        for s in ids:
+
+            current_household = int(s[4])
+            current_minicell = int(s[2])
+            current_cell = int(s[0])
+
+            if (current_minicell == previous_minicell) and (current_cell == previous_cell) and (current_household == previous_household):
+
+                household_counter += 1
+
+            else:
+
+                if household_counter > household_cap:
+
+                    num_samples = household_cap
+                    
+                else:
+
+                    num_samples = household_counter
+
+                #print(current_households)
+                households_sample = random.sample(current_households, num_samples)
+
+                for h in households_sample:
+
+                    new_sample.append(h)
+
+                current_households = []
+                household_counter = 1
+                
+                previous_cell = current_cell
+                previous_minicell = current_minicell
+                previous_household = current_household
+
+            current_households.append(s)
+
+        if household_counter > household_cap:
+        
+            num_samples = household_cap
+            
+        else:
+        
+            num_samples = household_counter
+        
+        #print(current_households)
+        households_sample = random.sample(current_households, num_samples)
+        
+        for h in households_sample:
+        
+            new_sample.append(h)
+
+
+
+        new_sample.sort()
+        
+        return new_sample
+
+
+
+
     # function to sort samples into a multi-dim list by household
     def sort_samples_by_household(self, samples):
 
@@ -139,7 +238,7 @@ class HouseholdLimits():
         return id_samples
 
 
-# Testing
+""" # Testing
 
 # the current method used for the household limiting sampling
 #household_cap = ["cap_number", 3] 
@@ -162,4 +261,11 @@ sample_ids = Test.get_sample_ids()
 
 #print(sample_ids)
 
-Test.sort_samples_by_household(sample_ids)
+Test.sort_samples_by_household(sample_ids) """
+
+ids = ["0.4.0.1","0.0.0.1","1.0.0.2",
+        "0.0.1.0","0.0.1.1","0.0.1.2","0.0.1.3",
+        "1.2.6.1","0.0.2.1","1.0.2.2",
+        "0.0.3.0","0.0.3.1","0.0.3.2",
+        "0.0.4.0","5.3.4.1","0.0.4.2"]
+
