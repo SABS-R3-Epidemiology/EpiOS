@@ -6,8 +6,8 @@ import math
 
 class NonResponder(Sampler):
 
-    def __init__(self, geoinfo, data, nonRespRate):
-        super().__init__(geoinfo, data)
+    def __init__(self, geoinfo_path, data, nonRespRate):
+        super().__init__(geoinfo_path, data)
         self.nonRespRate = nonRespRate
 
     def additional_sample(self, sampling_percentage=0.1, proportion=0.01, threshold=None):
