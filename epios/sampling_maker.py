@@ -1,5 +1,4 @@
 import pandas
-from epios import NonResponder, Sampler
 from numpy.random import binomial
 
 class SamplingMaker():
@@ -8,13 +7,13 @@ class SamplingMaker():
     '''
 
     def __init__(self, nonresprate=0, keeptrack=False, TheData=None, false_positive=0, false_negative=0, threshold=None):
-        self.recognised=['InfectASympt', 'InfectMild', 'InfectGP', 'InfectHosp', 'InfectICU', 'InfectICURecov']
-        self.nonresprate=nonresprate
-        self.keeptrack=keeptrack
-        self.TheData=TheData
-        self.false_positive=false_positive
-        self.false_negative=false_negative
-        self.threshold=threshold
+        self.recognised = ['InfectASympt', 'InfectMild', 'InfectGP', 'InfectHosp', 'InfectICU', 'InfectICURecov']
+        self.nonresprate = nonresprate
+        self.keeptrack = keeptrack
+        self.TheData = TheData
+        self.false_positive = false_positive
+        self.false_negative = false_negative
+        self.threshold = threshold
 
     def testresult(self,load):
         if bool(binomial(1, self.nonresprate)):
