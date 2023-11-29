@@ -17,7 +17,7 @@ class TestDataProcess(TestCase):
         '''
         self.path = './testing_dataprocess/'
         self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
-                                         '0.2.0.0', '1.0.0.0'], 'age': [1, 81, 45, 33, 20, 60]})
+                                         '0.2.0.0', '1.0.0.0'], 'age': [1, 101, 45, 33, 20, 60]})
         self.processor = DataProcess(self.data)
         self.expected_json = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0,
                               1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
@@ -28,7 +28,7 @@ class TestDataProcess(TestCase):
         self.expected_df_population = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1',
                                                            '0.0.1.0', '0.1.0.0',
                                                            '0.2.0.0', '1.0.0.0'],
-                                                    'age': [1, 81, 45, 33, 20, 60],
+                                                    'age': [1, 101, 45, 33, 20, 60],
                                                     'cell': [0, 0, 0, 0, 0, 1],
                                                     'microcell': [0, 0, 0, 1, 2, 0],
                                                     'household': [0, 0, 1, 0, 0, 0]})
@@ -36,7 +36,7 @@ class TestDataProcess(TestCase):
     def test_data_process(self):
         try:
             os.mkdir(self.path[2:-1])
-        except:
+        except FileExistsError:
             raise KeyError('Directory already exists, terminated not to overwrite anything!')
         self.processor.pre_process(path=self.path)
         self.assertTrue(os.path.exists(self.path + 'pop_dist.json'))
@@ -48,12 +48,12 @@ class TestDataProcess(TestCase):
         df_microcell = pd.read_csv(self.path + 'microcells.csv')
         try:
             assert_frame_equal(df_microcell, self.expected_df_microcell)
-        except:
+        except AssertionError:
             self.fail('microcells.csv is not generated as expected')
         df_population = pd.read_csv(self.path + 'data.csv')
         try:
             assert_frame_equal(df_population, self.expected_df_population)
-        except:
+        except AssertionError:
             self.fail('data.csv is not generated as expected')
 
     def tearDown(self) -> None:
