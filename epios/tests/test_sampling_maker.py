@@ -33,7 +33,8 @@ class TestSM(TestCase):
 
     def test__call__(self):
         t = [0,2]
-        X=SamplingMaker(TheLoads=pd.DataFrame({0:[0,0,1],1:[1,1,0],2:[2,2,2]}))
-        self.assertEqual(X(t,[0,1]),pd.DataFrame({0:['False','True'],1:['True','False']}))
-        X=SamplingMaker(TheLoads=pd.DataFrame({0:['Susceptible','Susceptible','InfectASympt'],1:['InfectASympt','InfectASympt','Susceptible'],2:[2,2,2]}))
-        self.assertEqual(X(t,[[0,1],[1,0]]),[pd.DataFrame({0:'False',1:'True'}),pd.DataFrame({0:'True',1:'False'})])
+        X=SamplingMaker(keeptrack=True, threshold=0.5, TheData=pd.DataFrame({0:[0,0,1],1:[1,1,0],2:[2,2,2]}))
+        self.assertFalse((X(t,[0,1])!=pd.DataFrame({0:['Negative','Positive'],1:['Positive','Negative']},index=[0,2])).any(axis=None))
+        X=SamplingMaker(TheData=pd.DataFrame({0:['Susceptible','Susceptible','InfectASympt'],1:['InfectASympt','InfectASympt','Susceptible'],2:[2,2,2]}))
+        self.assertFalse((X(t,[[0,1],[0,1]])[0]!=pd.DataFrame({0:'Negative',1:'Positive'},index=[0])).any(axis=None))
+        self.assertFalse((X(t,[[0,1],[0,1]])[1]!=pd.DataFrame({0:'Positive',1:'Negative'},index=[2])).any(axis=None))

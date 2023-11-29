@@ -8,12 +8,11 @@ class SamplingMaker():
 
     '''
 
-    def __init__(self, nonresprate=0, keeptrack=False, TheLoads=None, Statuses=None, false_positive=0, false_negative=0, threshold=None):
+    def __init__(self, nonresprate=0, keeptrack=False, TheData=None, false_positive=0, false_negative=0, threshold=None):
         self.recognised=['InfectASympt', 'InfectMild', 'InfectGP', 'InfectHosp', 'InfectICU', 'InfectICURecov']
         self.nonresprate=nonresprate
         self.keeptrack=keeptrack
-        self.TheLoads=TheLoads
-        self.Statuses=Statuses
+        self.TheData=TheData
         self.false_positive=false_positive
         self.false_negative=false_negative
         self.threshold=threshold
@@ -38,10 +37,10 @@ class SamplingMaker():
 
     def __call__(self, sampling_times, people):
         if self.keeptrack:
-            STATUSES = self.TheLoads.loc[sampling_times,self.sample()]
-            return STATUSES.apply(self.testresults, )
+            STATUSES = self.TheData.loc[sampling_times,people]
+            return STATUSES.apply(lambda x: list(map(self.testresult, x)))
         else:
-            times_people=list(zip(sampling_times,people))
-            raise Exception(str(times_people))
-            STATUSES = list(map(lambda t:self.Statuses.loc[t[0],t[1]],times_people))
-            return list(map(lambda x: x.apply(self.testresult),STATUSES))
+            times_people=zip(sampling_times,people)
+            STATUSES = map(lambda t:self.TheData.loc[[t[0]],t[1]],times_people)
+            RESULTS = map(lambda x: x.apply(lambda x: list(map(self.testresult, x))),STATUSES)
+            return list(RESULTS)
