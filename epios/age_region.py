@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import math
-import mip
+from gurobipy import Model, GRB, quicksum
 
 
 class Sampler():
@@ -338,9 +338,8 @@ class Sampler():
                     res.append(ite_sample[k])
         return res
 
-    def optimise_draw(self):
+    def optimise_draw(self, sample_size):
 
-        n = len(self.data)
         num_age = len(self.get_age_dist())
         num_region = len(self.get_region_dist())
         Q = np.zeros((num_age * num_region, num_age * num_region))
@@ -359,7 +358,7 @@ class Sampler():
         for i in range(num_region * num_age):
             pos_age = i % num_age
             pos_region = math.floor(i / num_age)
-            c[i] = -2 * n * (age_dist[pos_age] + region_dist[pos_region])
+            c[i] = -2 * sample_size * (age_dist[pos_age] + region_dist[pos_region])
 
         cap_block = []
         num_age = len(self.get_age_dist())
@@ -383,16 +382,14 @@ class Sampler():
                 ite = self.data[self.data['age'] >= i * 5]
                 ite = ite[ite['age'] < i * 5 + 5]
                 max_num_age = len(ite)
-                cap_age.append(min(n * age_dist[i] + 0.01 * n, max_num_age))
+                cap_age.append(min(sample_size * age_dist[i] + 0.01 * sample_size, max_num_age))
             else:
                 ite = self.data[self.data['age'] >= i * 5]
                 max_num_age = len(ite)
-                cap_age.append(min(max(n * age_dist[i] + 0.01 * n, 1), max_num_age))
-        cap_age = [cap_age, list(np.arange(len(cap_age)))]
+                cap_age.append(min(max(sample_size * age_dist[i] + 0.01 * sample_size, 1), max_num_age))
         for i in range(num_region):
-            cap_region.append(min(max(n * region_dist[i] + 0.005 * n, 1),
+            cap_region.append(min(max(sample_size * region_dist[i] + 0.005 * sample_size, 1),
                                   self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
-        cap_region = [cap_region, list(np.arange(len(cap_region)))]
         A2_ineq = np.zeros((num_age, num_age * num_region))
         for i in range(num_age):
             for j in range(num_region):
@@ -407,28 +404,35 @@ class Sampler():
         b3_ineq = cap_region
 
         A_eq = list(np.ones((1, num_age * num_region)))
-        b_eq = [n]
+        b_eq = [sample_size]
 
-        m = mip.Model()
+        len_c = len(c)
 
-        x = [m.add_var(var_type=mip.INTEGER) for i in range(len(c))]
+        m = Model('miqp')
 
-        m.objective = mip.minimize(mip.xsum(Q[i][j] * x[i] * x[j] for i in range(len(x)) for j in range(len(x)))
-                                   + mip.xsum(c[i] * x[i] for i in range(len(x))))
+        x = m.addVars(len(Q), vtype=GRB.INTEGER)
+
+        obj = quicksum(quicksum(Q[i][j] * x[i] * x[j] for j in range(len_c)) for i in range(len_c))
+        obj += quicksum(c[i] * x[i] for i in range(len_c))
+        m.setObjective(obj, GRB.MINIMIZE)
 
         for i in range(len(A1_ineq)):
-            m += mip.xsum(A1_ineq[i][j] * x[j] for j in range(len(x))) <= b1_ineq[i]
+            m.addConstr(quicksum(A1_ineq[i][j] * x[j] for j in range(len_c)) <= b1_ineq[i], "constraint{}".format(i))
 
         for i in range(len(A2_ineq)):
-            m += mip.xsum(A2_ineq[i][j] * x[j] for j in range(len(x))) <= b2_ineq[i]
+            m.addConstr(quicksum(A2_ineq[i][j] * x[j] for j in range(len_c)) <= b2_ineq[i], "constraint{}".format(i))
 
         for i in range(len(A3_ineq)):
-            m += mip.xsum(A3_ineq[i][j] * x[j] for j in range(len(x))) <= b3_ineq[i]
+            m.addConstr(quicksum(A3_ineq[i][j] * x[j] for j in range(len_c)) <= b3_ineq[i], "constraint{}".format(i))
 
         for i in range(len(A_eq)):
-            m += mip.xsum(A_eq[i][j] * x[j] for j in range(len(x))) == b_eq[i]
+            m.addConstr(quicksum(A_eq[i][j] * x[j] for j in range(len_c)) == b_eq[i], "constraint{}".format(i))
 
         m.optimize()
 
-        solution = [v.x for v in x]
-        return solution
+        if m.status == GRB.Status.OPTIMAL:
+            print("Optimal solution found:")
+            for v in m.getVars():
+                print(f"{v.VarName}: {v.x}")
+        else:
+            print("No optimal solution found.")

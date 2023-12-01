@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 import unittest
 from unittest import TestCase
-from epios.sampler import Sampler
+from sampler import Sampler
 import os
 from pandas.testing import assert_frame_equal
-from epios.utils import person_allowed
+from utils import person_allowed
 
 
 class TestDataProcess(TestCase):
