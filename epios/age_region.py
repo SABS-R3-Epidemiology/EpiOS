@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import math
+import mip
 
 
 class Sampler():
@@ -337,38 +338,97 @@ class Sampler():
                     res.append(ite_sample[k])
         return res
 
-    # def optimise_draw(self):
-    #     import mip
+    def optimise_draw(self):
 
-    #     # Example data
-    #     Q = [[1, 0], [0, 1]]  # Quadratic coefficients
-    #     c = [-1, -1]          # Linear coefficients
-    #     A_ineq = [[1, 0], [0, 1]]  # Inequality constraint coefficients
-    #     b_ineq = [2, 2]            # Inequality constraint bounds
-    #     A_eq = [[1, 1]]            # Equality constraint coefficients
-    #     b_eq = [3]                 # Equality constraint bounds
+        n = len(self.data)
+        num_age = len(self.get_age_dist())
+        num_region = len(self.get_region_dist())
+        Q = np.zeros((num_age * num_region, num_age * num_region))
+        for i in range(len(Q)):
+            pos_age = i % num_age
+            pos_region = math.floor(i / num_region)
+            for j in range(num_region):
+                Q[i, pos_region * num_age + j] = 1
+            for j in range(num_age):
+                Q[i, pos_age + j * num_region] = 1
+        Q = list(Q)
 
-    #     # Create a new model
-    #     m = mip.Model()
+        age_dist = self.get_age_dist()
+        region_dist = self.get_region_dist()
+        c = [0] * (num_age * num_region)
+        for i in range(num_region * num_age):
+            pos_age = i % num_age
+            pos_region = math.floor(i / num_region)
+            c[i] = -2 * n * (age_dist[pos_age] + region_dist[pos_region])
 
-    #     # Add variables
-    #     x = [m.add_var(var_type=mip.INTEGER) for i in range(len(c))]
+        cap_block = []
+        num_age = len(self.get_age_dist())
+        for i in range(num_age * num_region):
+            pos_age = i % num_age
+            pos_region = math.floor(i / num_age)
+            ite = self.data[self.data['cell'] == pos_region]
+            if pos_age != num_age - 1:
+                ite = ite[ite['age'] >= pos_age * 5]
+                ite = ite[ite['age'] < pos_age * 5 + 5]
+            else:
+                ite = ite[ite['age'] >= pos_age * 5]
+            cap_block.append(len(ite))
+        A1_ineq = list(np.eye(num_age * num_region))
+        b1_ineq = cap_block
 
-    #     # Set the objective
-    #     m.objective = mip.minimize(mip.xsum(Q[i][j] * x[i] * x[j] for i in range(len(x)) for j in range(len(x)))
-    #                                + mip.xsum(c[i] * x[i] for i in range(len(x))))
+        cap_age = []
+        cap_region = []
+        for i in range(num_age):
+            if i != num_age - 1:
+                ite = self.data[self.data['age'] >= i * 5]
+                ite = ite[ite['age'] < i * 5 + 5]
+                max_num_age = len(ite)
+                cap_age.append(min(n * age_dist[i] + 0.01 * n, max_num_age))
+            else:
+                ite = self.data[self.data['age'] >= i * 5]
+                max_num_age = len(ite)
+                cap_age.append(min(max(n * age_dist[i] + 0.01 * n, 1), max_num_age))
+        cap_age = [cap_age, list(np.arange(len(cap_age)))]
+        for i in range(num_region):
+            cap_region.append(min(max(n * region_dist[i] + 0.005 * n, 1),
+                                  self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
+        cap_region = [cap_region, list(np.arange(len(cap_region)))]
+        A2_ineq = np.zeros((num_age, num_age * num_region))
+        for i in range(num_age):
+            for j in range(num_region):
+                A2_ineq[i, i + j * num_age] = 1
+        A2_ineq = list(A2_ineq)
+        b2_ineq = cap_age
 
-    #     # Add inequality constraints
-    #     for i in range(len(A_ineq)):
-    #         m += mip.xsum(A_ineq[i][j] * x[j] for j in range(len(x))) <= b_ineq[i]
+        A3_ineq = np.zeros((num_region, num_age * num_region))
+        for i in range(num_region):
+            for j in range(num_age):
+                A3_ineq[i, i + j * num_region] = 1
+        b3_ineq = cap_region
 
-    #     # Add equality constraints
-    #     for i in range(len(A_eq)):
-    #         m += mip.xsum(A_eq[i][j] * x[j] for j in range(len(x))) == b_eq[i]
+        A_eq = list(np.ones((1, num_age * num_region)))
+        b_eq = [n]
 
-    #     # Optimize the model
-    #     m.optimize()
+        m = mip.Model(mip.GLPK)
 
-    #     # Get the solution
-    #     solution = [v.x for v in x]
-    #     print("Solution:", solution)
+        x = [m.add_var(var_type=mip.INTEGER) for i in range(len(c))]
+
+        m.objective = mip.minimize(mip.xsum(Q[i][j] * x[i] * x[j] for i in range(len(x)) for j in range(len(x)))
+                                   + mip.xsum(c[i] * x[i] for i in range(len(x))))
+
+        for i in range(len(A1_ineq)):
+            m += mip.xsum(A1_ineq[i][j] * x[j] for j in range(len(x))) <= b1_ineq[i]
+
+        for i in range(len(A2_ineq)):
+            m += mip.xsum(A2_ineq[i][j] * x[j] for j in range(len(x))) <= b2_ineq[i]
+
+        for i in range(len(A3_ineq)):
+            m += mip.xsum(A3_ineq[i][j] * x[j] for j in range(len(x))) <= b3_ineq[i]
+
+        for i in range(len(A_eq)):
+            m += mip.xsum(A_eq[i][j] * x[j] for j in range(len(x))) == b_eq[i]
+
+        m.optimize()
+
+        solution = [v.x for v in x]
+        return solution
