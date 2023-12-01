@@ -67,13 +67,13 @@ class TestDataProcess(TestCase):
         sample = ["0.0.0.0", "0.0.0.1"]
         choice = "0.0.0.2"
         threshold = 3
-        result = person_allowed(sample, choice, threshold)
+        result = self.sampler.person_allowed(sample, choice, threshold)
         self.assertTrue(result)
         new_sample = ["0.0.0.0", "0.0.0.1", "0.0.0.3"]
-        new_result = person_allowed(new_sample, choice, threshold)
+        new_result = self.sampler.person_allowed(new_sample, choice, threshold)
         self.assertFalse(new_result)
         new_threshold = 2
-        result = person_allowed(sample, choice, new_threshold)
+        result = self.sampler.person_allowed(sample, choice, new_threshold)
         self.assertFalse(result)
 
 
