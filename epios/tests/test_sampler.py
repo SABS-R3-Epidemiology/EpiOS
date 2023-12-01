@@ -5,7 +5,6 @@ from unittest import TestCase
 from sampler import Sampler
 import os
 from pandas.testing import assert_frame_equal
-from utils import person_allowed
 
 
 class TestDataProcess(TestCase):
