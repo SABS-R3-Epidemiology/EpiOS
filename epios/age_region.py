@@ -346,10 +346,10 @@ class Sampler():
         Q = np.zeros((num_age * num_region, num_age * num_region))
         for i in range(len(Q)):
             pos_age = i % num_age
-            pos_region = math.floor(i / num_region)
-            for j in range(num_region):
-                Q[i, pos_region * num_age + j] = 1
+            pos_region = math.floor(i / num_age)
             for j in range(num_age):
+                Q[i, pos_region * num_age + j] = 1
+            for j in range(num_region):
                 Q[i, pos_age + j * num_region] = 1
         Q = list(Q)
 
@@ -358,7 +358,7 @@ class Sampler():
         c = [0] * (num_age * num_region)
         for i in range(num_region * num_age):
             pos_age = i % num_age
-            pos_region = math.floor(i / num_region)
+            pos_region = math.floor(i / num_age)
             c[i] = -2 * n * (age_dist[pos_age] + region_dist[pos_region])
 
         cap_block = []
@@ -409,7 +409,7 @@ class Sampler():
         A_eq = list(np.ones((1, num_age * num_region)))
         b_eq = [n]
 
-        m = mip.Model(mip.GLPK)
+        m = mip.Model()
 
         x = [m.add_var(var_type=mip.INTEGER) for i in range(len(c))]
 
