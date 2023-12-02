@@ -1,6 +1,6 @@
 import pandas as pd
 from unittest import TestCase
-from epios.sampling_maker import SamplingMaker
+from sampling_maker import SamplingMaker
 
 
 class TestSM(TestCase):
