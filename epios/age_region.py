@@ -349,7 +349,7 @@ class Sampler():
             for j in range(num_age):
                 Q[i, pos_region * num_age + j] = 1
             for j in range(num_region):
-                Q[i, pos_age + j * num_region] = 1
+                Q[i, pos_age + j * num_age] = 1
         Q = list(Q)
 
         age_dist = self.get_age_dist()
@@ -400,7 +400,7 @@ class Sampler():
         A3_ineq = np.zeros((num_region, num_age * num_region))
         for i in range(num_region):
             for j in range(num_age):
-                A3_ineq[i, i + j * num_region] = 1
+                A3_ineq[i, i * num_age + j] = 1
         b3_ineq = cap_region
 
         A_eq = list(np.ones((1, num_age * num_region)))
@@ -431,8 +431,7 @@ class Sampler():
         m.optimize()
 
         if m.status == GRB.Status.OPTIMAL:
-            print("Optimal solution found:")
-            for v in m.getVars():
-                print(f"{v.VarName}: {v.x}")
+            res = [i.x for i in m.getVars()]
+            return res
         else:
             print("No optimal solution found.")
