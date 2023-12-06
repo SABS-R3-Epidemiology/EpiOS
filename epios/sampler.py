@@ -10,7 +10,7 @@ class Sampler(DataProcess):
 
     '''
 
-    def __init__(self, data=None, data_store_path='./input/', num_age_group=17):
+    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17):
         '''
         You can choose to import the data from a .csv file for a given path
         Or you can pass a pandas.DataFrame object to the 'data' argument,
@@ -21,7 +21,8 @@ class Sampler(DataProcess):
 
         '''
         if data is not None:
-            super().__init__(data=data, path=data_store_path, num_age_group=num_age_group)
+            if pre_process:
+                super().__init__(data=data, path=data_store_path, num_age_group=num_age_group)
             self.data = pd.read_csv(data_store_path + 'data.csv')
         else:
             raise ValueError('You have to input data to continue')

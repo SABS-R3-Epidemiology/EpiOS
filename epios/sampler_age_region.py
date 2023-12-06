@@ -3,13 +3,14 @@ import pandas as pd
 import numpy as np
 import json
 import math
+from copy import copy
 # from gurobipy import Model, GRB, quicksum
 
 
 class SamplerAgeRegion(Sampler):
 
-    def __init__(self, data=None, data_store_path='./input/', num_age_group=17, geoinfo_path='./input/microcells.csv',
-                 ageinfo_path='./input/pop_dist.json'):
+    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17,
+                 geoinfo_path='./input/microcells.csv', ageinfo_path='./input/pop_dist.json'):
         '''
         Contain all necessary information about the population
         ------------
@@ -19,7 +20,7 @@ class SamplerAgeRegion(Sampler):
 
         '''
         super().__init__(data=data, data_store_path=data_store_path,
-                         num_age_group=num_age_group)
+                         num_age_group=num_age_group, pre_process=pre_process)
         self.geoinfo = pd.read_csv(geoinfo_path)
         self.ageinfo = ageinfo_path
 
@@ -160,7 +161,7 @@ class SamplerAgeRegion(Sampler):
         res = [0] * len(prob)
         current_age = [0] * len_age
         current_region = [0] * len(cap_region[0])
-        current_block = np.zeros((len(cap_region[0]), len_age))
+        current_block = np.zeros((len(cap_region[0]), len_age), dtype=int)
 
         # We start the draw from here, we run the following code for each sample
         # to determine which age/region group it is
@@ -197,11 +198,12 @@ class SamplerAgeRegion(Sampler):
                         if current_block[pos_region, pos_age] + 1 > cap_block[pos_region, pos_age]:
                             # reduce the corresponding prob to 0, and distribute its prob to the rest of blocks
                             prob_exceed = prob[pos_region, pos_age]
-                            if i < len(df) - 1:
+                            if i < n - 1:
                                 if prob_exceed == prob.sum():
                                     raise KeyError('Probability provided not supported for the sample size')
                             prob[pos_region, pos_age] = 0
-                            prob = prob / (1 - prob_exceed)
+                            if i < n - 1:
+                                prob = prob / (1 - prob_exceed)
                             prob = prob.reshape((1, -1))[0]
                             # Since the prob changes, need to calculate the threshold again
                             threshold = []
@@ -218,7 +220,7 @@ class SamplerAgeRegion(Sampler):
                         if current_age[pos_age] + 1 > cap_age[0][pos_age]:
                             # Similarly, reduce all prob for this age group to 0, and re-distribute
                             prob_exceed = prob[:, pos_age].sum()
-                            # if i < len(df) - 1:
+                            # if i < n - 1:
                             #     if prob_exceed == prob.sum():
                             #         raise KeyError('Probability provided not supported for the sample size')
                             # These can be commented out since will be very unlikely to trigger
@@ -233,7 +235,8 @@ class SamplerAgeRegion(Sampler):
                             cap_block = np.delete(cap_block, pos_age, 1)
                             current_block = np.delete(current_block, pos_age, 1)
                             len_age += -1
-                            prob = prob / (1 - prob_exceed)
+                            if i < n - 1:
+                                prob = prob / (1 - prob_exceed)
                             prob = prob.reshape((1, -1))[0]
                             cap_age = list(np.delete(np.array(cap_age), pos_age, 1))
                             current_age.pop(pos_age)
@@ -253,14 +256,15 @@ class SamplerAgeRegion(Sampler):
                         if current_region[pos_region] + 1 > cap_region[0][pos_region]:
                             # Similar to the above
                             prob_exceed = prob[pos_region, :].sum()
-                            # if i < len(df) - 1:
+                            # if i < n - 1:
                             #     if prob_exceed == prob.sum():
                             #         raise KeyError('Probability provided not supported for the sample size')
                             # See explaination above
                             prob = np.delete(prob, pos_region, 0)
                             cap_block = np.delete(cap_block, pos_region, 0)
                             current_block = np.delete(current_block, pos_region, 0)
-                            prob = prob / (1 - prob_exceed)
+                            if i < n - 1:
+                                prob = prob / (1 - prob_exceed)
                             prob = prob.reshape((1, -1))[0]
                             cap_region = list(np.delete(np.array(cap_region), pos_region, 1))
                             current_region.pop(pos_region)
