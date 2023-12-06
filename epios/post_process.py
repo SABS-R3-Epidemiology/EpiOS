@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 from sampler_age_region import SamplerAgeRegion
 from sampling_maker import SamplingMaker
 
@@ -16,7 +15,7 @@ class PostProcess():
         sample_strategy(str): should be either 'random' or 'same'
                               'random' means sampling random people each round
                               'same' means sampling same people each round
-        
+
         '''
         self.time_sample = time_sampled
         self.sample_strategy = sample_strategy
@@ -33,7 +32,7 @@ class PostProcess():
 
         Output:
         res(pd.DataFrame): contains the result of sampling
-        
+
         '''
         if self.sample_strategy == 'same':
             infected_number = []
@@ -55,6 +54,9 @@ class PostProcess():
                 infected_number.append(ite.iloc[0].value_counts.get('Positive', 0))
         if gen_plot:
             plt.plot(self.time_sample, infected_number)
+            plt.xlabel('Time')
+            plt.ylabel('Population')
+            plt.title('Number of infection in the sample')
             plt.savefig(saving_path + 'sample.png')
         res = []
         res.append(self.time_sample)
@@ -62,11 +64,22 @@ class PostProcess():
         self.result = infected_number
         return res
 
-    def compare(self, scale_method: str = 'proportional'):
+    def compare(self, scale_method: str = 'proportional', saving_path: str = './output/'):
         if scale_method == 'proportional':
             scale_para = len(self.demo_data) / self.sample_size
             result_scaled = np.array(self.result) * scale_para
-            true_result = []
-            for t in self.time_sample:
-                true_result.append(self.time_data.iloc[t].value_counts.get([2, 3, 4, 5, 6, 7, 8, 9], 0))
-            diff = np.
+        else:
+            pass
+        true_result = []
+        for t in self.time_sample:
+            true_result.append(self.time_data.iloc[t].value_counts.get([2, 3, 4, 5, 6, 7, 8, 9], 0))
+        diff = np.array(true_result) - result_scaled
+        plt.plot(self.time_sample, result_scaled, label='Predicted result')
+        plt.plot(self.time_sample, true_result, label='True result')
+        plt.plot(self.time_sample, diff, label='Difference')
+        plt.legend()
+        plt.xlabel('Time')
+        plt.ylabel('Population')
+        plt.title('Number of infection in the population')
+        plt.savefig(saving_path + 'compare.png')
+        return diff

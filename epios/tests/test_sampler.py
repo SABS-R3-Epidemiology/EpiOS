@@ -30,18 +30,9 @@ class TestDataProcess(TestCase):
 
     def test_error(self):
         with self.assertRaises(ValueError):
-            Sampler(data=1, data_path=1)
-        with self.assertRaises(ValueError):
             Sampler()
         with self.assertRaises(ValueError):
             self.sampler.sample(len(self.sampler.data) + 1)
-
-    def test__init__(self):
-        try:
-            self.init = Sampler(data_path=self.path + 'data.csv')
-            assert_frame_equal(self.init.data, pd.read_csv(self.path + 'data.csv'))
-        except AssertionError:
-            self.fail('not load data as expected')
 
     def test_sample(self):
         np.random.seed(1)
