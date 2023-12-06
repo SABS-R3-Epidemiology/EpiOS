@@ -1,10 +1,12 @@
-import params
-from sampler import Sampler
+import pandas as pd
+import epios.params as params
 from sampler_age_region import SamplerAgeRegion
 
 # Sampler Instance
 #SAMPLE = Sampler(num_age_group=2, data_path="./input/test_data.csv")
-SAMPLE = SamplerAgeRegion(num_age_group=2, data_path="./input/test_data.csv", geoinfo_path='./input/microcells.csv')
+df = pd.read_csv('./input/test_data.csv').iloc[:, [0, 1]]
+SAMPLE = SamplerAgeRegion(data=df)
+SAMPLE.sample()
 
 # Sample over age and region
 choice = SAMPLE.sample(2000)
