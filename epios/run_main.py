@@ -1,11 +1,13 @@
 import params
 from sampler import Sampler
+from sampler_age_region import SamplerAgeRegion
 
 # Sampler Instance
-SAMPLE = Sampler(num_age_group=2, data_path="./input/data.csv")
+#SAMPLE = Sampler(num_age_group=2, data_path="./input/test_data.csv")
+SAMPLE = SamplerAgeRegion(num_age_group=2, data_path="./input/test_data.csv", geoinfo_path='./input/microcells.csv')
 
 # Sample over age and region
-choice = SAMPLE.sample(6)
+choice = SAMPLE.sample(2000)
 
 # Length of age/region sample
 original_sample_length = len(choice)
@@ -22,4 +24,5 @@ for s in choice:
 final_sample_length = len(new_sample)
 
 # Compare these lengths
-print(original_sample_length, final_sample_length)
+print("Sample after age/region: ", original_sample_length)
+print("Sample after household: ", final_sample_length)
