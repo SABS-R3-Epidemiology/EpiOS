@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 import unittest
 from unittest import TestCase
-from data_process import DataProcess
-from age_region import Sampler
+from sampler_age_region import SamplerAgeRegion
 import os
 from numpy.testing import assert_array_equal
 # from pandas.testing import assert_frame_equal
@@ -23,16 +22,14 @@ class TestDataProcess(TestCase):
         self.path = './testing_ageregion/'
         try:
             os.mkdir(self.path[2:-1])
-        except:
-            raise KeyError('Directory already exists, terminated not to overwrite anything!')
+        except FileExistsError:
+            raise FileExistsError('Directory already exists, terminated not to overwrite anything!')
         self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                          '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                   'age': [1, 81, 45, 33, 20, 60]})
-        self.processor = DataProcess(self.data)
-        self.processor.pre_process(path=self.path)
-        self.sampler = Sampler(geoinfo_path=self.path + 'microcells.csv',
-                               ageinfo_path=self.path + 'pop_dist.json',
-                               data_path=self.path + 'data.csv')
+        self.sampler = SamplerAgeRegion(data=self.data, data_store_path=self.path,
+                                        geoinfo_path=self.path + 'microcells.csv',
+                                        ageinfo_path=self.path + 'pop_dist.json')
 
         self.expected_age_dist = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0,
                                   0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
@@ -65,7 +62,7 @@ class TestDataProcess(TestCase):
         res, cap = self.sampler.multinomial_draw(len(self.sampler.data), ar_dist)
         try:
             assert_array_equal(res, np.array(cap).reshape((1, -1))[0])
-        except:
+        except AssertionError:
             self.fail('not draw as expected')
 
     def test_sample1(self):
@@ -82,14 +79,25 @@ class TestDataProcess(TestCase):
         self.data1 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                           '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                   'age': [1, 2, 45, 33, 20, 60]})
-        self.processor1 = DataProcess(self.data1)
-        self.processor1.pre_process(path=self.path)
-        self.sampler1 = Sampler(geoinfo_path=self.path + 'microcells.csv',
-                                ageinfo_path=self.path + 'pop_dist.json',
-                                data_path=self.path + 'data.csv')
+        self.sampler1 = SamplerAgeRegion(data=self.data1, data_store_path=self.path,
+                                         geoinfo_path=self.path + 'microcells.csv',
+                                         ageinfo_path=self.path + 'pop_dist.json')
         np.random.seed(1)
         self.assertEqual(self.sampler1.sample(len(self.sampler1.data)), ['0.0.0.1', '0.0.0.0', '0.2.0.0',
                                                                          '0.1.0.0', '0.0.1.0', '1.0.0.0'])
+
+    def test_sample3(self):
+        self.data2 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
+                                          '0.0.0.3', '0.0.0.4', '0.0.0.5'],
+                                  'age': [1, 2, 2, 2, 1, 0]})
+        self.sampler2 = SamplerAgeRegion(data=self.data2, data_store_path=self.path,
+                                         geoinfo_path=self.path + 'microcells.csv',
+                                         ageinfo_path=self.path + 'pop_dist.json')
+        np.random.seed(1)
+        self.assertEqual(self.sampler2.sample(4, household_criterion=True, household_threshold=4),
+                         ['0.0.0.0', '0.0.0.1', '0.0.0.3', '0.0.0.2'])
+        with self.assertRaises(ValueError):
+            self.sampler2.sample(len(self.sampler2.data), household_criterion=True, household_threshold=1)
 
     def tearDown(self) -> None:
         '''

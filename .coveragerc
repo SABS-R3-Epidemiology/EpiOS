@@ -5,3 +5,4 @@ omit =
     epios/version_info.py
     epios/__init__.py
     epios/run_tests.py
+    epios/params.py

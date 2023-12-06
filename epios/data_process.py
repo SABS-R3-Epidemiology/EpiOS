@@ -6,13 +6,14 @@ import json
 
 class DataProcess():
 
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data: pd.DataFrame, path: str = './input/', num_age_group=17):
         '''
         .data attribute contains the DataFrame with two columns. The first column
         contains IDs, the second one contains ages
 
         '''
         self.data = data
+        self.pre_process(path=path, num_age_group=num_age_group)
 
     def pre_process(self, path='./input/', num_age_group=17):
         '''
@@ -36,22 +37,22 @@ class DataProcess():
         count_age = [0] * num_age_group
         for index, row in df.iterrows():
             ind_age = math.floor(row['age'] / 5)
-            count_age[ind_age] += 1
+            if ind_age < num_age_group - 1:
+                count_age[ind_age] += 1
+            else:
+                count_age[-1] += 1
             person_id = row['ID']
-            pos_dot = []
-            for i in range(len(person_id)):
-                if person_id[i] == '.':
-                    pos_dot.append(i)
-            cell_num = int(person_id[0:pos_dot[0]])
-            microcell_num = int(person_id[pos_dot[0] + 1:pos_dot[1]])
-            household_num = int(person_id[pos_dot[1] + 1:pos_dot[2]])
+            splitted_id = person_id.split('.')
+            cell_num = int(splitted_id[0])
+            microcell_num = int(splitted_id[1])
+            household_num = int(splitted_id[2])
             new_row = pd.DataFrame({'ID': person_id, 'age': row['age'], 'cell': cell_num,
                                     'microcell': microcell_num, 'household': household_num}, index=[0])
             population_info = pd.concat([population_info, new_row], ignore_index=True)
-            key = person_id[0:pos_dot[-1]]
+            key = '.'.join(splitted_id[:-1])
             try:
                 household_info[key] += 1
-            except:
+            except KeyError:
                 household_info[key] = 1
         population_info.to_csv(path + 'data.csv', index=False)
 
