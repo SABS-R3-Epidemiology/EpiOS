@@ -360,11 +360,7 @@ class SamplerAgeRegion(Sampler):
         Generate the additional samples according to the non-response rate
         --------
         Input:
-        data(pandas.DataFrame): The population information, corresponding to 'data.csv' in
-                                the data pre-process part
         nonRespID(list): A list containing the non-responder IDs
-        num_region_group(int): The number of region groups
-        num_age_group(int): The number of age groups
         sampling_percentage(float, between 0 and 1): The proportion of additional samples
                                                         taken from a specific age-regional group
         proportion(float, between 0 and 1): The proportion of total groups to be sampled additionally
