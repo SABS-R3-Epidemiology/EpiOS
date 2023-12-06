@@ -1,13 +1,15 @@
+from epios.sampler import Sampler
 import pandas as pd
 import numpy as np
 import json
 import math
+# from gurobipy import Model, GRB, quicksum
 
 
-class Sampler():
+class SamplerAgeRegion(Sampler):
 
-    def __init__(self, geoinfo_path='./input/microcells.csv',
-                 ageinfo_path='./input/pop_dist.json', data_path='./input/data.csv'):
+    def __init__(self, data=None, data_store_path='./input/', num_age_group=17, geoinfo_path='./input/microcells.csv',
+                 ageinfo_path='./input/pop_dist.json', data_path=None):
         '''
         Contain all necessary information about the population
         ------------
@@ -16,9 +18,10 @@ class Sampler():
         data(DataFrame): should be the extracted data to be sampled from the Epiabm
 
         '''
+        super().__init__(data_path=data_path, data=data, data_store_path=data_store_path,
+                         num_age_group=num_age_group)
         self.geoinfo = pd.read_csv(geoinfo_path)
         self.ageinfo = ageinfo_path
-        self.data = pd.read_csv(data_path)
 
     def get_age_dist(self):
         '''
@@ -147,7 +150,7 @@ class Sampler():
         for i in range(len(prob)):
             try:
                 threshold.append(threshold[-1] + prob[i - 1])
-            except:
+            except IndexError:
                 threshold.append(0)
         threshold.append(1)
         cap_block = np.array(cap_block).reshape((-1, len_age))
@@ -205,7 +208,7 @@ class Sampler():
                             for k in range(len(prob)):
                                 try:
                                     threshold.append(threshold[-1] + prob[k - 1])
-                                except:
+                                except IndexError:
                                     threshold.append(0)
                             if threshold[-1] < 1:
                                 threshold.append(1)
@@ -238,7 +241,7 @@ class Sampler():
                             for k in range(len(prob)):
                                 try:
                                     threshold.append(threshold[-1] + prob[k - 1])
-                                except:
+                                except IndexError:
                                     threshold.append(0)
                             if len(threshold) > 0:
                                 if threshold[-1] < 1:
@@ -265,7 +268,7 @@ class Sampler():
                             for k in range(len(prob)):
                                 try:
                                     threshold.append(threshold[-1] + prob[k - 1])
-                                except:
+                                except IndexError:
                                     threshold.append(0)
                             if len(threshold) > 0:
                                 if threshold[-1] < 1:
@@ -275,7 +278,8 @@ class Sampler():
                     break
         return res, res_cap_block
 
-    def sample(self, sample_size: int, additional_sample: list = None):
+    def sample(self, sample_size: int, additional_sample: list = None,
+               household_criterion=False, household_threshold: int = 3):
         '''
         Given a sample size, and the additional sample, should return a list of people's IDs drawn from the population
         ---------
@@ -332,7 +336,150 @@ class Sampler():
                     ite = df[df['cell'] == i]
                     ite = ite[ite['age'] >= j * 5]
                 ite_sample = list(ite['ID'])
-                choice = np.random.choice(np.arange(len(ite_sample)), size=num_sample[i, j], replace=False)
-                for k in choice:
-                    res.append(ite_sample[k])
+                if household_criterion:
+                    count = 0
+                    while count < num_sample[i, j]:
+                        if ite_sample:
+                            pass
+                        else:
+                            raise ValueError('Household threshold is too low, not enough household to generate samples')
+                        choice_ind = np.random.choice(np.arange(len(ite_sample)), size=1)[0]
+                        choice = ite_sample[choice_ind]
+                        if self.person_allowed(res, choice, threshold=household_threshold):
+                            res.append(choice)
+                            count += 1
+                        ite_sample.pop(ite_sample.index(choice))
+                else:
+                    choice = np.random.choice(np.arange(len(ite_sample)), size=num_sample[i, j], replace=False)
+                    for k in choice:
+                        res.append(ite_sample[k])
         return res
+
+    # def optimise_draw(self, sample_size: int):
+    #     '''
+    #     This function use package gurobipy to solve a MIQP problem to replace the multinomial_draw
+    #     function above to generate the optimal number of people drawn from each age-region group
+    #     ----------
+    #     Prerequisites:
+    #     gurobipy package and an academic license required!
+    #     To install this package, you need to firstly register a free academic account on Guroby
+    #     website, and submit a request for a free license
+    #     Secondly, you can pip install gurobipy, then run the command provided when applying the license
+    #     to install that license. Then you finish the setup!
+
+    #     Input:
+    #     sample_size(int): the size of sample
+
+    #     Output:
+    #     res(list): If an optimal solution is found:
+    #                An 1D list of numbers, with length number of age groups * number of region groups,
+    #                indicating the number of people should be drawn from each age-region group
+    #                Otherwise:
+    #                Raise an ValueError, please go and check your sample size!
+
+    #     '''
+    #     # Setup the matrix Q in the MIQP problem
+    #     num_age = len(self.get_age_dist())
+    #     num_region = len(self.get_region_dist())
+    #     Q = np.zeros((num_age * num_region, num_age * num_region))
+    #     for i in range(len(Q)):
+    #         pos_age = i % num_age
+    #         pos_region = math.floor(i / num_age)
+    #         for j in range(num_age):
+    #             Q[i, pos_region * num_age + j] = 1
+    #         for j in range(num_region):
+    #             Q[i, pos_age + j * num_age] = 1
+    #     Q = list(Q)
+
+    #     # Setup the vector c in the MIQP problem
+    #     age_dist = self.get_age_dist()
+    #     region_dist = self.get_region_dist()
+    #     c = [0] * (num_age * num_region)
+    #     for i in range(num_region * num_age):
+    #         pos_age = i % num_age
+    #         pos_region = math.floor(i / num_age)
+    #         c[i] = -2 * sample_size * (age_dist[pos_age] + region_dist[pos_region])
+
+    #     # Setup the constraint to keep the number picked for each age-region group
+    #     # does not exceed the existed number of people within that group
+    #     cap_block = []
+    #     num_age = len(self.get_age_dist())
+    #     for i in range(num_age * num_region):
+    #         pos_age = i % num_age
+    #         pos_region = math.floor(i / num_age)
+    #         ite = self.data[self.data['cell'] == pos_region]
+    #         if pos_age != num_age - 1:
+    #             ite = ite[ite['age'] >= pos_age * 5]
+    #             ite = ite[ite['age'] < pos_age * 5 + 5]
+    #         else:
+    #             ite = ite[ite['age'] >= pos_age * 5]
+    #         cap_block.append(len(ite))
+    #     A1_ineq = list(np.eye(num_age * num_region))
+    #     b1_ineq = cap_block
+
+    #     # Setup the constraint for cap of age groups
+    #     cap_age = []
+    #     cap_region = []
+    #     for i in range(num_age):
+    #         if i != num_age - 1:
+    #             ite = self.data[self.data['age'] >= i * 5]
+    #             ite = ite[ite['age'] < i * 5 + 5]
+    #             max_num_age = len(ite)
+    #             cap_age.append(min(sample_size * age_dist[i] + 0.01 * sample_size, max_num_age))
+    #         else:
+    #             ite = self.data[self.data['age'] >= i * 5]
+    #             max_num_age = len(ite)
+    #             cap_age.append(min(max(sample_size * age_dist[i] + 0.01 * sample_size, 1), max_num_age))
+    #     for i in range(num_region):
+    #         cap_region.append(min(max(sample_size * region_dist[i] + 0.005 * sample_size, 1),
+    #                               self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
+    #     A2_ineq = np.zeros((num_age, num_age * num_region))
+    #     for i in range(num_age):
+    #         for j in range(num_region):
+    #             A2_ineq[i, i + j * num_age] = 1
+    #     A2_ineq = list(A2_ineq)
+    #     b2_ineq = cap_age
+
+    #     # Setup the constraint for caps of region groups
+    #     A3_ineq = np.zeros((num_region, num_age * num_region))
+    #     for i in range(num_region):
+    #         for j in range(num_age):
+    #             A3_ineq[i, i * num_age + j] = 1
+    #     b3_ineq = cap_region
+
+    #     # Make sure that the sum of number of people sampled equals to the sample size
+    #     A_eq = list(np.ones((1, num_age * num_region)))
+    #     b_eq = [sample_size]
+
+    #     len_c = len(c)
+
+    #     # Construct the model
+    #     m = Model('miqp')
+
+    #     x = m.addVars(len(Q), vtype=GRB.INTEGER)
+
+    #     obj = quicksum(quicksum(Q[i][j] * x[i] * x[j] for j in range(len_c)) for i in range(len_c))
+    #     obj += quicksum(c[i] * x[i] for i in range(len_c))
+    #     m.setObjective(obj, GRB.MINIMIZE)
+
+    #     # Add the constraints defined above
+    #     for i in range(len(A1_ineq)):
+    #         m.addConstr(quicksum(A1_ineq[i][j] * x[j] for j in range(len_c)) <= b1_ineq[i], "constraint{}".format(i))
+
+    #     for i in range(len(A2_ineq)):
+    #         m.addConstr(quicksum(A2_ineq[i][j] * x[j] for j in range(len_c)) <= b2_ineq[i], "constraint{}".format(i))
+
+    #     for i in range(len(A3_ineq)):
+    #         m.addConstr(quicksum(A3_ineq[i][j] * x[j] for j in range(len_c)) <= b3_ineq[i], "constraint{}".format(i))
+
+    #     for i in range(len(A_eq)):
+    #         m.addConstr(quicksum(A_eq[i][j] * x[j] for j in range(len_c)) == b_eq[i], "constraint{}".format(i))
+
+    #     m.optimize()
+
+    #     # Return the result
+    #     if m.status == GRB.Status.OPTIMAL:
+    #         res = [i.x for i in m.getVars()]
+    #         return res
+    #     else:
+    #         raise ValueError('No solution exists for these constraints, check sample_size please')
