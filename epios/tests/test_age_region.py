@@ -99,6 +99,33 @@ class TestDataProcess(TestCase):
         with self.assertRaises(ValueError):
             self.sampler2.sample(len(self.sampler2.data), household_criterion=True, household_threshold=1)
 
+    def test_additional_nonresponder(self):
+        self.data3 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
+                                          '0.2.0.0', '1.0.0.0'],
+                                   'age': [1, 81, 45, 33, 20, 60],
+                                   'cell': [0, 0, 0, 0, 0, 1],
+                                   'microcell': [0, 0, 0, 1, 2, 0],
+                                   'household': [0, 0, 1, 0, 0, 0]})
+        self.sampler3 = SamplerAgeRegion(data=self.data3, data_store_path=self.path,
+                                         geoinfo_path=self.path + 'microcells.csv',
+                                         ageinfo_path=self.path + 'pop_dist.json')
+        expected_res = np.zeros((2, 17))
+        expected_res[0, 0] = 1
+        try:
+            assert_array_equal(np.array(self.sampler3.additional_nonresponder(['0.0.0.0'], 1, 1)), expected_res)
+        except AssertionError:
+            self.fail('additional samples not generated as expected')
+        try:
+            assert_array_equal(np.array(self.sampler3.additional_nonresponder(['0.0.0.0'], 1, 0, 1)), expected_res)
+        except AssertionError:
+            self.fail('additional samples not generated as expected')
+        expected_res[0, 0] = 0
+        expected_res[0, 16] = 1
+        try:
+            assert_array_equal(np.array(self.sampler3.additional_nonresponder(['0.0.0.1'], 1, 1)), expected_res)
+        except AssertionError:
+            self.fail('additional samples not generated as expected')
+
     def tearDown(self) -> None:
         '''
         Clean up everything created
