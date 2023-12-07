@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import json
 import math
-from copy import copy
 # from gurobipy import Model, GRB, quicksum
 
 
