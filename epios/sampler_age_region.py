@@ -167,119 +167,118 @@ class SamplerAgeRegion(Sampler):
         # to determine which age/region group it is
         for i in range(n):
             rand = np.random.rand()
-            for j in range(len(threshold)):
-                if rand < threshold[j]:
-                    # There is a break at the end of this if statement,
-                    # so the program will stop when it first exceed any barrier
+            j = 0
+            while rand >= threshold[j]:
+                j += 1
+            # so the program will stop when it first exceed any barrier
 
-                    # Locate its position of age/region group
-                    j += -1
-                    pos_age = j % len_age
-                    pos_region = math.floor(j / len_age)
+            # Locate its position of age/region group
+            j += -1
+            pos_age = j % len_age
+            pos_region = math.floor(j / len_age)
 
-                    # Use the above function to test whether it is going to hit the cap
-                    if self.bool_exceed(current_age[pos_age], current_region[pos_region],
-                                        current_block[pos_region, pos_age], cap_age[0][pos_age],
-                                        cap_region[0][pos_region], cap_block[pos_region, pos_age]):
-                        # This means it does not hit the cap
-                        res[int(cap_region[1][pos_region] * record_age + cap_age[1][pos_age])] += 1
-                        current_age[pos_age] += 1
-                        current_region[pos_region] += 1
-                        current_block[pos_region, pos_age] += 1
-                    else:
-                        # This means it hits the cap
-                        res[int(cap_region[1][pos_region] * record_age + cap_age[1][pos_age])] += 1
-                        current_age[pos_age] += 1
-                        current_region[pos_region] += 1
-                        current_block[pos_region, pos_age] += 1
+            # Use the above function to test whether it is going to hit the cap
+            if self.bool_exceed(current_age[pos_age], current_region[pos_region],
+                                current_block[pos_region, pos_age], cap_age[0][pos_age],
+                                cap_region[0][pos_region], cap_block[pos_region, pos_age]):
+                # This means it does not hit the cap
+                res[int(cap_region[1][pos_region] * record_age + cap_age[1][pos_age])] += 1
+                current_age[pos_age] += 1
+                current_region[pos_region] += 1
+                current_block[pos_region, pos_age] += 1
+            else:
+                # This means it hits the cap
+                res[int(cap_region[1][pos_region] * record_age + cap_age[1][pos_age])] += 1
+                current_age[pos_age] += 1
+                current_region[pos_region] += 1
+                current_block[pos_region, pos_age] += 1
+                prob = prob.reshape((-1, len_age))
+
+                # This is testing whether it hits block cap
+                if current_block[pos_region, pos_age] + 1 > cap_block[pos_region, pos_age]:
+                    # reduce the corresponding prob to 0, and distribute its prob to the rest of blocks
+                    prob_exceed = prob[pos_region, pos_age]
+                    if i < n - 1:
+                        if prob_exceed == prob.sum():
+                            raise KeyError('Probability provided not supported for the sample size')
+                    prob[pos_region, pos_age] = 0
+                    if i < n - 1:
+                        prob = prob / (1 - prob_exceed)
+                    prob = prob.reshape((1, -1))[0]
+                    # Since the prob changes, need to calculate the threshold again
+                    threshold = []
+                    for k in range(len(prob)):
+                        try:
+                            threshold.append(threshold[-1] + prob[k - 1])
+                        except IndexError:
+                            threshold.append(0)
+                    if threshold[-1] < 1:
+                        threshold.append(1)
+                    prob = prob.reshape((-1, len_age))
+
+                # Testing whether it hits age cap
+                if current_age[pos_age] + 1 > cap_age[0][pos_age]:
+                    # Similarly, reduce all prob for this age group to 0, and re-distribute
+                    prob_exceed = prob[:, pos_age].sum()
+                    # if i < n - 1:
+                    #     if prob_exceed == prob.sum():
+                    #         raise KeyError('Probability provided not supported for the sample size')
+                    # These can be commented out since will be very unlikely to trigger
+                    # Trigger this -> sum of prob of age group = 1 and reach the bound
+                    # -> cannot be the bound in first arg of max above, since n * 1 + 0.01 * n > n
+                    # -> the second arg means reach block cap for each age first
+                    # -> dealt by the above if statement
+                    # Note: problems may exist if prob.sum() < 1
+                    # But, this error should be at least greater than 0.01 to influence this
+                    # which is almost impossible
+                    prob = np.delete(prob, pos_age, 1)
+                    cap_block = np.delete(cap_block, pos_age, 1)
+                    current_block = np.delete(current_block, pos_age, 1)
+                    len_age += -1
+                    if i < n - 1:
+                        prob = prob / (1 - prob_exceed)
+                    prob = prob.reshape((1, -1))[0]
+                    cap_age = list(np.delete(np.array(cap_age), pos_age, 1))
+                    current_age.pop(pos_age)
+                    threshold = []
+                    for k in range(len(prob)):
+                        try:
+                            threshold.append(threshold[-1] + prob[k - 1])
+                        except IndexError:
+                            threshold.append(0)
+                    if len(threshold) > 0:
+                        if threshold[-1] < 1:
+                            threshold.append(1)
+                    if len_age > 0:
                         prob = prob.reshape((-1, len_age))
 
-                        # This is testing whether it hits block cap
-                        if current_block[pos_region, pos_age] + 1 > cap_block[pos_region, pos_age]:
-                            # reduce the corresponding prob to 0, and distribute its prob to the rest of blocks
-                            prob_exceed = prob[pos_region, pos_age]
-                            if i < n - 1:
-                                if prob_exceed == prob.sum():
-                                    raise KeyError('Probability provided not supported for the sample size')
-                            prob[pos_region, pos_age] = 0
-                            if i < n - 1:
-                                prob = prob / (1 - prob_exceed)
-                            prob = prob.reshape((1, -1))[0]
-                            # Since the prob changes, need to calculate the threshold again
-                            threshold = []
-                            for k in range(len(prob)):
-                                try:
-                                    threshold.append(threshold[-1] + prob[k - 1])
-                                except IndexError:
-                                    threshold.append(0)
-                            if threshold[-1] < 1:
-                                threshold.append(1)
-                            prob = prob.reshape((-1, len_age))
-
-                        # Testing whether it hits age cap
-                        if current_age[pos_age] + 1 > cap_age[0][pos_age]:
-                            # Similarly, reduce all prob for this age group to 0, and re-distribute
-                            prob_exceed = prob[:, pos_age].sum()
-                            # if i < n - 1:
-                            #     if prob_exceed == prob.sum():
-                            #         raise KeyError('Probability provided not supported for the sample size')
-                            # These can be commented out since will be very unlikely to trigger
-                            # Trigger this -> sum of prob of age group = 1 and reach the bound
-                            # -> cannot be the bound in first arg of max above, since n * 1 + 0.01 * n > n
-                            # -> the second arg means reach block cap for each age first
-                            # -> dealt by the above if statement
-                            # Note: problems may exist if prob.sum() < 1
-                            # But, this error should be at least greater than 0.01 to influence this
-                            # which is almost impossible
-                            prob = np.delete(prob, pos_age, 1)
-                            cap_block = np.delete(cap_block, pos_age, 1)
-                            current_block = np.delete(current_block, pos_age, 1)
-                            len_age += -1
-                            if i < n - 1:
-                                prob = prob / (1 - prob_exceed)
-                            prob = prob.reshape((1, -1))[0]
-                            cap_age = list(np.delete(np.array(cap_age), pos_age, 1))
-                            current_age.pop(pos_age)
-                            threshold = []
-                            for k in range(len(prob)):
-                                try:
-                                    threshold.append(threshold[-1] + prob[k - 1])
-                                except IndexError:
-                                    threshold.append(0)
-                            if len(threshold) > 0:
-                                if threshold[-1] < 1:
-                                    threshold.append(1)
-                            if len_age > 0:
-                                prob = prob.reshape((-1, len_age))
-
-                        # Testing whether it hits region cap
-                        if current_region[pos_region] + 1 > cap_region[0][pos_region]:
-                            # Similar to the above
-                            prob_exceed = prob[pos_region, :].sum()
-                            # if i < n - 1:
-                            #     if prob_exceed == prob.sum():
-                            #         raise KeyError('Probability provided not supported for the sample size')
-                            # See explaination above
-                            prob = np.delete(prob, pos_region, 0)
-                            cap_block = np.delete(cap_block, pos_region, 0)
-                            current_block = np.delete(current_block, pos_region, 0)
-                            if i < n - 1:
-                                prob = prob / (1 - prob_exceed)
-                            prob = prob.reshape((1, -1))[0]
-                            cap_region = list(np.delete(np.array(cap_region), pos_region, 1))
-                            current_region.pop(pos_region)
-                            threshold = []
-                            for k in range(len(prob)):
-                                try:
-                                    threshold.append(threshold[-1] + prob[k - 1])
-                                except IndexError:
-                                    threshold.append(0)
-                            if len(threshold) > 0:
-                                if threshold[-1] < 1:
-                                    threshold.append(1)
-                            if len_age > 0:
-                                prob = prob.reshape((-1, len_age))
-                    break
+                # Testing whether it hits region cap
+                if current_region[pos_region] + 1 > cap_region[0][pos_region]:
+                    # Similar to the above
+                    prob_exceed = prob[pos_region, :].sum()
+                    # if i < n - 1:
+                    #     if prob_exceed == prob.sum():
+                    #         raise KeyError('Probability provided not supported for the sample size')
+                    # See explaination above
+                    prob = np.delete(prob, pos_region, 0)
+                    cap_block = np.delete(cap_block, pos_region, 0)
+                    current_block = np.delete(current_block, pos_region, 0)
+                    if i < n - 1:
+                        prob = prob / (1 - prob_exceed)
+                    prob = prob.reshape((1, -1))[0]
+                    cap_region = list(np.delete(np.array(cap_region), pos_region, 1))
+                    current_region.pop(pos_region)
+                    threshold = []
+                    for k in range(len(prob)):
+                        try:
+                            threshold.append(threshold[-1] + prob[k - 1])
+                        except IndexError:
+                            threshold.append(0)
+                    if len(threshold) > 0:
+                        if threshold[-1] < 1:
+                            threshold.append(1)
+                    if len_age > 0:
+                        prob = prob.reshape((-1, len_age))
         return res, res_cap_block
 
     def sample(self, sample_size: int, additional_sample: list = None,
