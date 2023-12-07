@@ -30,9 +30,12 @@ class TestDataProcess(TestCase):
         self.time_data = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
                                        '0.0.0.0': ['InfectASympt'] * 6,
                                        '0.0.0.1': [0, 0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt'],
-                                       '0.0.1.0': [0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt', 'InfectASympt'],
-                                       '0.1.0.0': [0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt', 'InfectASympt'],
-                                       '0.2.0.0': [0, 'InfectASympt', 'InfectASympt', 'InfectASympt', 'InfectASympt', 'InfectASympt'],
+                                       '0.0.1.0': [0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt',
+                                                   'InfectASympt'],
+                                       '0.1.0.0': [0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt',
+                                                   'InfectASympt'],
+                                       '0.2.0.0': [0, 'InfectASympt', 'InfectASympt', 'InfectASympt',
+                                                   'InfectASympt', 'InfectASympt'],
                                        '1.0.0.0': [0, 0, 0, 0, 0, 'InfectASympt']})
         self.processor_s = PostProcess(self.demo_data, self.time_data, 6, [0, 1, 2, 3, 4, 5], sample_strategy='same')
         self.processor_r = PostProcess(self.demo_data, self.time_data, 6, [0, 1, 2, 3, 4, 5])
@@ -42,22 +45,28 @@ class TestDataProcess(TestCase):
         self.assertEqual(self.processor_r.sample_strategy, 'random')
         try:
             assert_frame_equal(self.processor_r.demo_data, pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
-                                                                              '0.1.0.0', '0.2.0.0', '1.0.0.0'],
-                                                                       'age': [1, 81, 45, 33, 20, 60]}))
+                                                                                '0.1.0.0', '0.2.0.0', '1.0.0.0'],
+                                                                         'age': [1, 81, 45, 33, 20, 60]}))
             assert_frame_equal(self.processor_r.time_data, pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
-                                                                       '0.0.0.0': ['InfectASympt'] * 6,
-                                                                       '0.0.0.1': [0, 0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt'],
-                                                                       '0.0.1.0': [0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt', 'InfectASympt'],
-                                                                       '0.1.0.0': [0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt', 'InfectASympt'],
-                                                                       '0.2.0.0': [0, 'InfectASympt', 'InfectASympt', 'InfectASympt', 'InfectASympt', 'InfectASympt'],
-                                                                       '1.0.0.0': [0, 0, 0, 0, 0, 'InfectASympt']}))
+                                                                         '0.0.0.0': ['InfectASympt'] * 6,
+                                                                         '0.0.0.1': [0, 0, 0, 'InfectASympt',
+                                                                                     'InfectASympt', 'InfectASympt'],
+                                                                         '0.0.1.0': [0, 0, 'InfectASympt',
+                                                                                     'InfectASympt', 'InfectASympt',
+                                                                                     'InfectASympt'],
+                                                                         '0.1.0.0': [0, 0, 'InfectASympt', 'InfectASympt',
+                                                                                     'InfectASympt', 'InfectASympt'],
+                                                                         '0.2.0.0': [0, 'InfectASympt', 'InfectASympt',
+                                                                                     'InfectASympt', 'InfectASympt',
+                                                                                     'InfectASympt'],
+                                                                         '1.0.0.0': [0, 0, 0, 0, 0, 'InfectASympt']}))
         except AssertionError:
             self.fail('init function error')
 
     def test_sampled_result_s(self):
         res = self.processor_s.sampled_result(gen_plot=True, saving_path=self.path)
         self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [1, 2, 4, 5, 5, 6]])
-        # assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
+        assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
 
     def test_sampled_result_r(self):
         if os.path.exists(self.path + 'sample.png'):
@@ -66,6 +75,12 @@ class TestDataProcess(TestCase):
         res = self.processor_r.sampled_result(gen_plot=True, saving_path=self.path)
         self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [1, 2, 4, 5, 5, 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
+
+    def test_compare(self):
+        self.processor_s.sampled_result()
+        diff = self.processor_s.compare(saving_path=self.path)
+        self.assertEqual(list(diff), [0, 0, 0, 0, 0, 0])
+        assert os.path.exists(self.path + 'compare.png'), "Plot file was not saved"
 
     def tearDown(self) -> None:
         '''
@@ -81,6 +96,8 @@ class TestDataProcess(TestCase):
                 os.remove(self.path + 'data.csv')
             if os.path.exists(self.path + 'sample.png'):
                 os.remove(self.path + 'sample.png')
+            if os.path.exists(self.path + 'compare.png'):
+                os.remove(self.path + 'compare.png')
             os.rmdir(self.path)
 
 

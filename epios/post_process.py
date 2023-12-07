@@ -86,11 +86,15 @@ class PostProcess():
         if scale_method == 'proportional':
             scale_para = len(self.demo_data) / self.sample_size
             result_scaled = np.array(self.result) * scale_para
-        else:
-            pass
         true_result = []
         for t in self.time_sample:
-            true_result.append(self.time_data.iloc[t].value_counts().get([1, 2, 3, 4, 5, 6, 7, 8, 9], 0))
+            num = self.time_data.iloc[t].value_counts().get('InfectASympt', 0)
+            num += self.time_data.iloc[t].value_counts().get('InfectMild', 0)
+            num += self.time_data.iloc[t].value_counts().get('InfectGP', 0)
+            num += self.time_data.iloc[t].value_counts().get('InfectHosp', 0)
+            num += self.time_data.iloc[t].value_counts().get('InfectICU', 0)
+            num += self.time_data.iloc[t].value_counts().get('InfectICURecov', 0)
+            true_result.append(num)
         diff = np.array(true_result) - result_scaled
         plt.plot(self.time_sample, result_scaled, label='Predicted result')
         plt.plot(self.time_sample, true_result, label='True result')
