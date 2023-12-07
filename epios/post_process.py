@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 from epios.sampler_age_region import SamplerAgeRegion
 from epios.sampling_maker import SamplingMaker
 
@@ -64,6 +65,75 @@ class PostProcess():
             plt.title('Number of infection in the sample')
             if saving_path:
                 plt.savefig(saving_path + 'sample.png')
+        res = []
+        res.append(self.time_sample)
+        res.append(infected_number)
+        self.result = infected_number
+        return res
+
+    def sampled_non_responder(self, nonresprate, gen_plot: bool = False, saving_path=None):
+        if self.sample_strategy == 'same':
+            raise ValueError("non-responders can only be introduced when the strategy is 'random'.")
+        elif self.sample_strategy == 'random':
+            infected_number = []
+            for i in range(len(self.time_sample)):
+                if i == 0:
+                    sampler_class = SamplerAgeRegion(data=self.demo_data)
+                else:
+                    sampler_class = SamplerAgeRegion(data=self.demo_data, pre_process=False)
+                try:
+                    people = sampler_class.sample(sample_size=self.sample_size, additional_sample=additional_sample)
+                except NameError:
+                    people = sampler_class.sample(sample_size=self.sample_size)
+                X = SamplingMaker(nonresprate=nonresprate, keeptrack=True, TheData=self.time_data,
+                                  false_positive=0, false_negative=0, threshold=None)
+                ite = X([self.time_sample[i]], people)
+                try:
+                    additional_sample = np.array(additional_sample)
+                    if additional_sample.sum() == 0:
+                        raise NameError
+                    else:
+                        indices = np.nonzero(additional_sample)
+                        add_pos = []
+                        for k in range(len(indices[0])):
+                            add_pos.append((indices[0][k], indices[1][k]))
+                        count_total = 0
+                        count_posi = 0
+                        other_posi = 0
+                        for id in people:
+                            region_pos = int(id.split('.')[0])
+                            age_pos = min(16, math.floor(self.demo_data[self.demo_data['ID'] == id]['age'] / 5))
+                            indexer = (region_pos, age_pos)
+                            if indexer in add_pos:
+                                count_total += 1
+                                col_index = ite.columns.get_loc(id)
+                                if ite.iloc[0, col_index] == 'Positive':
+                                    count_posi += 1
+                            else:
+                                col_index = ite.columns.get_loc(id)
+                                if ite.iloc[0, col_index] == 'Positive':
+                                    other_posi += 1
+                        spaces = self.sample_size - (len(people) - count_total)
+                        spaces_posi = round(spaces * count_posi / count_total)
+                        infected_number.append(spaces_posi + other_posi)
+                except NameError:
+                    infected_number.append(ite.iloc[0].value_counts().get('Positive', 0))
+
+                nonRespID = []
+                for j in len(ite.columns):
+                    if ite.iloc[0, j] == 'NonResponder':
+                        nonRespID.append(ite.columns[j])
+                additional_sample = sampler_class.additional_nonresponder(nonRespID=nonRespID)
+
+        if gen_plot:
+            plt.plot(self.time_sample, infected_number)
+            plt.xlabel('Time')
+            plt.ylabel('Population')
+            plt.xlim(0, max(self.time_sample))
+            plt.ylim(0, len(self.demo_data))
+            plt.title('Number of infection in the sample (consider non-responders)')
+            if saving_path:
+                plt.savefig(saving_path + 'sample_nonResp.png')
         res = []
         res.append(self.time_sample)
         res.append(infected_number)
