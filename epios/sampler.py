@@ -25,7 +25,10 @@ class Sampler(DataProcess):
                 super().__init__(data=data, path=data_store_path, num_age_group=num_age_group)
             self.data = pd.read_csv(data_store_path + 'data.csv')
         else:
-            raise ValueError('You have to input data to continue')
+            if pre_process:
+                raise ValueError('You have to input data to continue')
+            else:
+                self.data = pd.read_csv(data_store_path + 'data.csv')
 
     def sample(self, sample_size: int):
         '''

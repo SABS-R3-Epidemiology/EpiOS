@@ -7,7 +7,8 @@ from epios.sampling_maker import SamplingMaker
 
 class PostProcess():
 
-    def __init__(self, demo_data, time_data, sample_size, time_sampled: list, sample_strategy: str = 'random'):
+    def __init__(self, demo_data, time_data, sample_size, time_sampled: list,
+                 data_store_path='./input/', sample_strategy: str = 'random'):
         '''
         This is the setup for the post process part of the sampled data
         --------
@@ -23,6 +24,7 @@ class PostProcess():
         self.demo_data = demo_data
         self.time_data = time_data
         self.sample_size = sample_size
+        self.path = data_store_path
 
     def sampled_result(self, gen_plot: bool = False, saving_path=None):
         '''
@@ -37,7 +39,7 @@ class PostProcess():
         '''
         if self.sample_strategy == 'same':
             infected_number = []
-            sampler_class = SamplerAgeRegion(data=self.demo_data)
+            sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path)
             people = sampler_class.sample(sample_size=self.sample_size)
             X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
                               false_positive=0, false_negative=0, threshold=None)
@@ -48,9 +50,9 @@ class PostProcess():
             infected_number = []
             for i in range(len(self.time_sample)):
                 if i == 0:
-                    sampler_class = SamplerAgeRegion(data=self.demo_data)
+                    sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path)
                 else:
-                    sampler_class = SamplerAgeRegion(data=self.demo_data, pre_process=False)
+                    sampler_class = SamplerAgeRegion(data_store_path=self.path, pre_process=False)
                 people = sampler_class.sample(sample_size=self.sample_size)
                 X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
@@ -75,12 +77,12 @@ class PostProcess():
         if self.sample_strategy == 'same':
             raise ValueError("non-responders can only be introduced when the strategy is 'random'.")
         elif self.sample_strategy == 'random':
-            infected_number = []
+            infected_rate = []
             for i in range(len(self.time_sample)):
                 if i == 0:
-                    sampler_class = SamplerAgeRegion(data=self.demo_data)
+                    sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path)
                 else:
-                    sampler_class = SamplerAgeRegion(data=self.demo_data, pre_process=False)
+                    sampler_class = SamplerAgeRegion(data_store_path=self.path, pre_process=False)
                 try:
                     people = sampler_class.sample(sample_size=self.sample_size, additional_sample=additional_sample)
                 except NameError:
@@ -100,6 +102,8 @@ class PostProcess():
                         count_total = 0
                         count_posi = 0
                         other_posi = 0
+                        count_nonResp = 0
+                        other_nonResp = 0
                         for id in people:
                             region_pos = int(id.split('.')[0])
                             age_pos = min(16, math.floor(self.demo_data[self.demo_data['ID'] == id]['age'] / 5))
@@ -109,35 +113,45 @@ class PostProcess():
                                 col_index = ite.columns.get_loc(id)
                                 if ite.iloc[0, col_index] == 'Positive':
                                     count_posi += 1
+                                if ite.iloc[0, col_index] == 'NonResponder':
+                                    count_nonResp += 1
                             else:
                                 col_index = ite.columns.get_loc(id)
                                 if ite.iloc[0, col_index] == 'Positive':
                                     other_posi += 1
-                        spaces = self.sample_size - (len(people) - count_total)
-                        spaces_posi = round(spaces * count_posi / count_total)
-                        infected_number.append(spaces_posi + other_posi)
+                                if ite.iloc[0, col_index] == 'NonResponder':
+                                    other_nonResp += 1
+                        effective_total = count_total - count_nonResp
+                        if effective_total > 0:
+                            spaces = self.sample_size - (len(people) - count_total)
+                            spaces_posi = round(spaces * count_posi / effective_total)
+                            infected_rate.append((spaces_posi + other_posi)
+                                                 / (spaces + len(people) - count_total - other_nonResp))
+                        else:
+                            infected_rate.append(other_posi / (len(people) - count_total - other_nonResp))
                 except NameError:
-                    infected_number.append(ite.iloc[0].value_counts().get('Positive', 0))
+                    infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0)
+                                         / (ite.iloc[0].value_counts().get('Positive', 0)
+                                            + ite.iloc[0].value_counts().get('Negative', 0)))
 
                 nonRespID = []
-                for j in len(ite.columns):
+                for j in range(len(ite.columns)):
                     if ite.iloc[0, j] == 'NonResponder':
                         nonRespID.append(ite.columns[j])
                 additional_sample = sampler_class.additional_nonresponder(nonRespID=nonRespID)
 
         if gen_plot:
-            plt.plot(self.time_sample, infected_number)
+            plt.plot(self.time_sample, infected_rate)
             plt.xlabel('Time')
-            plt.ylabel('Population')
+            plt.ylabel('Proportion of population')
             plt.xlim(0, max(self.time_sample))
-            plt.ylim(0, len(self.demo_data))
-            plt.title('Number of infection in the sample (consider non-responders)')
+            plt.ylim(0, 1)
+            plt.title('Proportion of infection in the sample (consider non-responders)')
             if saving_path:
                 plt.savefig(saving_path + 'sample_nonResp.png')
         res = []
         res.append(self.time_sample)
-        res.append(infected_number)
-        self.result = infected_number
+        res.append(infected_rate)
         return res
 
     def compare(self, scale_method: str = 'proportional', saving_path=None):

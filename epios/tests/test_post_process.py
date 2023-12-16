@@ -37,8 +37,9 @@ class TestDataProcess(TestCase):
                                        '0.2.0.0': [0, 'InfectASympt', 'InfectASympt', 'InfectASympt',
                                                    'InfectASympt', 'InfectASympt'],
                                        '1.0.0.0': [0, 0, 0, 0, 0, 'InfectASympt']})
-        self.processor_s = PostProcess(self.demo_data, self.time_data, 6, [0, 1, 2, 3, 4, 5], sample_strategy='same')
-        self.processor_r = PostProcess(self.demo_data, self.time_data, 6, [0, 1, 2, 3, 4, 5])
+        self.processor_s = PostProcess(self.demo_data, self.time_data, 6, [0, 1, 2, 3, 4, 5],
+                                       data_store_path=self.path, sample_strategy='same')
+        self.processor_r = PostProcess(self.demo_data, self.time_data, 6, [0, 1, 2, 3, 4, 5], data_store_path=self.path)
 
     def test__init__(self):
         self.assertEqual(self.processor_r.time_sample, [0, 1, 2, 3, 4, 5])
@@ -76,6 +77,14 @@ class TestDataProcess(TestCase):
         self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [1, 2, 4, 5, 5, 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
 
+    def test_sampled_non_responder(self):
+        with self.assertRaises(ValueError):
+            self.processor_s.sampled_non_responder(nonresprate=0)
+        np.random.seed(1)
+        res = self.processor_r.sampled_non_responder(nonresprate=0.1, gen_plot=True, saving_path=self.path)
+        self.assertAlmostEqual(res, [[0, 1, 2, 3, 4, 5], [1 / 6, 0.4, 2 / 3, 5 / 6, 1, 1]])
+        assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
+
     def test_compare(self):
         self.processor_s.sampled_result()
         diff = self.processor_s.compare(saving_path=self.path)
@@ -96,6 +105,8 @@ class TestDataProcess(TestCase):
                 os.remove(self.path + 'data.csv')
             if os.path.exists(self.path + 'sample.png'):
                 os.remove(self.path + 'sample.png')
+            if os.path.exists(self.path + 'sample_nonResp.png'):
+                os.remove(self.path + 'sample_nonResp.png')
             if os.path.exists(self.path + 'compare.png'):
                 os.remove(self.path + 'compare.png')
             os.rmdir(self.path)

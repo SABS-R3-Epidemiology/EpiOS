@@ -16,9 +16,13 @@ class TestDataProcess(TestCase):
 
         '''
         self.path = './testing_dataprocess/'
+        try:
+            os.mkdir(self.path[2:-1])
+        except FileExistsError:
+            raise FileExistsError('Directory already exists, terminated not to overwrite anything!')
         self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
                                          '0.2.0.0', '1.0.0.0'], 'age': [1, 101, 45, 33, 20, 60]})
-        self.processor = DataProcess(self.data)
+        self.processor = DataProcess(self.data, path=self.path)
         self.expected_json = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0,
                               1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
         self.expected_df_microcell = pd.DataFrame({'cell': [0, 0, 0, 0, 1],
@@ -34,10 +38,6 @@ class TestDataProcess(TestCase):
                                                     'household': [0, 0, 1, 0, 0, 0]})
 
     def test_data_process(self):
-        try:
-            os.mkdir(self.path[2:-1])
-        except FileExistsError:
-            raise FileExistsError('Directory already exists, terminated not to overwrite anything!')
         self.processor.pre_process(path=self.path)
         self.assertTrue(os.path.exists(self.path + 'pop_dist.json'))
         self.assertTrue(os.path.exists(self.path + 'data.csv'))
