@@ -73,7 +73,8 @@ class PostProcess():
         self.result = infected_number
         return res
 
-    def sampled_non_responder(self, nonresprate, gen_plot: bool = False, saving_path=None):
+    def sampled_non_responder(self, nonresprate, gen_plot: bool = False, saving_path=None, sampling_percentage=0.1,
+                              proportion=0.01, threshold=None):
         if self.sample_strategy == 'same':
             raise ValueError("non-responders can only be introduced when the strategy is 'random'.")
         elif self.sample_strategy == 'random':
@@ -106,7 +107,8 @@ class PostProcess():
                         other_nonResp = 0
                         for id in people:
                             region_pos = int(id.split('.')[0])
-                            age_pos = min(16, math.floor(self.demo_data[self.demo_data['ID'] == id]['age'] / 5))
+                            age_value = self.demo_data[self.demo_data['ID'] == id]['age'].values[0]
+                            age_pos = min(16, math.floor(age_value / 5))
                             indexer = (region_pos, age_pos)
                             if indexer in add_pos:
                                 count_total += 1
@@ -128,17 +130,25 @@ class PostProcess():
                             infected_rate.append((spaces_posi + other_posi)
                                                  / (spaces + len(people) - count_total - other_nonResp))
                         else:
-                            infected_rate.append(other_posi / (len(people) - count_total - other_nonResp))
+                            try:
+                                infected_rate.append(other_posi / (len(people) - count_total - other_nonResp))
+                            except ZeroDivisionError:
+                                infected_rate.append(np.nan)
                 except NameError:
-                    infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0)
-                                         / (ite.iloc[0].value_counts().get('Positive', 0)
-                                            + ite.iloc[0].value_counts().get('Negative', 0)))
+                    try:
+                        infected_rate_ite = (ite.iloc[0].value_counts().get('Positive', 0)
+                                             / (ite.iloc[0].value_counts().get('Positive', 0)
+                                                + ite.iloc[0].value_counts().get('Negative', 0)))
+                    except ZeroDivisionError:
+                        infected_rate_ite = np.nan
+                    infected_rate.append(infected_rate_ite)
 
                 nonRespID = []
                 for j in range(len(ite.columns)):
                     if ite.iloc[0, j] == 'NonResponder':
                         nonRespID.append(ite.columns[j])
-                additional_sample = sampler_class.additional_nonresponder(nonRespID=nonRespID)
+                additional_sample = sampler_class.additional_nonresponder(nonRespID=nonRespID, sampling_percentage=sampling_percentage,
+                                                                          proportion=proportion, threshold=threshold)
 
         if gen_plot:
             plt.plot(self.time_sample, infected_rate)

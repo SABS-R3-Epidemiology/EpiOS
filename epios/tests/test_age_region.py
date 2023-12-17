@@ -27,9 +27,7 @@ class TestDataProcess(TestCase):
         self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                          '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                   'age': [1, 81, 45, 33, 20, 60]})
-        self.sampler = SamplerAgeRegion(data=self.data, data_store_path=self.path,
-                                        geoinfo_path=self.path + 'microcells.csv',
-                                        ageinfo_path=self.path + 'pop_dist.json')
+        self.sampler = SamplerAgeRegion(data=self.data, data_store_path=self.path)
 
         self.expected_age_dist = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0,
                                   0.0, 1 / 6, 0.0, 0.0, 1 / 6, 0.0, 0.0, 0.0, 1 / 6]
@@ -79,9 +77,7 @@ class TestDataProcess(TestCase):
         self.data1 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                           '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                   'age': [1, 2, 45, 33, 20, 60]})
-        self.sampler1 = SamplerAgeRegion(data=self.data1, data_store_path=self.path,
-                                         geoinfo_path=self.path + 'microcells.csv',
-                                         ageinfo_path=self.path + 'pop_dist.json')
+        self.sampler1 = SamplerAgeRegion(data=self.data1, data_store_path=self.path)
         np.random.seed(1)
         self.assertEqual(self.sampler1.sample(len(self.sampler1.data)), ['0.0.0.1', '0.0.0.0', '0.2.0.0',
                                                                          '0.1.0.0', '0.0.1.0', '1.0.0.0'])
@@ -90,9 +86,7 @@ class TestDataProcess(TestCase):
         self.data2 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                           '0.0.0.3', '0.0.0.4', '0.0.0.5'],
                                   'age': [1, 2, 2, 2, 1, 0]})
-        self.sampler2 = SamplerAgeRegion(data=self.data2, data_store_path=self.path,
-                                         geoinfo_path=self.path + 'microcells.csv',
-                                         ageinfo_path=self.path + 'pop_dist.json')
+        self.sampler2 = SamplerAgeRegion(data=self.data2, data_store_path=self.path)
         np.random.seed(1)
         self.assertEqual(self.sampler2.sample(4, household_criterion=True, household_threshold=4),
                          ['0.0.0.0', '0.0.0.1', '0.0.0.3', '0.0.0.2'])
@@ -106,9 +100,7 @@ class TestDataProcess(TestCase):
                                    'cell': [0, 0, 0, 0, 0, 1],
                                    'microcell': [0, 0, 0, 1, 2, 0],
                                    'household': [0, 0, 1, 0, 0, 0]})
-        self.sampler3 = SamplerAgeRegion(data=self.data3, data_store_path=self.path,
-                                         geoinfo_path=self.path + 'microcells.csv',
-                                         ageinfo_path=self.path + 'pop_dist.json')
+        self.sampler3 = SamplerAgeRegion(data=self.data3, data_store_path=self.path)
         expected_res = np.zeros((2, 17))
         expected_res[0, 0] = 1
         try:

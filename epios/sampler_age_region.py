@@ -8,8 +8,7 @@ import math
 
 class SamplerAgeRegion(Sampler):
 
-    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17,
-                 geoinfo_path='./input/microcells.csv', ageinfo_path='./input/pop_dist.json'):
+    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17):
         '''
         Contain all necessary information about the population
         ------------
@@ -20,6 +19,8 @@ class SamplerAgeRegion(Sampler):
         '''
         super().__init__(data=data, data_store_path=data_store_path,
                          num_age_group=num_age_group, pre_process=pre_process)
+        geoinfo_path = data_store_path + 'microcells.csv'
+        ageinfo_path = data_store_path + 'pop_dist.json'
         self.geoinfo = pd.read_csv(geoinfo_path)
         self.ageinfo = ageinfo_path
 
@@ -411,7 +412,7 @@ class SamplerAgeRegion(Sampler):
                 res.append([pos % num_age_group, math.floor(pos / num_age_group)])
 
         # Determine the cap for each age-region groups
-        additional_sample = list(np.zeros((num_region_group, num_age_group)))
+        additional_sample = list(np.zeros((num_region_group, num_age_group), dtype=int))
         cap_block = []
         for i in range(len(nonRespNum)):
             pos_age = i % num_age_group
