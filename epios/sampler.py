@@ -22,7 +22,11 @@ class Sampler(DataProcess):
         '''
         if data is not None:
             if pre_process:
-                super().__init__(data=data, path=data_store_path, num_age_group=num_age_group)
+                if hasattr(self, 'mode'):
+                    super().__init__(data=data, path=data_store_path, num_age_group=num_age_group, mode=self.mode)
+                else:
+                    self.mode = 'Random'
+                    super().__init__(data=data, path=data_store_path, num_age_group=num_age_group, mode=self.mode)
             self.data = pd.read_csv(data_store_path + 'data.csv')
         else:
             if pre_process:

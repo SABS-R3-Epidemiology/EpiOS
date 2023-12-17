@@ -17,6 +17,7 @@ class SamplerAgeRegion(Sampler):
         data(DataFrame): should be the extracted data to be sampled from the Epiabm
 
         '''
+        self.mode = 'AgeRegion'
         super().__init__(data=data, data_store_path=data_store_path,
                          num_age_group=num_age_group, pre_process=pre_process)
         geoinfo_path = data_store_path + 'microcells.csv'
