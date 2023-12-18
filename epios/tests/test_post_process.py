@@ -91,7 +91,7 @@ class TestDataProcess(TestCase):
 
     def test_sampled_result_s(self):
         res = self.processor_s.sampled_result(gen_plot=True, saving_path=self.path)
-        self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [1, 2, 4, 5, 5, 6]])
+        self.assertAlmostEqual(res, [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
 
     def test_sampled_result_r(self):
@@ -99,7 +99,7 @@ class TestDataProcess(TestCase):
             os.remove(self.path + 'sample.png')
         np.random.seed(1)
         res = self.processor_r.sampled_result(gen_plot=True, saving_path=self.path)
-        self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [1, 2, 4, 5, 5, 6]])
+        self.assertAlmostEqual(res, [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
 
     def test_sampled_non_responder(self):

@@ -38,7 +38,7 @@ class PostProcess():
 
         '''
         if self.sample_strategy == 'same':
-            infected_number = []
+            infected_rate = []
             sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path,
                                              num_age_group=num_age_group, age_group_width=age_group_width)
             people = sampler_class.sample(sample_size=self.sample_size)
@@ -46,9 +46,9 @@ class PostProcess():
                               false_positive=0, false_negative=0, threshold=None)
             ite = X(self.time_sample, people)
             for i in range(len(self.time_sample)):
-                infected_number.append(ite.iloc[i].value_counts().get('Positive', 0))
+                infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
         elif self.sample_strategy == 'random':
-            infected_number = []
+            infected_rate = []
             for i in range(len(self.time_sample)):
                 if i == 0:
                     sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path,
@@ -60,9 +60,9 @@ class PostProcess():
                 X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X([self.time_sample[i]], people)
-                infected_number.append(ite.iloc[0].value_counts().get('Positive', 0))
+                infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
         if gen_plot:
-            plt.plot(self.time_sample, infected_number)
+            plt.plot(self.time_sample, infected_rate)
             plt.xlabel('Time')
             plt.ylabel('Population')
             plt.xlim(0, max(self.time_sample))
@@ -72,8 +72,8 @@ class PostProcess():
                 plt.savefig(saving_path + 'sample.png')
         res = []
         res.append(self.time_sample)
-        res.append(infected_number)
-        self.result = infected_number
+        res.append(infected_rate)
+        self.result = infected_rate
         return res
 
     def sampled_non_responder(self, nonresprate, gen_plot: bool = False, saving_path=None, sampling_percentage=0.1,
@@ -168,6 +168,7 @@ class PostProcess():
         res = []
         res.append(self.time_sample)
         res.append(infected_rate)
+        self.result = infected_rate
         return res
 
     def compare(self, scale_method: str = 'proportional', saving_path=None):
@@ -184,8 +185,7 @@ class PostProcess():
 
         '''
         if scale_method == 'proportional':
-            scale_para = len(self.demo_data) / self.sample_size
-            result_scaled = np.array(self.result) * scale_para
+            result_scaled = np.array(self.result) * len(self.demo_data)
         true_result = []
         for t in self.time_sample:
             num = self.time_data.iloc[t].value_counts().get('InfectASympt', 0)
