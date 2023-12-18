@@ -4,7 +4,7 @@ import unittest
 from unittest import TestCase
 from sampler import Sampler
 import os
-# from pandas.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 
 class TestDataProcess(TestCase):
@@ -39,19 +39,13 @@ class TestDataProcess(TestCase):
         self.assertEqual(self.sampler.sample(len(self.sampler.data)), ['0.0.1.0', '0.0.0.1', '0.2.0.0',
                                                                        '0.0.0.0', '0.1.0.0', '1.0.0.0'])
 
-    def tearDown(self) -> None:
-        '''
-        Clean up everything created
-
-        '''
-        if os.path.exists(self.path):
-            if os.path.exists(self.path + 'pop_dist.json'):
-                os.remove(self.path + 'pop_dist.json')
-            if os.path.exists(self.path + 'microcells.csv'):
-                os.remove(self.path + 'microcells.csv')
-            if os.path.exists(self.path + 'data.csv'):
-                os.remove(self.path + 'data.csv')
-            os.rmdir(self.path)
+    def test__init__(self):
+        self.sampler1 = Sampler(data_store_path=self.path, pre_process=False)
+        self.assertEqual(self.sampler1.age_group_width, 5)
+        try:
+            assert_frame_equal(self.sampler1.data, self.data)
+        except AssertionError:
+            self.fail('Initiation in the Base mode is unexpected')
 
     def test_person_allowed(self):
         sample = ["0.0.0.0", "0.0.0.1"]
@@ -65,6 +59,20 @@ class TestDataProcess(TestCase):
         new_threshold = 2
         result = self.sampler.person_allowed(sample, choice, new_threshold)
         self.assertFalse(result)
+
+    def tearDown(self) -> None:
+        '''
+        Clean up everything created
+
+        '''
+        if os.path.exists(self.path):
+            if os.path.exists(self.path + 'pop_dist.json'):
+                os.remove(self.path + 'pop_dist.json')
+            if os.path.exists(self.path + 'microcells.csv'):
+                os.remove(self.path + 'microcells.csv')
+            if os.path.exists(self.path + 'data.csv'):
+                os.remove(self.path + 'data.csv')
+            os.rmdir(self.path)
 
 
 if __name__ == '__main__':
