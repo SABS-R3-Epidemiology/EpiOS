@@ -38,8 +38,8 @@ class TestDataProcess(TestCase):
                                                     'household': [0, 0, 1, 0, 0, 0]})
 
     def test_data_process_ageregion(self):
-        self.processor.ageinfo = True
-        self.processor.geoinfo = True
+        self.processor.gen_ageinfo = True
+        self.processor.gen_geoinfo = True
         self.processor.pre_process(path=self.path)
         self.assertTrue(os.path.exists(self.path + 'pop_dist.json'))
         self.assertTrue(os.path.exists(self.path + 'data.csv'))
@@ -65,8 +65,8 @@ class TestDataProcess(TestCase):
             os.remove(self.path + 'data.csv')
 
     def test_data_process_age(self):
-        self.processor.ageinfo = True
-        self.processor.geoinfo = False
+        self.processor.gen_ageinfo = True
+        self.processor.gen_geoinfo = False
         self.processor.pre_process(path=self.path)
         self.assertTrue(os.path.exists(self.path + 'pop_dist.json'))
         self.assertTrue(os.path.exists(self.path + 'data.csv'))
@@ -93,8 +93,8 @@ class TestDataProcess(TestCase):
                                                     'cell': [0, 0, 0, 0, 0, 1],
                                                     'microcell': [0, 0, 0, 1, 2, 0],
                                                     'household': [0, 0, 1, 0, 0, 0]})
-        self.processor.ageinfo = False
-        self.processor.geoinfo = True
+        self.processor.gen_ageinfo = False
+        self.processor.gen_geoinfo = True
         self.processor.pre_process(path=self.path)
         self.assertFalse(os.path.exists(self.path + 'pop_dist.json'))
         self.assertTrue(os.path.exists(self.path + 'data.csv'))
@@ -112,11 +112,17 @@ class TestDataProcess(TestCase):
 
     def test__init__(self):
         self.processor_init = DataProcess(self.data, path=self.path, mode='AgeRegion')
-        self.assertTrue(self.processor_init.ageinfo)
-        self.assertTrue(self.processor_init.geoinfo)
+        self.assertTrue(self.processor_init.gen_ageinfo)
+        self.assertTrue(self.processor_init.gen_geoinfo)
         self.processor_init = DataProcess(self.data, path=self.path, mode='Base')
-        self.assertFalse(self.processor_init.ageinfo)
-        self.assertFalse(self.processor_init.geoinfo)
+        self.assertFalse(self.processor_init.gen_ageinfo)
+        self.assertFalse(self.processor_init.gen_geoinfo)
+        self.processor_init = DataProcess(self.data, path=self.path, mode='Age')
+        self.assertTrue(self.processor_init.gen_ageinfo)
+        self.assertFalse(self.processor_init.gen_geoinfo)
+        self.processor_init = DataProcess(self.data, path=self.path, mode='Region')
+        self.assertFalse(self.processor_init.gen_ageinfo)
+        self.assertTrue(self.processor_init.gen_geoinfo)
 
     def tearDown(self) -> None:
         '''

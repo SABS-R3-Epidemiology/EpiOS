@@ -12,14 +12,20 @@ class DataProcess():
         contains IDs, the second one contains ages
 
         '''
-        self.ageinfo = False
-        self.geoinfo = False
+        self.gen_ageinfo = False
+        self.gen_geoinfo = False
         if mode == 'AgeRegion':
-            self.ageinfo = True
-            self.geoinfo = True
+            self.gen_ageinfo = True
+            self.gen_geoinfo = True
         elif mode == 'Base':
-            self.ageinfo = False
-            self.ageinfo = False
+            self.gen_ageinfo = False
+            self.gen_ageinfo = False
+        elif mode == 'Age':
+            self.gen_ageinfo = True
+            self.gen_geoinfo = False
+        elif mode == 'Region':
+            self.gen_ageinfo = False
+            self.gen_geoinfo = True
         self.data = data
         self.age_group_width = age_group_width
         self.pre_process(path=path, num_age_group=num_age_group)
@@ -40,7 +46,7 @@ class DataProcess():
 
         '''
         df = self.data
-        if self.ageinfo and self.geoinfo:
+        if self.gen_ageinfo and self.gen_geoinfo:
             population_info = pd.DataFrame(columns=['ID', 'age', 'cell', 'microcell', 'household'])
             household_info = {}
             population_size = len(df)
@@ -84,7 +90,7 @@ class DataProcess():
             json_string = json.dumps(age_dist)
             with open(path + 'pop_dist.json', 'w') as f:
                 f.write(json_string)
-        elif self.ageinfo and (~self.geoinfo):
+        elif self.gen_ageinfo and (~self.gen_geoinfo):
             df.to_csv(path + 'data.csv', index=False)
             population_size = len(df)
             count_age = [0] * num_age_group
@@ -98,12 +104,11 @@ class DataProcess():
             json_string = json.dumps(age_dist)
             with open(path + 'pop_dist.json', 'w') as f:
                 f.write(json_string)
-        elif self.geoinfo and (~self.ageinfo):
+        elif self.gen_geoinfo and (~self.gen_ageinfo):
             population_info = pd.DataFrame(columns=['ID', 'cell', 'microcell', 'household'])
             household_info = {}
             population_size = len(df)
             for index, row in df.iterrows():
-                ind_age = math.floor(row['age'] / self.age_group_width)
                 person_id = row['ID']
                 splitted_id = person_id.split('.')
                 cell_num = int(splitted_id[0])
@@ -132,5 +137,5 @@ class DataProcess():
                                         'household': household_num, 'Susceptible': value}, index=[0])
                 household_df = pd.concat([household_df, new_row], ignore_index=True)
             household_df.to_csv(path + 'microcells.csv', index=False)
-        elif (~self.geoinfo) and (~self.ageinfo):
+        elif (~self.gen_geoinfo) and (~self.gen_ageinfo):
             df.to_csv(path + 'data.csv', index=False)
