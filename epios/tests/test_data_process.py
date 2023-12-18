@@ -110,6 +110,14 @@ class TestDataProcess(TestCase):
         except AssertionError:
             self.fail('data.csv is not generated as expected')
 
+    def test__init__(self):
+        self.processor_init = DataProcess(self.data, path=self.path, mode='AgeRegion')
+        self.assertTrue(self.processor_init.ageinfo)
+        self.assertTrue(self.processor_init.geoinfo)
+        self.processor_init = DataProcess(self.data, path=self.path, mode='Base')
+        self.assertFalse(self.processor_init.ageinfo)
+        self.assertFalse(self.processor_init.geoinfo)
+
     def tearDown(self) -> None:
         '''
         Clean up everything created
