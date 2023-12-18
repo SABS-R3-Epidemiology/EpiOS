@@ -10,7 +10,8 @@ class Sampler(DataProcess):
 
     '''
 
-    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17, age_group_width=5):
+    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17, age_group_width=5,
+                 mode='Base'):
         '''
         You can choose to import the data from a .csv file for a given path
         Or you can pass a pandas.DataFrame object to the 'data' argument,
@@ -20,15 +21,11 @@ class Sampler(DataProcess):
                  check DataProcess class for more details.
 
         '''
+        self.mode = mode
         if data is not None:
             if pre_process:
-                if hasattr(self, 'mode'):
-                    super().__init__(data=data, path=data_store_path, num_age_group=num_age_group,
-                                     mode=self.mode, age_group_width=age_group_width)
-                else:
-                    self.mode = 'Base'
-                    super().__init__(data=data, path=data_store_path, num_age_group=num_age_group,
-                                     mode=self.mode, age_group_width=age_group_width)
+                super().__init__(data=data, path=data_store_path, num_age_group=num_age_group,
+                                 mode=self.mode, age_group_width=age_group_width)
             self.data = pd.read_csv(data_store_path + 'data.csv')
         else:
             if pre_process:

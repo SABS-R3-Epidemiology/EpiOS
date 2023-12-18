@@ -8,7 +8,8 @@ import math
 
 class SamplerAgeRegion(Sampler):
 
-    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17, age_group_width=5):
+    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17, age_group_width=5,
+                 mode='AgeRegion'):
         '''
         Contain all necessary information about the population
         ------------
@@ -17,10 +18,10 @@ class SamplerAgeRegion(Sampler):
         data(DataFrame): should be the extracted data to be sampled from the Epiabm
 
         '''
-        self.mode = 'AgeRegion'
+        self.mode = mode
         super().__init__(data=data, data_store_path=data_store_path,
                          num_age_group=num_age_group, pre_process=pre_process,
-                         age_group_width=age_group_width)
+                         age_group_width=age_group_width, mode=self.mode)
         geoinfo_path = data_store_path + 'microcells.csv'
         ageinfo_path = data_store_path + 'pop_dist.json'
         self.geoinfo = pd.read_csv(geoinfo_path)
