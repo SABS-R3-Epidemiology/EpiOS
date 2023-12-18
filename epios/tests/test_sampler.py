@@ -4,7 +4,7 @@ import unittest
 from unittest import TestCase
 from sampler import Sampler
 import os
-from pandas.testing import assert_frame_equal
+# from pandas.testing import assert_frame_equal
 
 
 class TestDataProcess(TestCase):

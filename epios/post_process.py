@@ -152,7 +152,8 @@ class PostProcess():
                 for j in range(len(ite.columns)):
                     if ite.iloc[0, j] == 'NonResponder':
                         nonRespID.append(ite.columns[j])
-                additional_sample = sampler_class.additional_nonresponder(nonRespID=nonRespID, sampling_percentage=sampling_percentage,
+                additional_sample = sampler_class.additional_nonresponder(nonRespID=nonRespID,
+                                                                          sampling_percentage=sampling_percentage,
                                                                           proportion=proportion, threshold=threshold)
 
         if gen_plot:
