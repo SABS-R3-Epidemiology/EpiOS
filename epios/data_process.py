@@ -6,7 +6,7 @@ import json
 
 class DataProcess():
 
-    def __init__(self, data: pd.DataFrame, path: str = './input/', num_age_group=17, mode=None):
+    def __init__(self, data: pd.DataFrame, path: str = './input/', num_age_group=17, age_group_width=5, mode=None):
         '''
         .data attribute contains the DataFrame with two columns. The first column
         contains IDs, the second one contains ages
@@ -21,6 +21,7 @@ class DataProcess():
             self.ageinfo = False
             self.ageinfo = False
         self.data = data
+        self.age_group_width = age_group_width
         self.pre_process(path=path, num_age_group=num_age_group)
 
     def pre_process(self, path='./input/', num_age_group=17):
@@ -45,7 +46,7 @@ class DataProcess():
             population_size = len(df)
             count_age = [0] * num_age_group
             for index, row in df.iterrows():
-                ind_age = math.floor(row['age'] / 5)
+                ind_age = math.floor(row['age'] / self.age_group_width)
                 if ind_age < num_age_group - 1:
                     count_age[ind_age] += 1
                 else:
@@ -88,7 +89,7 @@ class DataProcess():
             population_size = len(df)
             count_age = [0] * num_age_group
             for index, row in df.iterrows():
-                ind_age = math.floor(row['age'] / 5)
+                ind_age = math.floor(row['age'] / self.age_group_width)
                 if ind_age < num_age_group - 1:
                     count_age[ind_age] += 1
                 else:
@@ -102,7 +103,7 @@ class DataProcess():
             household_info = {}
             population_size = len(df)
             for index, row in df.iterrows():
-                ind_age = math.floor(row['age'] / 5)
+                ind_age = math.floor(row['age'] / self.age_group_width)
                 person_id = row['ID']
                 splitted_id = person_id.split('.')
                 cell_num = int(splitted_id[0])

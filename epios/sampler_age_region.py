@@ -8,7 +8,7 @@ import math
 
 class SamplerAgeRegion(Sampler):
 
-    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17):
+    def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17, age_group_width=5):
         '''
         Contain all necessary information about the population
         ------------
@@ -19,7 +19,8 @@ class SamplerAgeRegion(Sampler):
         '''
         self.mode = 'AgeRegion'
         super().__init__(data=data, data_store_path=data_store_path,
-                         num_age_group=num_age_group, pre_process=pre_process)
+                         num_age_group=num_age_group, pre_process=pre_process,
+                         age_group_width=age_group_width)
         geoinfo_path = data_store_path + 'microcells.csv'
         ageinfo_path = data_store_path + 'pop_dist.json'
         self.geoinfo = pd.read_csv(geoinfo_path)
@@ -111,10 +112,10 @@ class SamplerAgeRegion(Sampler):
             pos_region = math.floor(i / len_age)
             ite = df[df['cell'] == pos_region]
             if pos_age != len_age - 1:
-                ite = ite[ite['age'] >= pos_age * 5]
-                ite = ite[ite['age'] < pos_age * 5 + 5]
+                ite = ite[ite['age'] >= pos_age * self.age_group_width]
+                ite = ite[ite['age'] < pos_age * self.age_group_width + self.age_group_width]
             else:
-                ite = ite[ite['age'] >= pos_age * 5]
+                ite = ite[ite['age'] >= pos_age * self.age_group_width]
             cap_block.append(len(ite))
 
         # Since we do not want too many samples from the same age/region group,
@@ -124,12 +125,12 @@ class SamplerAgeRegion(Sampler):
         cap_region = []
         for i in range(np.shape(prob)[1]):
             if i != np.shape(prob)[1] - 1:
-                ite = df[df['age'] >= i * 5]
-                ite = ite[ite['age'] < i * 5 + 5]
+                ite = df[df['age'] >= i * self.age_group_width]
+                ite = ite[ite['age'] < i * self.age_group_width + self.age_group_width]
                 max_num_age = len(ite)
                 cap_age.append(min(n * prob[:, i].sum() + 0.01 * n, max_num_age))
             else:
-                ite = df[df['age'] >= i * 5]
+                ite = df[df['age'] >= i * self.age_group_width]
                 max_num_age = len(ite)
                 cap_age.append(min(max(n * prob[:, i].sum() + 0.01 * n, 1), max_num_age))
         cap_age = [cap_age, list(np.arange(len(cap_age)))]
@@ -334,11 +335,11 @@ class SamplerAgeRegion(Sampler):
             for j in range(len(num_sample[0])):
                 if j != len(num_sample[0]) - 1:
                     ite = df[df['cell'] == i]
-                    ite = ite[ite['age'] >= j * 5]
-                    ite = ite[ite['age'] < j * 5 + 5]
+                    ite = ite[ite['age'] >= j * self.age_group_width]
+                    ite = ite[ite['age'] < j * self.age_group_width + self.age_group_width]
                 else:
                     ite = df[df['cell'] == i]
-                    ite = ite[ite['age'] >= j * 5]
+                    ite = ite[ite['age'] >= j * self.age_group_width]
                 ite_sample = list(ite['ID'])
                 if household_criterion:
                     count = 0
@@ -390,8 +391,8 @@ class SamplerAgeRegion(Sampler):
         nonRespNum = [0] * (num_age_group * num_region_group)
         for i in nonRespID:
             age = df[df['ID'] == i]['age'].values[0]
-            if math.floor(age / 5) < num_age_group - 1:
-                age_group_pos = math.floor(age / 5)
+            if math.floor(age / self.age_group_width) < num_age_group - 1:
+                age_group_pos = math.floor(age / self.age_group_width)
             else:
                 age_group_pos = num_age_group - 1
             region_group_pos = df[df['ID'] == i]['cell'].values[0]
@@ -420,10 +421,10 @@ class SamplerAgeRegion(Sampler):
             pos_region = math.floor(i / num_age_group)
             ite = df[df['cell'] == pos_region]
             if pos_age != num_age_group - 1:
-                ite = ite[ite['age'] >= pos_age * 5]
-                ite = ite[ite['age'] < pos_age * 5 + 5]
+                ite = ite[ite['age'] >= pos_age * self.age_group_width]
+                ite = ite[ite['age'] < pos_age * self.age_group_width + self.age_group_width]
             else:
-                ite = ite[ite['age'] >= pos_age * 5]
+                ite = ite[ite['age'] >= pos_age * self.age_group_width]
             cap_block.append(len(ite))
         cap_block = np.array(cap_block).reshape((-1, num_age_group))
 
@@ -486,10 +487,10 @@ class SamplerAgeRegion(Sampler):
     #         pos_region = math.floor(i / num_age)
     #         ite = self.data[self.data['cell'] == pos_region]
     #         if pos_age != num_age - 1:
-    #             ite = ite[ite['age'] >= pos_age * 5]
-    #             ite = ite[ite['age'] < pos_age * 5 + 5]
+    #             ite = ite[ite['age'] >= pos_age * self.age_group_width]
+    #             ite = ite[ite['age'] < pos_age * self.age_group_width + self.age_group_width]
     #         else:
-    #             ite = ite[ite['age'] >= pos_age * 5]
+    #             ite = ite[ite['age'] >= pos_age * self.age_group_width]
     #         cap_block.append(len(ite))
     #     A1_ineq = list(np.eye(num_age * num_region))
     #     b1_ineq = cap_block
@@ -499,12 +500,12 @@ class SamplerAgeRegion(Sampler):
     #     cap_region = []
     #     for i in range(num_age):
     #         if i != num_age - 1:
-    #             ite = self.data[self.data['age'] >= i * 5]
-    #             ite = ite[ite['age'] < i * 5 + 5]
+    #             ite = self.data[self.data['age'] >= i * self.age_group_width]
+    #             ite = ite[ite['age'] < i * self.age_group_width + self.age_group_width]
     #             max_num_age = len(ite)
     #             cap_age.append(min(sample_size * age_dist[i] + 0.01 * sample_size, max_num_age))
     #         else:
-    #             ite = self.data[self.data['age'] >= i * 5]
+    #             ite = self.data[self.data['age'] >= i * self.age_group_width]
     #             max_num_age = len(ite)
     #             cap_age.append(min(max(sample_size * age_dist[i] + 0.01 * sample_size, 1), max_num_age))
     #     for i in range(num_region):

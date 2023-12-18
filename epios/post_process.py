@@ -26,7 +26,7 @@ class PostProcess():
         self.sample_size = sample_size
         self.path = data_store_path
 
-    def sampled_result(self, gen_plot: bool = False, saving_path=None):
+    def sampled_result(self, gen_plot: bool = False, saving_path=None, num_age_group=17, age_group_width=5):
         '''
         This is a method to generate the sampled result and plot a figure
         --------
@@ -39,7 +39,8 @@ class PostProcess():
         '''
         if self.sample_strategy == 'same':
             infected_number = []
-            sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path)
+            sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path,
+                                             num_age_group=num_age_group, age_group_width=age_group_width)
             people = sampler_class.sample(sample_size=self.sample_size)
             X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
                               false_positive=0, false_negative=0, threshold=None)
@@ -50,9 +51,11 @@ class PostProcess():
             infected_number = []
             for i in range(len(self.time_sample)):
                 if i == 0:
-                    sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path)
+                    sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path,
+                                                     num_age_group=num_age_group, age_group_width=age_group_width)
                 else:
-                    sampler_class = SamplerAgeRegion(data_store_path=self.path, pre_process=False)
+                    sampler_class = SamplerAgeRegion(data_store_path=self.path, pre_process=False,
+                                                     num_age_group=num_age_group, age_group_width=age_group_width)
                 people = sampler_class.sample(sample_size=self.sample_size)
                 X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
@@ -74,16 +77,18 @@ class PostProcess():
         return res
 
     def sampled_non_responder(self, nonresprate, gen_plot: bool = False, saving_path=None, sampling_percentage=0.1,
-                              proportion=0.01, threshold=None):
+                              proportion=0.01, threshold=None, num_age_group=17, age_group_width=5):
         if self.sample_strategy == 'same':
             raise ValueError("non-responders can only be introduced when the strategy is 'random'.")
         elif self.sample_strategy == 'random':
             infected_rate = []
             for i in range(len(self.time_sample)):
                 if i == 0:
-                    sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path)
+                    sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=self.path,
+                                                     num_age_group=num_age_group, age_group_width=age_group_width)
                 else:
-                    sampler_class = SamplerAgeRegion(data_store_path=self.path, pre_process=False)
+                    sampler_class = SamplerAgeRegion(data_store_path=self.path, pre_process=False,
+                                                     num_age_group=num_age_group, age_group_width=age_group_width)
                 try:
                     people = sampler_class.sample(sample_size=self.sample_size, additional_sample=additional_sample)
                 except NameError:
@@ -108,7 +113,7 @@ class PostProcess():
                         for id in people:
                             region_pos = int(id.split('.')[0])
                             age_value = self.demo_data[self.demo_data['ID'] == id]['age'].values[0]
-                            age_pos = min(16, math.floor(age_value / 5))
+                            age_pos = min(num_age_group - 1, math.floor(age_value / age_group_width))
                             indexer = (region_pos, age_pos)
                             if indexer in add_pos:
                                 count_total += 1
