@@ -88,7 +88,7 @@ class TestDataProcess(TestCase):
         kwargs = {
             'sample_strategy': 'Same',
             'gen_plot': True,
-            'saving_path': self.path,
+            'saving_path_sampling': self.path + 'sample.png',
         }
         res = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False, **kwargs)
         self.assertAlmostEqual(res, [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
@@ -118,7 +118,7 @@ class TestDataProcess(TestCase):
         kwargs = {
             'sample_strategy': 'Random',
             'gen_plot': True,
-            'saving_path': self.path
+            'saving_path_sampling': self.path + 'sample.png'
         }
         res = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False, **kwargs)
         self.assertAlmostEqual(res, [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
@@ -151,7 +151,7 @@ class TestDataProcess(TestCase):
         np.random.seed(1)
         kwargs = {
             'gen_plot': True,
-            'saving_path': self.path
+            'saving_path_sampling': self.path + 'sample_nonResp.png'
         }
         res = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
                              nonresprate=0.1, **kwargs)
@@ -172,7 +172,7 @@ class TestDataProcess(TestCase):
         self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
         kwargs = {
             'gen_plot': True,
-            'saving_path': self.path
+            'saving_path_sampling': self.path + 'sample_nonResp.png'
         }
         res = self.processor('Region', 6, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
                              nonresprate=0.1, **kwargs)
@@ -195,7 +195,7 @@ class TestDataProcess(TestCase):
     def test_compare(self):
         kwargs = {
             'sample_strategy': 'Same',
-            'saving_path': self.path,
+            'saving_path_compare': self.path + 'compare.png',
             'gen_plot': True
         }
         _, diff = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=True, **kwargs)
@@ -204,7 +204,7 @@ class TestDataProcess(TestCase):
         if os.path.exists(self.path + 'compare.png'):
             os.remove(self.path + 'compare.png')
         kwargs = {
-            'saving_path': self.path,
+            'saving_path_compare': self.path + 'compare.png',
             'gen_plot': True
         }
         _, diff = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=True,

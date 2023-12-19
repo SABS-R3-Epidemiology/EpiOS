@@ -73,9 +73,9 @@ class PostProcess():
                 raise ValueError('You have to input the non-response rate when considering non-responders')
 
             # Select all useful variable names provided in kwargs
-            sampling_params = ['gen_plot', 'saving_path', 'num_age_group', 'age_group_width',
+            sampling_params = ['gen_plot', 'saving_path_sampling', 'num_age_group', 'age_group_width',
                                'sampling_percentage', 'proportion', 'threshold']
-            compare_params = ['scale_method', 'saving_path', 'gen_plot']
+            compare_params = ['scale_method', 'saving_path_compare', 'gen_plot']
             total_params = set(sampling_params + compare_params)
 
             # Print the unused variable names
@@ -115,9 +115,9 @@ class PostProcess():
             return res
         else:  # For non-responders disabled
             # Almost the same script, see comments above
-            sampling_params = ['sample_strategy', 'gen_plot', 'saving_path', 'num_age_group',
+            sampling_params = ['sample_strategy', 'gen_plot', 'saving_path_sampling', 'num_age_group',
                                'age_group_width']
-            compare_params = ['scale_method', 'saving_path', 'gen_plot']
+            compare_params = ['scale_method', 'saving_path_compare', 'gen_plot']
             total_params = set(sampling_params + compare_params)
             params_not_used = []
             for i in kwargs:
@@ -152,7 +152,7 @@ class PostProcess():
             return res
 
     def sampled_result(self, sampling_method, sample_size, time_sample, sample_strategy='Random',
-                       gen_plot: bool = False, saving_path=None, num_age_group=17, age_group_width=5):
+                       gen_plot: bool = False, saving_path_sampling=None, num_age_group=17, age_group_width=5):
         '''
         This is a method to generate the sampled result and plot a figure
         This method should not be used directly, it is integrated within the __callable__ method
@@ -276,8 +276,8 @@ class PostProcess():
             plt.xlim(0, max(time_sample))
             plt.ylim(0, len(self.demo_data))
             plt.title('Number of infection in the sample')
-            if saving_path:
-                plt.savefig(saving_path + 'sample.png')
+            if saving_path_sampling:
+                plt.savefig(saving_path_sampling)
         res = []
         res.append(time_sample)
         res.append(infected_rate)
@@ -286,7 +286,7 @@ class PostProcess():
         return res
 
     def sampled_non_responder(self, sampling_method, sample_size, time_sample, nonresprate,
-                              gen_plot: bool = False, saving_path=None, sampling_percentage=0.1,
+                              gen_plot: bool = False, saving_path_sampling=None, sampling_percentage=0.1,
                               proportion=0.01, threshold=None, num_age_group=17, age_group_width=5):
         '''
         This is a method to generate the sampled result and plot a figure when considering non-responders
@@ -496,8 +496,8 @@ class PostProcess():
             plt.xlim(0, max(time_sample))
             plt.ylim(0, 1)
             plt.title('Proportion of infection in the sample (consider non-responders)')
-            if saving_path:
-                plt.savefig(saving_path + 'sample_nonResp.png')
+            if saving_path_sampling:
+                plt.savefig(saving_path_sampling)
         res = []
         res.append(time_sample)
         res.append(infected_rate)
@@ -505,7 +505,7 @@ class PostProcess():
         self.result = infected_rate
         return res
 
-    def compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path=None):
+    def compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path_compare=None):
         '''
         Generate a graph comparing the difference between predicted and real infection level
         This method should not be used directly, it is integrated within the __callable__ method
@@ -536,6 +536,6 @@ class PostProcess():
             plt.xlabel('Time')
             plt.ylabel('Population')
             plt.title('Number of infection in the population')
-            if saving_path:
-                plt.savefig(saving_path + 'compare.png')
+            if saving_path_compare:
+                plt.savefig(saving_path_compare)
         return diff
