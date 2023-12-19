@@ -8,8 +8,20 @@ class DataProcess():
 
     def __init__(self, data: pd.DataFrame, path: str = './input/', num_age_group=None, age_group_width=None, mode=None):
         '''
-        .data attribute contains the DataFrame with two columns. The first column
-        contains IDs, the second one contains ages
+        This is the base class for different samplers.
+        Can process data depending on different modes of samplers.
+        When defining an attribute, the pre_process part would automatically run
+        --------
+        Input:
+        path(str): The path to store the processed data
+        data(pd.DataFrame): The dataframe containing geographical data
+        num_age_group(int): This will be used when age stratification is enabled
+                            indicating how many age groups are there.
+                            *The last group includes age >= some threshold
+        age_group_width(int): This will beused when age stratification is enabled
+                              indicating the width of each age group(except for the last group)
+        mode(str): This indicates the specific mode to process the data
+                   This should be the name of the modes that can be identified
 
         '''
         self.gen_ageinfo = False
@@ -31,14 +43,13 @@ class DataProcess():
 
     def pre_process(self, path='./input/', num_age_group=None, age_group_width=None):
         '''
-        Take the DataFrame then convert the data into files that age_region.py can use
+        Take the geographical DataFrame then convert the data into files that Sampler classes can use
         -------
         Input:
-        path(str): The path to save the processed data file
-        num_age_group(int): How many age group want to have. Each age group has width 5
+        (See explanation in __init__ method)
 
         Output:
-        Will write three files into the given path
+        Will write three files(depending on the mode of processing chosen) into the given path
         The first one is data.csv, contains the data for each person
         The second one is microcells.csv, contains the geographical information
         The third one is pop_dist.json, contains a list of age distribution across the population
@@ -46,6 +57,7 @@ class DataProcess():
         '''
         df = self.data
         if self.gen_ageinfo and self.gen_geoinfo:
+            # Both age and region stratification is needed
             population_info = pd.DataFrame(columns=['ID', 'age', 'cell', 'microcell', 'household'])
             household_info = {}
             population_size = len(df)
@@ -61,6 +73,7 @@ class DataProcess():
                 cell_num = int(splitted_id[0])
                 microcell_num = int(splitted_id[1])
                 household_num = int(splitted_id[2])
+                # Generation of each row of data.csv file
                 new_row = pd.DataFrame({'ID': person_id, 'age': row['age'], 'cell': cell_num,
                                         'microcell': microcell_num, 'household': household_num}, index=[0])
                 population_info = pd.concat([population_info, new_row], ignore_index=True)
@@ -80,16 +93,19 @@ class DataProcess():
                 cell_num = int(key[0:pos_dot[0]])
                 microcell_num = int(key[pos_dot[0] + 1:pos_dot[1]])
                 household_num = int(key[pos_dot[1] + 1:])
+                # Generation of each row of microcells.csv file
                 new_row = pd.DataFrame({'cell': cell_num, 'microcell': microcell_num,
                                         'household': household_num, 'Susceptible': value}, index=[0])
                 household_df = pd.concat([household_df, new_row], ignore_index=True)
             household_df.to_csv(path + 'microcells.csv', index=False)
 
+            # Generation of pop_dist.json file
             age_dist = list(np.array(count_age) / population_size)
             json_string = json.dumps(age_dist)
             with open(path + 'pop_dist.json', 'w') as f:
                 f.write(json_string)
         elif self.gen_ageinfo and (~self.gen_geoinfo):
+            # Only age stratification needed
             df.to_csv(path + 'data.csv', index=False)
             population_size = len(df)
             count_age = [0] * num_age_group
@@ -104,6 +120,7 @@ class DataProcess():
             with open(path + 'pop_dist.json', 'w') as f:
                 f.write(json_string)
         elif self.gen_geoinfo and (~self.gen_ageinfo):
+            # Only region stratification needed
             population_info = pd.DataFrame(columns=['ID', 'cell', 'microcell', 'household'])
             household_info = {}
             population_size = len(df)
@@ -137,4 +154,5 @@ class DataProcess():
                 household_df = pd.concat([household_df, new_row], ignore_index=True)
             household_df.to_csv(path + 'microcells.csv', index=False)
         elif (~self.gen_geoinfo) and (~self.gen_ageinfo):
+            # Neither of age and region stratification needed
             df.to_csv(path + 'data.csv', index=False)

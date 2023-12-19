@@ -13,12 +13,20 @@ class Sampler(DataProcess):
     def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=None,
                  age_group_width=None, mode='Base'):
         '''
-        You can choose to import the data from a .csv file for a given path
-        Or you can pass a pandas.DataFrame object to the 'data' argument,
-        then we can use DataProcess class to process that data
-
-        Warning: The DataFrame passed to DataProcess need to satisfy a certain format,
-                 check DataProcess class for more details.
+        Contain the basic settings and input of a single sample of the population
+        ---------
+        Input:
+        If you want to input new data, you can input that into data argument and set the pre_process to True
+        If you want to use previous processed data, you can input the data_store_path to read data files,
+        and set the pre_process to False
+        num_age_group(int): This will be used when age stratification is enabled
+                            indicating how many age groups are there.
+                            *The last group includes age >= some threshold
+        age_group_width(int): This will beused when age stratification is enabled
+                              indicating the width of each age group(except for the last group)
+        mode(str): This indicates the specific mode to process the data
+                   This should be the name of the modes that can be identified
+                   **If you want this class sample as originally designed, do not change this value**
 
         '''
         self.mode = mode

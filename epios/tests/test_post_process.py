@@ -195,7 +195,8 @@ class TestDataProcess(TestCase):
     def test_compare(self):
         kwargs = {
             'sample_strategy': 'Same',
-            'saving_path': self.path
+            'saving_path': self.path,
+            'gen_plot': True
         }
         _, diff = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=True, **kwargs)
         self.assertEqual(list(diff), [0, 0, 0, 0, 0, 0])
@@ -203,7 +204,8 @@ class TestDataProcess(TestCase):
         if os.path.exists(self.path + 'compare.png'):
             os.remove(self.path + 'compare.png')
         kwargs = {
-            'saving_path': self.path
+            'saving_path': self.path,
+            'gen_plot': True
         }
         _, diff = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=True,
                                  non_responder=True, nonresprate=0, **kwargs)

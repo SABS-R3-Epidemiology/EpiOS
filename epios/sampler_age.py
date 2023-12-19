@@ -4,15 +4,27 @@ import json
 
 
 class SamplerAge(Sampler):
+    '''
+    The sampling class with age stratification
+    This class is inherited from the Sampler class, which is the base sampling class
+
+    '''
 
     def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17, age_group_width=5,
                  mode='Age'):
         '''
-        Contain all necessary information about the population
-        ------------
+        Contain the basic settings and input of a single sample of the population
+        ---------
         Input:
-        geoinfo_path(str): should be the path to the csv file include the geo-information
-        data(DataFrame): should be the extracted data to be sampled from the Epiabm
+        If you want to input new data, you can input that into data argument and set the pre_process to True
+        If you want to use previous processed data, you can input the data_store_path to read data files,
+        and set the pre_process to False
+        num_age_group(int): Indicating how many age groups are there.
+                            *The last group includes age >= some threshold
+        age_group_width(int): Indicating the width of each age group(except for the last group)
+        mode(str): This indicates the specific mode to process the data
+                   This should be the name of the modes that can be identified
+                   **If you want this class sample as originally designed, do not change this value**
 
         '''
         self.mode = mode
@@ -25,7 +37,7 @@ class SamplerAge(Sampler):
 
     def get_age_dist(self):
         '''
-        Read the age distribution from json file in EpiGeoPop
+        Read the age distribution from pop_dist.json processed from DataProcess class
         ------------
         Input:
         path(str): should be the path to the file
@@ -58,16 +70,15 @@ class SamplerAge(Sampler):
     def multinomial_draw(self, n: int, prob: list):
         '''
         Perform a multinomial draw with caps, it will return a tuple of lists
-        The first output is the number of people that I want to draw from each group, specified by age and region
+        The first output is the number of people that I want to draw from each group, specified by age
         The second output is for convenience of the following sampling function
         ---------
         Input:
         n(int): the sample size
-        prob(list): list of floats, sum to 1, length should be number of age groups times number of region groups
+        prob(list): list of floats, sum to 1, length should be number of age groups
 
         Output:
-        res(list): a list of integers indicating the number of samples from each age-region group
-        res_cap_block(list): a list of caps for each age-region group
+        res(list): a list of integers indicating the number of samples from each age group
 
         '''
         # The following block trasform the probability to a list of barriers between 0 and 1
@@ -80,8 +91,8 @@ class SamplerAge(Sampler):
 
         len_age = len(self.get_age_dist())
 
-        # Since we do not want too many samples from the same age/region group,
-        # so we set a total cap for each age/region
+        # Since we do not want too many samples from the same age group,
+        # so we set a total cap for each age
         cap_age = []
         for i in range(len(prob)):
             if i != len(prob) - 1:
@@ -103,12 +114,12 @@ class SamplerAge(Sampler):
                 threshold.append(0)
         threshold.append(1)
 
-        # Set the age/region/block counter to record whether any cap is reached
+        # Set the age counter to record whether any cap is reached
         res = [0] * len(prob)
         current_age = [0] * len_age
 
         # We start the draw from here, we run the following code for each sample
-        # to determine which age/region group it is
+        # to determine which age group it is
         for i in range(n):
             rand = np.random.rand()
             j = 0
@@ -116,7 +127,7 @@ class SamplerAge(Sampler):
                 j += 1
             # so the program will stop when it first exceed any barrier
 
-            # Locate its position of age/region group
+            # Locate its position of age group
             j += -1
             pos_age = j
 
@@ -159,8 +170,6 @@ class SamplerAge(Sampler):
         ---------
         Input:
         sample_size(int): the size of sample
-        additional_sample(list): list of integers indicating the number of additional
-        samples drawn from each age-region group
 
         Output:
         res: a list of strings, each string is the ID of the sampled person
