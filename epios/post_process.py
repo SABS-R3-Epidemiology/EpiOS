@@ -49,8 +49,10 @@ class PostProcess():
                         The following parameters can be passed:
                         gen_plot(boolean): Whether or not to generate plots
                                            Default = False
-                        saving_path(str): Path to save figures
-                                          Default = None
+                        saving_path_sampling(str): Path to save figures of sampled data
+                                                   Default = None
+                        saving_path_compare(str): Path to save figures of comparison data
+                                                  Default = None
                         num_age_group(int): Indicating how many age groups are there.
                                             *The last group includes age >= some threshold
                                             Default = 17
