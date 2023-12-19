@@ -26,6 +26,7 @@ class SamplerAgeRegion(Sampler):
         ageinfo_path = data_store_path + 'pop_dist.json'
         self.geoinfo = pd.read_csv(geoinfo_path)
         self.ageinfo = ageinfo_path
+        self.age_group_width = age_group_width
 
     def get_age_dist(self):
         '''

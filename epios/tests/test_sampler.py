@@ -41,7 +41,6 @@ class TestDataProcess(TestCase):
 
     def test__init__(self):
         self.sampler1 = Sampler(data_store_path=self.path, pre_process=False)
-        self.assertEqual(self.sampler1.age_group_width, 5)
         try:
             assert_frame_equal(self.sampler1.data, self.data)
         except AssertionError:

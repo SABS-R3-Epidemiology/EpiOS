@@ -6,7 +6,7 @@ import json
 
 class DataProcess():
 
-    def __init__(self, data: pd.DataFrame, path: str = './input/', num_age_group=17, age_group_width=5, mode=None):
+    def __init__(self, data: pd.DataFrame, path: str = './input/', num_age_group=None, age_group_width=None, mode=None):
         '''
         .data attribute contains the DataFrame with two columns. The first column
         contains IDs, the second one contains ages
@@ -27,10 +27,9 @@ class DataProcess():
             self.gen_ageinfo = False
             self.gen_geoinfo = True
         self.data = data
-        self.age_group_width = age_group_width
-        self.pre_process(path=path, num_age_group=num_age_group)
+        self.pre_process(path=path, num_age_group=num_age_group, age_group_width=age_group_width)
 
-    def pre_process(self, path='./input/', num_age_group=17):
+    def pre_process(self, path='./input/', num_age_group=None, age_group_width=None):
         '''
         Take the DataFrame then convert the data into files that age_region.py can use
         -------
@@ -52,7 +51,7 @@ class DataProcess():
             population_size = len(df)
             count_age = [0] * num_age_group
             for index, row in df.iterrows():
-                ind_age = math.floor(row['age'] / self.age_group_width)
+                ind_age = math.floor(row['age'] / age_group_width)
                 if ind_age < num_age_group - 1:
                     count_age[ind_age] += 1
                 else:
@@ -95,7 +94,7 @@ class DataProcess():
             population_size = len(df)
             count_age = [0] * num_age_group
             for index, row in df.iterrows():
-                ind_age = math.floor(row['age'] / self.age_group_width)
+                ind_age = math.floor(row['age'] / age_group_width)
                 if ind_age < num_age_group - 1:
                     count_age[ind_age] += 1
                 else:

@@ -40,7 +40,7 @@ class TestDataProcess(TestCase):
     def test_data_process_ageregion(self):
         self.processor.gen_ageinfo = True
         self.processor.gen_geoinfo = True
-        self.processor.pre_process(path=self.path)
+        self.processor.pre_process(path=self.path, num_age_group=17, age_group_width=5)
         self.assertTrue(os.path.exists(self.path + 'pop_dist.json'))
         self.assertTrue(os.path.exists(self.path + 'data.csv'))
         self.assertTrue(os.path.exists(self.path + 'microcells.csv'))
@@ -67,7 +67,7 @@ class TestDataProcess(TestCase):
     def test_data_process_age(self):
         self.processor.gen_ageinfo = True
         self.processor.gen_geoinfo = False
-        self.processor.pre_process(path=self.path)
+        self.processor.pre_process(path=self.path, num_age_group=17, age_group_width=5)
         self.assertTrue(os.path.exists(self.path + 'pop_dist.json'))
         self.assertTrue(os.path.exists(self.path + 'data.csv'))
         self.assertFalse(os.path.exists(self.path + 'microcells.csv'))
@@ -111,13 +111,15 @@ class TestDataProcess(TestCase):
             self.fail('data.csv is not generated as expected')
 
     def test__init__(self):
-        self.processor_init = DataProcess(self.data, path=self.path, mode='AgeRegion')
+        self.processor_init = DataProcess(self.data, path=self.path, mode='AgeRegion',
+                                          age_group_width=5, num_age_group=17)
         self.assertTrue(self.processor_init.gen_ageinfo)
         self.assertTrue(self.processor_init.gen_geoinfo)
         self.processor_init = DataProcess(self.data, path=self.path, mode='Base')
         self.assertFalse(self.processor_init.gen_ageinfo)
         self.assertFalse(self.processor_init.gen_geoinfo)
-        self.processor_init = DataProcess(self.data, path=self.path, mode='Age')
+        self.processor_init = DataProcess(self.data, path=self.path, mode='Age',
+                                          age_group_width=5, num_age_group=17)
         self.assertTrue(self.processor_init.gen_ageinfo)
         self.assertFalse(self.processor_init.gen_geoinfo)
         self.processor_init = DataProcess(self.data, path=self.path, mode='Region')

@@ -21,6 +21,7 @@ class SamplerAge(Sampler):
                          age_group_width=age_group_width, mode=self.mode)
         ageinfo_path = data_store_path + 'pop_dist.json'
         self.ageinfo = ageinfo_path
+        self.age_group_width = age_group_width
 
     def get_age_dist(self):
         '''
