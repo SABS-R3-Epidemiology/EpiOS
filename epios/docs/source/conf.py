@@ -20,7 +20,7 @@ exclude_patterns = []
 
 
 
-# -- Options for HTML output -------------------------------------------------
+# -- Options for HTML output ------------------------------------------------- # noqa
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'alabaster'
