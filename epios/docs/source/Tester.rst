@@ -10,5 +10,5 @@ Overview:
 
 
 .. autoclass:: SamplingMaker
-    :special-members: __init__, __call__
+    :special-members: __init__
     :members:
