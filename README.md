@@ -54,4 +54,4 @@ pip install -e path/to/pyEpiabm
  res, diff = postprocess(sampling_method='AgeRegion', time_sample=[0, 1, 2, 3, 4, 5], sample_size=3, non_responders=False, comparison=True, **kwargs)
  ```
 
- You will not have your figure saved to the given path!
+ Now, you will have your figure saved to the given path!
