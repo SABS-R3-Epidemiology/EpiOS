@@ -5,25 +5,41 @@ import json
 
 
 class DataProcess():
+    """"
+    Can process data depending on different modes of samplers.
+    When defining an instance, the pre_process part would automatically run.
+    This is the base class for different samplers.
+
+    Parameters
+    ----------
+
+    path : str
+        The path to store the processed data
+    data : pandas.DataFrame
+        The dataframe containing geographical data
+    num_age_group : int
+        This will be used when age stratification is enabled,
+        indicating how many age groups are there.
+        *The last group includes age >= some threshold
+    age_group_width : int
+        This will beused when age stratification is enabled
+        indicating the width of each age group(except for the last group)
+    mode : str
+        This indicates the specific mode to process the data
+        This should be the name of the modes that can be identified
+
+    Attributes
+    ----------
+
+    gen_ageinfo : bool
+        Whether generating age information
+    gen_geoinfo : bool
+        Whether generating demographical information
+    data : pandas.DataFrame
+        The demographical data from EpiABM
+    """
 
     def __init__(self, data: pd.DataFrame, path: str = './input/', num_age_group=None, age_group_width=None, mode=None):
-        '''
-        This is the base class for different samplers.
-        Can process data depending on different modes of samplers.
-        When defining an attribute, the pre_process part would automatically run
-        --------
-        Input:
-        path(str): The path to store the processed data
-        data(pd.DataFrame): The dataframe containing geographical data
-        num_age_group(int): This will be used when age stratification is enabled
-                            indicating how many age groups are there.
-                            *The last group includes age >= some threshold
-        age_group_width(int): This will beused when age stratification is enabled
-                              indicating the width of each age group(except for the last group)
-        mode(str): This indicates the specific mode to process the data
-                   This should be the name of the modes that can be identified
-
-        '''
         self.gen_ageinfo = False
         self.gen_geoinfo = False
         if mode == 'AgeRegion':
@@ -42,19 +58,22 @@ class DataProcess():
         self.pre_process(path=path, num_age_group=num_age_group, age_group_width=age_group_width)
 
     def pre_process(self, path='./input/', num_age_group=None, age_group_width=None):
-        '''
+        """
         Take the geographical DataFrame then convert the data into files that Sampler classes can use
-        -------
-        Input:
+
+        Parameters
+        ----------
+
         (See explanation in __init__ method)
 
-        Output:
+        Output
+        ------
+
         Will write three files(depending on the mode of processing chosen) into the given path
         The first one is data.csv, contains the data for each person
         The second one is microcells.csv, contains the geographical information
         The third one is pop_dist.json, contains a list of age distribution across the population
-
-        '''
+        """
         df = self.data
         if self.gen_ageinfo and self.gen_geoinfo:
             # Both age and region stratification is needed
