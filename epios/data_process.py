@@ -13,7 +13,7 @@ class DataProcess():
     This is the base class for different samplers.
 
     Parameters:
-    ----------
+    -----------
 
     path : str
         The path to store the processed data
@@ -23,7 +23,7 @@ class DataProcess():
         This will be used when age stratification is enabled,
         indicating how many age groups are there.
 
-        *The last group includes age >= some threshold
+        *The last group includes age >= some threshold*
     age_group_width : int
         This will beused when age stratification is enabled
         indicating the width of each age group(except for the last group)
@@ -32,7 +32,7 @@ class DataProcess():
         This should be the name of the modes that can be identified
 
     Attributes:
-    ----------
+    -----------
 
     gen_ageinfo : bool
         Whether generating age information
@@ -65,12 +65,12 @@ class DataProcess():
         Take the geographical DataFrame then convert the data into files that Sampler classes can use
 
         Parameters:
-        ----------
+        -----------
 
         (See explanation for the class above)
 
         Output:
-        ------
+        -------
 
         Will write three files(depending on the mode of processing chosen) into the given path.
 

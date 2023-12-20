@@ -1,6 +1,6 @@
-****
+*******
 Sampler
-****
+*******
 
 .. currentmodule:: epios
 

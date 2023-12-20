@@ -8,7 +8,7 @@ class SamplerAge(Sampler):
     The sampling class with age stratification.
 
     Parameters:
-    ----------
+    -----------
 
     If you want to input new data, you can input that into data argument and set the pre_process to True
     If you want to use previous processed data, you can input the data_store_path to read data files,
@@ -17,7 +17,7 @@ class SamplerAge(Sampler):
     num_age_group : int
         Indicating how many age groups are there.
 
-        *The last group includes age >= some threshold
+        *The last group includes age >= some threshold*
     age_group_width : int
         Indicating the width of each age group(except for the last group)
     mode : str
@@ -43,7 +43,7 @@ class SamplerAge(Sampler):
         Read the age distribution from pop_dist.json processed from DataProcess class
 
         Output:
-        ------
+        -------
 
         config : list
             A list of floats, with sum 1, length should be the number of age groups
@@ -76,14 +76,14 @@ class SamplerAge(Sampler):
         The first output is the number of people that I want to draw from each group, specified by age.
 
         Parameters:
-        ----------
+        -----------
         n : int
             The sample size
         prob : list
             List of floats, sum to 1. Length should be number of age groups
 
         Output:
-        ------
+        -------
 
         res : list
             A list of integers indicating the number of samples from each age group
@@ -177,13 +177,13 @@ class SamplerAge(Sampler):
         Given a sample size, and the additional sample, should return a list of people's IDs drawn from the population
 
         Parameters:
-        ----------
+        -----------
 
         sample_size : int
             The size of sample
 
         Output:
-        ------
+        -------
 
         res : list
             A list of ID of the sampled people

@@ -16,7 +16,7 @@ class PostProcess():
     And generate plots and comparison with the true infection level within the population.
 
     How to use:
-    ----------
+    -----------
 
     Define an instance and input the demographical and time data of the population
     Then use __call__ method directly to generate plots and comparison
@@ -24,7 +24,7 @@ class PostProcess():
     To define an instance of PostProcess, you need the following inputs:
 
     Parameters:
-    ----------
+    -----------
 
     demo_data : pandas.DataFrame
         The geographical data of the population
@@ -46,7 +46,8 @@ class PostProcess():
         Make this class callable to run the post process part just by calling the instance
 
         Parameters:
-        ----------
+        -----------
+
         sampling_method : str
             A specific string tells which sampling method using
         sample_size : int
@@ -57,7 +58,7 @@ class PostProcess():
             Turn on or off the non-responder function
         comparison : bool
             Turn on or off the comparison between the sampled result and the true result
-        **kwargs : dict
+        kwargs : dict
             A dictionary of parameters passed to process part
             The following parameters can be passed:
                 gen_plot : bool
@@ -71,7 +72,7 @@ class PostProcess():
                     Default = None
                 num_age_group : int
                     Indicating how many age groups are there.
-                    *The last group includes age >= some threshold
+                    *The last group includes age >= some threshold*
                     Default = 17
                 age_group_width : int
                     Indicating the width of each age group(except for the last group)

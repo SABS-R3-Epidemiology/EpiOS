@@ -10,7 +10,7 @@ class Sampler(DataProcess):
     This class will perform a totally random sampling for a single time.
 
     Parameters:
-    ----------
+    -----------
 
     If you want to input new data, you can input that into data argument and set the pre_process to True.
 
@@ -20,7 +20,7 @@ class Sampler(DataProcess):
     num_age_group : int
         This will be used when age stratification is enabled indicating how many age groups are there.
 
-        *The last group includes age >= some threshold
+        *The last group includes age >= some threshold*
     age_group_width : int
         This will beused when age stratification is enabled,
         indicating the width of each age group(except for the last group)
@@ -51,13 +51,13 @@ class Sampler(DataProcess):
         This method samples data for a given sample size randomly.
 
         Parameters:
-        ----------
+        -----------
 
         sample_size : int
             The size of sample
 
         Output:
-        ------
+        -------
         res : list
             A list of ID of people who is sampled
 
@@ -77,7 +77,7 @@ class Sampler(DataProcess):
         Function to see if the sampled person should be included in the generic sample
 
         Parameters:
-        ----------
+        -----------
 
         sample : list
             List of people who have already been chosen

@@ -5,7 +5,7 @@ class SamplingMaker():
     '''Class to return the results of sampling
 
     Parameters:
-    ----------
+    -----------
 
     nonresprate : float, between 0 and 1
         The probability of a person that do not respond
@@ -55,7 +55,7 @@ class SamplingMaker():
         This will return the test result for samples provided
 
         Parameters:
-        ----------
+        -----------
 
         sampling_times : list
             A list of time points to sample
