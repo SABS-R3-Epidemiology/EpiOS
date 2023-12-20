@@ -5,30 +5,35 @@ import pandas as pd
 
 class Sampler(DataProcess):
     '''
-    The base sampling class. This class will perform a totally random sampling.
-    This class is inherited from the DataProcess class.
+    The base sampling class.
+
+    This class will perform a totally random sampling for a single time.
+
+    Parameters:
+    ----------
+
+    If you want to input new data, you can input that into data argument and set the pre_process to True.
+
+    If you want to use previous processed data, you can input the data_store_path to read data files,
+    and set the pre_process to False.
+
+    num_age_group : int
+        This will be used when age stratification is enabled indicating how many age groups are there.
+
+        *The last group includes age >= some threshold
+    age_group_width : int
+        This will beused when age stratification is enabled,
+        indicating the width of each age group(except for the last group)
+    mode : str
+        This indicates the specific mode to process the data.
+        This should be the name of the modes that can be identified.
+
+        **If you want this class sample as originally designed, do not change this value**
 
     '''
 
     def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=None,
                  age_group_width=None, mode='Base'):
-        '''
-        Contain the basic settings and input of a single sample of the population
-        ---------
-        Input:
-        If you want to input new data, you can input that into data argument and set the pre_process to True
-        If you want to use previous processed data, you can input the data_store_path to read data files,
-        and set the pre_process to False
-        num_age_group(int): This will be used when age stratification is enabled
-                            indicating how many age groups are there.
-                            *The last group includes age >= some threshold
-        age_group_width(int): This will beused when age stratification is enabled
-                              indicating the width of each age group(except for the last group)
-        mode(str): This indicates the specific mode to process the data
-                   This should be the name of the modes that can be identified
-                   **If you want this class sample as originally designed, do not change this value**
-
-        '''
         self.mode = mode
         if data is not None:
             if pre_process:
@@ -44,12 +49,17 @@ class Sampler(DataProcess):
     def sample(self, sample_size: int):
         '''
         This method samples data for a given sample size randomly.
-        -------
-        Input:
-        sample_size(int): The size of sample
+
+        Parameters:
+        ----------
+
+        sample_size : int
+            The size of sample
 
         Output:
-        res(list): a list of ID of people who is sampled
+        ------
+        res : list
+            A list of ID of people who is sampled
 
         '''
         population_size = len(self.data)
@@ -63,12 +73,18 @@ class Sampler(DataProcess):
         return res
 
     def person_allowed(self, sample: list, choice: str, threshold: int = 3):
-        """ function to see if the sampled person should be included in the generic sample
+        """
+        Function to see if the sampled person should be included in the generic sample
 
-        Args:
-            sample (list): list of people who have already been chosen
-            choice (str): string id of the person being sampled
-            threshold (int): the cap on the number of people sampled per household
+        Parameters:
+        ----------
+
+        sample : list
+            List of people who have already been chosen
+        choice : str
+            string id of the person being sampled
+        threshold : int
+            The cap on the number of people sampled per household
         """
 
         # get the household of the person

@@ -9,6 +9,5 @@ Overview:
 - :class:`DataProcess`
 
 
-.. autoclass:: Sampler
-    :special-members: __init__
+.. autoclass:: DataProcess
     :members:

@@ -5,28 +5,31 @@ import json
 
 class SamplerAge(Sampler):
     '''
-    The sampling class with age stratification
-    This class is inherited from the Sampler class, which is the base sampling class
+    The sampling class with age stratification.
+
+    Parameters:
+    ----------
+
+    If you want to input new data, you can input that into data argument and set the pre_process to True
+    If you want to use previous processed data, you can input the data_store_path to read data files,
+    and set the pre_process to False.
+
+    num_age_group : int
+        Indicating how many age groups are there.
+
+        *The last group includes age >= some threshold
+    age_group_width : int
+        Indicating the width of each age group(except for the last group)
+    mode : str
+        This indicates the specific mode to process the data.
+        This should be the name of the modes that can be identified.
+
+        **If you want this class sample as originally designed, do not change this value**
 
     '''
 
     def __init__(self, data=None, data_store_path='./input/', pre_process=True, num_age_group=17, age_group_width=5,
                  mode='Age'):
-        '''
-        Contain the basic settings and input of a single sample of the population
-        ---------
-        Input:
-        If you want to input new data, you can input that into data argument and set the pre_process to True
-        If you want to use previous processed data, you can input the data_store_path to read data files,
-        and set the pre_process to False
-        num_age_group(int): Indicating how many age groups are there.
-                            *The last group includes age >= some threshold
-        age_group_width(int): Indicating the width of each age group(except for the last group)
-        mode(str): This indicates the specific mode to process the data
-                   This should be the name of the modes that can be identified
-                   **If you want this class sample as originally designed, do not change this value**
-
-        '''
         self.mode = mode
         super().__init__(data=data, data_store_path=data_store_path,
                          num_age_group=num_age_group, pre_process=pre_process,
@@ -38,12 +41,12 @@ class SamplerAge(Sampler):
     def get_age_dist(self):
         '''
         Read the age distribution from pop_dist.json processed from DataProcess class
-        ------------
-        Input:
-        path(str): should be the path to the file
 
         Output:
-        config(list): should be a list of floats, with sum 1, length should be the number of age groups
+        ------
+
+        config : list
+            A list of floats, with sum 1, length should be the number of age groups
 
         '''
         with open(self.ageinfo, 'r') as f:
@@ -69,16 +72,21 @@ class SamplerAge(Sampler):
 
     def multinomial_draw(self, n: int, prob: list):
         '''
-        Perform a multinomial draw with caps, it will return a tuple of lists
-        The first output is the number of people that I want to draw from each group, specified by age
-        The second output is for convenience of the following sampling function
-        ---------
-        Input:
-        n(int): the sample size
-        prob(list): list of floats, sum to 1, length should be number of age groups
+        Perform a multinomial draw with caps, it will return a tuple of lists.
+        The first output is the number of people that I want to draw from each group, specified by age.
+
+        Parameters:
+        ----------
+        n : int
+            The sample size
+        prob : list
+            List of floats, sum to 1. Length should be number of age groups
 
         Output:
-        res(list): a list of integers indicating the number of samples from each age group
+        ------
+
+        res : list
+            A list of integers indicating the number of samples from each age group
 
         '''
         # The following block trasform the probability to a list of barriers between 0 and 1
@@ -167,12 +175,18 @@ class SamplerAge(Sampler):
     def sample(self, sample_size: int):
         '''
         Given a sample size, and the additional sample, should return a list of people's IDs drawn from the population
-        ---------
-        Input:
-        sample_size(int): the size of sample
+
+        Parameters:
+        ----------
+
+        sample_size : int
+            The size of sample
 
         Output:
-        res: a list of strings, each string is the ID of the sampled person
+        ------
+
+        res : list
+            A list of ID of the sampled people
 
         '''
         res = []

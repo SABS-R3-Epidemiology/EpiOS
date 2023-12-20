@@ -10,5 +10,4 @@ Overview:
 
 
 .. autoclass:: PostProcess
-    :special-members: __init__
-    :members:
+    :special-members: __call__

@@ -5,12 +5,14 @@ import json
 
 
 class DataProcess():
-    """"
+    """
     Can process data depending on different modes of samplers.
+
     When defining an instance, the pre_process part would automatically run.
+    
     This is the base class for different samplers.
 
-    Parameters
+    Parameters:
     ----------
 
     path : str
@@ -20,6 +22,7 @@ class DataProcess():
     num_age_group : int
         This will be used when age stratification is enabled,
         indicating how many age groups are there.
+
         *The last group includes age >= some threshold
     age_group_width : int
         This will beused when age stratification is enabled
@@ -28,7 +31,7 @@ class DataProcess():
         This indicates the specific mode to process the data
         This should be the name of the modes that can be identified
 
-    Attributes
+    Attributes:
     ----------
 
     gen_ageinfo : bool
@@ -61,18 +64,21 @@ class DataProcess():
         """
         Take the geographical DataFrame then convert the data into files that Sampler classes can use
 
-        Parameters
+        Parameters:
         ----------
 
-        (See explanation in __init__ method)
+        (See explanation for the class above)
 
-        Output
+        Output:
         ------
 
-        Will write three files(depending on the mode of processing chosen) into the given path
-        The first one is data.csv, contains the data for each person
-        The second one is microcells.csv, contains the geographical information
-        The third one is pop_dist.json, contains a list of age distribution across the population
+        Will write three files(depending on the mode of processing chosen) into the given path.
+
+        The first one is data.csv, contains the data for each person.
+
+        The second one is microcells.csv, contains the geographical information.
+
+        The third one is pop_dist.json, contains a list of age distribution across the population.
         """
         df = self.data
         if self.gen_ageinfo and self.gen_geoinfo:

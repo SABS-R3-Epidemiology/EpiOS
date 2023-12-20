@@ -15,19 +15,18 @@ Overview:
 .. autoclass:: Sampler
     :members:
     :show-inheritance:
-    :special-members: __init__
 
 .. autoclass:: SamplerAge
     :members:
+    :exclude-members: bool_exceed
     :show-inheritance:
-    :special-members: __init__
 
 .. autoclass:: SamplerRegion
     :members:
+    :exclude-members: bool_exceed
     :show-inheritance:
-    :special-members: __init__
 
 .. autoclass:: SamplerAgeRegion
     :members:
+    :exclude-members: bool_exceed
     :show-inheritance:
-    :special-members: __init__
