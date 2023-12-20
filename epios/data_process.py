@@ -9,7 +9,7 @@ class DataProcess():
     Can process data depending on different modes of samplers.
 
     When defining an instance, the pre_process part would automatically run.
-    
+
     This is the base class for different samplers.
 
     Parameters:
