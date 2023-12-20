@@ -4,17 +4,27 @@
    contain the root `toctree` directive.
 
 Welcome to EpiOS's documentation!
-=================================
+=======================================
+
+This is a python backend for the epios package.
+
+
+Contents
+========
+
+.. module:: epios
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+
+    Pre-process
+    Sampler
+    Tester
+    Post-process
 
 
 
-Indices and tables
-==================
+Search
+======
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
