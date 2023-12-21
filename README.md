@@ -2,7 +2,7 @@
 [![Operating systems](https://github.com/SABS-R3-Epidemiology/EpiOS/actions/workflows/os_versions.yml/badge.svg)](https://github.com/SABS-R3-Epidemiology/EpiOS/actions/workflows/os_versions.yml)
 [![Python package](https://github.com/SABS-R3-Epidemiology/EpiOS/actions/workflows/python_versions.yml/badge.svg)](https://github.com/SABS-R3-Epidemiology/EpiOS/actions/workflows/python_versions.yml)
 [![Style tests (flake8)](https://github.com/SABS-R3-Epidemiology/EpiOS/actions/workflows/style.yml/badge.svg)](https://github.com/SABS-R3-Epidemiology/EpiOS/actions/workflows/style.yml)
-[![Documentation Status](https://readthedocs.org/projects/EpiOS/badge/?version=latest)](https://EpiOS.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/epios/badge/?version=latest)](https://epios.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/SABS-R3-Epidemiology/EpiOS/graph/badge.svg?token=FFZVJBPNM1)](https://codecov.io/gh/SABS-R3-Epidemiology/EpiOS)
 
 ## General Information
