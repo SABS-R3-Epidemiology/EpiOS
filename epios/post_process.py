@@ -646,24 +646,40 @@ class PostProcess():
             Each list within 'results' contain the results of the same method under different sets of parameters.
             *The length of these lists are not the same since the number of combinations of parameters are different.*
         '''
+        # Firstly define the time points to sample based on sampling-interval
         time_sample = list(np.arange(math.floor(total_day_number / sampling_interval))
                            * sampling_interval)
+
+        # Divide into different cases
         if non_responder is False:
             if hyperparameter_autotune is False:
+
+                # This is the result to output in the end, performance of different methods
                 res_across_methods = []
                 for method in recognised_methods:
+
+                    # Put the result of the same method into one list
                     result_within_method = []
+
+                    # Split the method name and sample strategy
                     method_string = method.split('-')
                     if method_string[1] == 'Same':
                         input_kwargs = {
                             'sample_strategy': 'Same'
                         }
+
+                        # Pour the inputs in useful_inputs into the dict to input
                         for input in useful_inputs:
                             input_kwargs[input] = useful_inputs[input]
+
+                        # Perform the sampling by __call__ method above
                         _, diff = self(method_string[0], sample_size,
                                        time_sample, **input_kwargs)
+
+                        # Process the diff according to the metric provided
                         result_within_method.append(self.diff_processing(diff, metric))
                     elif method_string[1] == 'Random':
+                        # The following part is almost same as above
                         input_kwargs = {
                             'sample_strategy': 'Random'
                         }
@@ -672,9 +688,18 @@ class PostProcess():
                         _, diff = self(method_string[0], sample_size,
                                        time_sample, **input_kwargs)
                         result_within_method.append(self.diff_processing(diff, metric))
+
+                    # For different methods, we have a list to contain its result,
+                    # I do this because there will be different parameter pairs to repeat
                     res_across_methods.append(result_within_method)
+
+                # Output the final result
                 return res_across_methods
             else:
+
+                # This is the code when considering hyperparameter autotuning
+                # Use the same structure as above
+                # Comment when there is something is different
                 res_across_methods = []
                 for method in recognised_methods:
                     result_within_method = []
@@ -683,15 +708,33 @@ class PostProcess():
                         input_kwargs = {
                             'sample_strategy': 'Same'
                         }
+
+                        # Here, we need to distuiguish between Age-related and
+                        # Age-unrelated, since the inputs are different
+                        # For age-related, they need the num_age_group and
+                        # age_group_width variables
                         if method_string[0] == 'Base' or 'Region':
+
+                            # Since there is no parameters to vary,
+                            # So just like above, directly output
+                            # the result
                             _, diff = self(method_string[0], sample_size,
                                            time_sample, **input_kwargs)
                             result_within_method.append(self.diff_processing(diff, metric))
                         elif method_string[0] == 'Age' or 'AgeRegion':
+
+                            # Now we have parameters to vary
+                            # Firstly we should collect all parameters can vary
+                            # And put their ranges into a list
                             all_ranges = []
                             for key in useful_inputs:
                                 all_ranges.append(useful_inputs[key])
+
+                            # Use this list to generate all possible combinations
+                            # of different parameters
                             all_combinations = list(product(*all_ranges))
+
+                            # For each combination, do a sampling and output result
                             for combination in all_combinations:
                                 count = 0
                                 for key in useful_inputs:
@@ -701,6 +744,7 @@ class PostProcess():
                                                time_sample, **input_kwargs)
                                 result_within_method.append(self.diff_processing(diff, metric))
                     elif method_string[1] == 'Random':
+                        # Exactly the same logic as above
                         input_kwargs = {
                             'sample_strategy': 'Random'
                         }
@@ -723,6 +767,10 @@ class PostProcess():
                                 result_within_method.append(self.diff_processing(diff, metric))
                 return res_across_methods
         else:
+
+            # The following part is for the case considering non-responders
+            # Use the same logic as above
+            # Comments when there is something different below
             if hyperparameter_autotune is False:
                 res_across_methods = []
                 for method in recognised_methods:
@@ -744,6 +792,12 @@ class PostProcess():
                     method_string = method.split('-')
                     input_kwargs = {}
                     if method_string[0] == 'Region':
+
+                        # Here has something different
+                        # Since Region method does not have the num_age_group
+                        # and age_group_width variable to vary,
+                        # So we need to use a different useful_input dict
+                        # to setup the ranges to generate the combinations
                         all_ranges = []
                         for key in useful_inputs_nonrespRange:
                             all_ranges.append(useful_inputs_nonrespRange[key])
@@ -758,6 +812,8 @@ class PostProcess():
                                            nonresprate=nonresprate, **input_kwargs)
                             result_within_method.append(self.diff_processing(diff, metric))
                     elif method_string[0] == 'AgeRegion':
+
+                        # Here is just the normal case
                         all_ranges = []
                         for key in useful_inputs:
                             all_ranges.append(useful_inputs[key])
@@ -828,7 +884,7 @@ class PostProcess():
             The number of days between each sampling time points
         metric : str
             The metric used to transform difference between the sampled result and true infection into
-             a float to measure the performance.
+            a float to measure the performance.
             Acceptible metric:
                 'mean':
                     Use the mean of absolute difference between true and predicted infection.
@@ -837,16 +893,16 @@ class PostProcess():
                     Use the max of absolute difference between true and predicted infection.
         iteration : int
             The number of iterations to run and average the value of prediction to get
-             a robust result
+            a robust result
         kwargs : dict
             A dictionary of parameters passed to process part
             The following parameters can be passed:
                 num_age_group : int
                     Indicating how many age groups are there.
 
-                    *The last group includes age >= some threshold*
-
                     Default = 17
+
+                    *The last group includes age >= some threshold*
 
                     *This is used when autotuning is turned off*
                 age_group_width : int
@@ -873,33 +929,39 @@ class PostProcess():
                     Default = None (Only for non-responders)
 
                     *This is used when autotuning is turned off*
-                num_age_group_range : int
-                    Indicating how many age groups are there.
-                    *The last group includes age >= some threshold*
+                num_age_group_range : list
+                    All possible number of age groups that you want to try/iterate over
 
                     Default = [10, 13, 15, 17, 20]
 
+                    *The last group includes age >= some threshold*
+
                     *This is used when autotuning is turned on*
-                age_group_width_range : int
-                    Indicating the width of each age group(except for the last group)
+                age_group_width_range : list
+                    All possible age group width (except for the last group)
+                    that you want to try/iterate over
 
                     Default = [5, 10]
 
                     *This is used when autotuning is turned on*
-                sampling_percentage_range : float, between 0 and 1
-                    The proportion of additional samples taken from a specific (age-)regional group
+                sampling_percentage_range : list
+                    All possible proportion of additional samples taken
+                    from a specific (age-)regional group that you want to
+                    try/iterate over
 
                     Default = [0.1, 0.2, 0.3] (Only for non-responders)
 
                     *This is used when autotuning is turned on*
-                proportion_range : float, between 0 and 1
-                    The proportion of total groups to be sampled additionally
+                proportion_range : list
+                    All possible proportion of total groups to be sampled additionally
+                    that you want to try/iterate over
 
                     Default = [0.01, 0.05, 0.1] (Only for non-responders)
 
                     *This is used when autotuning is turned on*
-                threshold_range : NoneType or Int
-                    The lowest number of groups to be sampled additionally
+                threshold_range : list
+                    All possible lowest number of groups to be sampled additionally
+                    that you want to try/iterate over
 
                     Default = [10, 20, 30] (Only for non-responders)
 
