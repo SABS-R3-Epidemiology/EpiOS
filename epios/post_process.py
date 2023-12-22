@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import math
+from itertools import product
+import multiprocessing
 from epios.sampler import Sampler
 from epios.sampler_age_region import SamplerAgeRegion
 from epios.sampler_age import SamplerAge
@@ -63,31 +65,41 @@ class PostProcess():
             The following parameters can be passed:
                 gen_plot : bool
                     Whether or not to generate plots
+
                     Default = False
                 saving_path_sampling : str
                     Path to save figures of sampled data
+
                     Default = None
                 saving_path_compare : str
                     Path to save figures of comparison data
+
                     Default = None
                 num_age_group : int
                     Indicating how many age groups are there.
+
                     *The last group includes age >= some threshold*
+
                     Default = 17
                 age_group_width : int
                     Indicating the width of each age group(except for the last group)
+
                     Default = 5
                 scale_method : str
                     Specific string telling how to compare the sampled data with the true population
+
                     Default = 'proportional'
                 sampling_percentage : float, between 0 and 1
                     The proportion of additional samples taken from a specific (age-)regional group
+
                     Default = 0.1 (Only for non-responders)
                 proportion : float, between 0 and 1
                     The proportion of total groups to be sampled additionally
+
                     Default = 0.01 (Only for non-responders)
                 threshold : NoneType or Int
                     The lowest number of groups to be sampled additionally
+
                     Default = None (Only for non-responders)
 
         '''
@@ -562,3 +574,608 @@ class PostProcess():
             if saving_path_compare:
                 plt.savefig(saving_path_compare)
         return diff
+
+    def diff_processing(self, diff, metric):
+        '''
+        Function for transforming the diff into a value according to different metric
+
+        Parameters:
+        -----------
+
+        diff : list
+            The diff from compare method
+        metric : str
+            A specific string specifying the method used to transform
+
+        Output:
+        -------
+
+        A float number
+        '''
+        if metric == 'mean':
+            return np.nanmean(np.abs(diff))
+        elif metric == 'max':
+            return max(np.abs(diff))
+
+    def iteration_once(
+            self,
+            sampling_interval,
+            total_day_number,
+            non_responder,
+            hyperparameter_autotune,
+            recognised_methods,
+            sample_size,
+            useful_inputs,
+            metric,
+            useful_inputs_nonrespRange=None,
+            nonresprate=None
+    ):
+        '''
+        The function to perform one iteration
+
+        Parameters:
+        -----------
+
+        sampling_interval : int
+            The number of days between two sample time points
+        total_day_number : int
+            The total number of days that simulated
+        non_responder : bool
+            Whether or not to consider non-responders
+        hyperparameter_autotune : bool
+            Whether or not to autotune the hyperparameters
+        recognised_methods : list
+            A list of sampling methods that is recognised by 'best_method' method
+        sample_size : int
+            The size of the sample
+        useful_inputs : dict
+            A dictionary including all parameters used for sampling
+        metric : str
+            A specific string indicating the metric used to transform diff to a single value
+        useful_inputs_nonrespRange : dict
+            When hyperparameter tuning is on, and non-responder is on, the 'Region' method requires different input.
+            This dictionary include these inputs
+        nonresprate : float between 0 and 1
+            The possibility of a person to be non-responders
+
+        Output:
+        -------
+
+        results : list of list
+            A list of n lists, where n is the total number of recognised methods.
+            Each list within 'results' contain the results of the same method under different sets of parameters.
+            *The length of these lists are not the same since the number of combinations of parameters are different.*
+        '''
+        time_sample = list(np.arange(math.floor(total_day_number / sampling_interval))
+                           * sampling_interval)
+        if non_responder is False:
+            if hyperparameter_autotune is False:
+                res_across_methods = []
+                for method in recognised_methods:
+                    result_within_method = []
+                    method_string = method.split('-')
+                    if method_string[1] == 'Same':
+                        input_kwargs = {
+                            'sample_strategy': 'Same'
+                        }
+                        for input in useful_inputs:
+                            input_kwargs[input] = useful_inputs[input]
+                        _, diff = self(method_string[0], sample_size,
+                                       time_sample, **input_kwargs)
+                        result_within_method.append(self.diff_processing(diff, metric))
+                    elif method_string[1] == 'Random':
+                        input_kwargs = {
+                            'sample_strategy': 'Random'
+                        }
+                        for input in useful_inputs:
+                            input_kwargs[input] = useful_inputs[input]
+                        _, diff = self(method_string[0], sample_size,
+                                       time_sample, **input_kwargs)
+                        result_within_method.append(self.diff_processing(diff, metric))
+                    res_across_methods.append(result_within_method)
+                return res_across_methods
+            else:
+                res_across_methods = []
+                for method in recognised_methods:
+                    result_within_method = []
+                    method_string = method.split('-')
+                    if method_string[1] == 'Same':
+                        input_kwargs = {
+                            'sample_strategy': 'Same'
+                        }
+                        if method_string[0] == 'Base' or 'Region':
+                            _, diff = self(method_string[0], sample_size,
+                                           time_sample, **input_kwargs)
+                            result_within_method.append(self.diff_processing(diff, metric))
+                        elif method_string[0] == 'Age' or 'AgeRegion':
+                            all_ranges = []
+                            for key in useful_inputs:
+                                all_ranges.append(useful_inputs[key])
+                            all_combinations = list(product(*all_ranges))
+                            for combination in all_combinations:
+                                count = 0
+                                for key in useful_inputs:
+                                    input_kwargs[key[:-6]] = combination[count]
+                                    count += 1
+                                _, diff = self(method_string[0], sample_size,
+                                               time_sample, **input_kwargs)
+                                result_within_method.append(self.diff_processing(diff, metric))
+                    elif method_string[1] == 'Random':
+                        input_kwargs = {
+                            'sample_strategy': 'Random'
+                        }
+                        if method_string[0] == 'Base' or 'Region':
+                            _, diff = self(method_string[0], sample_size,
+                                           time_sample, **input_kwargs)
+                            result_within_method.append(self.diff_processing(diff, metric))
+                        elif method_string[0] == 'Age' or 'AgeRegion':
+                            all_ranges = []
+                            for key in useful_inputs:
+                                all_ranges.append(useful_inputs[key])
+                            all_combinations = list(product(*all_ranges))
+                            for combination in all_combinations:
+                                count = 0
+                                for key in useful_inputs:
+                                    input_kwargs[key[:-6]] = combination[count]
+                                    count += 1
+                                _, diff = self(method_string[0], sample_size,
+                                               time_sample, **input_kwargs)
+                                result_within_method.append(self.diff_processing(diff, metric))
+                return res_across_methods
+        else:
+            if hyperparameter_autotune is False:
+                res_across_methods = []
+                for method in recognised_methods:
+                    result_within_method = []
+                    method_string = method.split('-')
+                    input_kwargs = {}
+                    for input in useful_inputs:
+                        input_kwargs[input] = useful_inputs[input]
+                    _, diff = self(method_string[0], sample_size,
+                                   time_sample, non_responder=True,
+                                   nonresprate=nonresprate, **input_kwargs)
+                    result_within_method.append(self.diff_processing(diff, metric))
+                    res_across_methods.append(result_within_method)
+                return res_across_methods
+            else:
+                res_across_methods = []
+                for method in recognised_methods:
+                    result_within_method = []
+                    method_string = method.split('-')
+                    input_kwargs = {}
+                    if method_string[0] == 'Region':
+                        all_ranges = []
+                        for key in useful_inputs_nonrespRange:
+                            all_ranges.append(useful_inputs_nonrespRange[key])
+                        all_combinations = list(product(*all_ranges))
+                        for combination in all_combinations:
+                            count = 0
+                            for key in useful_inputs_nonrespRange:
+                                input_kwargs[key[:-6]] = combination[count]
+                                count += 1
+                            _, diff = self(method_string[0], sample_size,
+                                           time_sample, non_responder=True,
+                                           nonresprate=nonresprate, **input_kwargs)
+                            result_within_method.append(self.diff_processing(diff, metric))
+                    elif method_string[0] == 'AgeRegion':
+                        all_ranges = []
+                        for key in useful_inputs:
+                            all_ranges.append(useful_inputs[key])
+                        all_combinations = list(product(*all_ranges))
+                        for combination in all_combinations:
+                            count = 0
+                            for key in useful_inputs:
+                                input_kwargs[key[:-6]] = combination[count]
+                                count += 1
+                            _, diff = self(method_string[0], sample_size,
+                                           time_sample, non_responder=True,
+                                           nonresprate=nonresprate, **input_kwargs)
+                            result_within_method.append(self.diff_processing(diff, metric))
+                return res_across_methods
+
+    def wrapper_iteration_once(self, kwargs_dict):
+        '''
+        Since the input variables of iteration_once may be different, need this function to wrap up these inputs
+
+        Parameters:
+        -----------
+
+        kwargs_dict : dict
+            A dictionary of inputs of 'iteration_once'
+        '''
+        return self.iteration_once(**kwargs_dict)
+
+    def best_method(self, methods, sample_size, hyperparameter_autotune=False,
+                    non_responder=False, nonresprate=None, sampling_interval=7,
+                    metric='mean', iteration=100, **kwargs):
+        '''
+        Print the best method among different methods provided.
+
+        Features:
+        ---------
+
+        When a range of parameters provided, can automatically tune the hyperparameters
+
+        Can set to consider non-ressponders
+
+        Will print any unrecognised inputs or methods
+
+        Parameters:
+        -----------
+
+        methods : list
+            A list of strings indicating the methods to compare with each other
+            Acceptible methods:
+                Use 'Same' strategy:
+                    'Age-Same'
+                    'Region-Same'
+                    'AgeRegion-Same'
+                    'Base-Same'
+                Use 'Random' strategy:
+                    'Age-Random'
+                    'Region-Random'
+                    'AgeRegion-Random'
+                    'Base-Random'
+                *Note: When you input the method names without sample strategy, 'Random' will be the default*
+        sample_size : int
+            The size of sample
+        hyperparameter_autotune : bool
+            Whether or not to turn on the hyperparameter automatic tuning
+            *For extra input, see documentation for parameter 'kwargs' below*
+        non_responder : bool
+            Whether or not to consider non-responders
+        sampling_interval : int
+            The number of days between each sampling time points
+        metric : str
+            The metric used to transform difference between the sampled result and true infection into
+             a float to measure the performance.
+            Acceptible metric:
+                'mean':
+                    Use the mean of absolute difference between true and predicted infection.
+                    We ignore all nan values
+                'max':
+                    Use the max of absolute difference between true and predicted infection.
+        iteration : int
+            The number of iterations to run and average the value of prediction to get
+             a robust result
+        kwargs : dict
+            A dictionary of parameters passed to process part
+            The following parameters can be passed:
+                num_age_group : int
+                    Indicating how many age groups are there.
+
+                    *The last group includes age >= some threshold*
+
+                    Default = 17
+
+                    *This is used when autotuning is turned off*
+                age_group_width : int
+                    Indicating the width of each age group(except for the last group)
+
+                    Default = 5
+
+                    *This is used when autotuning is turned off*
+                sampling_percentage : float, between 0 and 1
+                    The proportion of additional samples taken from a specific (age-)regional group
+
+                    Default = 0.1 (Only for non-responders)
+
+                    *This is used when autotuning is turned off*
+                proportion : float, between 0 and 1
+                    The proportion of total groups to be sampled additionally
+
+                    Default = 0.01 (Only for non-responders)
+
+                    *This is used when autotuning is turned off*
+                threshold : NoneType or Int
+                    The lowest number of groups to be sampled additionally
+
+                    Default = None (Only for non-responders)
+
+                    *This is used when autotuning is turned off*
+                num_age_group_range : int
+                    Indicating how many age groups are there.
+                    *The last group includes age >= some threshold*
+
+                    Default = [10, 13, 15, 17, 20]
+
+                    *This is used when autotuning is turned on*
+                age_group_width_range : int
+                    Indicating the width of each age group(except for the last group)
+
+                    Default = [5, 10]
+
+                    *This is used when autotuning is turned on*
+                sampling_percentage_range : float, between 0 and 1
+                    The proportion of additional samples taken from a specific (age-)regional group
+
+                    Default = [0.1, 0.2, 0.3] (Only for non-responders)
+
+                    *This is used when autotuning is turned on*
+                proportion_range : float, between 0 and 1
+                    The proportion of total groups to be sampled additionally
+
+                    Default = [0.01, 0.05, 0.1] (Only for non-responders)
+
+                    *This is used when autotuning is turned on*
+                threshold_range : NoneType or Int
+                    The lowest number of groups to be sampled additionally
+
+                    Default = [10, 20, 30] (Only for non-responders)
+
+                    *This is used when autotuning is turned on*
+        '''
+        # Check whether metric is recognisable
+        recognisable_metric = [
+            'mean',
+            'max'
+        ]
+        if metric not in recognisable_metric:
+            raise ValueError('Metric not recognisable')
+
+        # All recognisable inputs
+        recognisable_inputs = [
+            'num_age_group',
+            'age_group_width',
+            'sampling_percentage',
+            'proportion',
+            'threshold',
+            'num_age_group_range',
+            'age_group_width_range',
+            'sampling_percentage_range',
+            'proportion_range',
+            'threshold_range'
+        ]
+
+        # All parameters used when the autotune function enabled
+        inputs_for_autotune_normal = {
+            'num_age_group_range': [10, 13, 15, 17, 20],
+            'age_group_width_range': [5, 10]
+        }
+        inputs_for_autotune_nonresp = {
+            'num_age_group_range': [10, 13, 15, 17, 20],
+            'age_group_width_range': [5, 10],
+            'sampling_percentage_range': [0.1, 0.2, 0.3],
+            'proportion_range': [0.01, 0.05, 0.1],
+            'threshold_range': [10, 20, 30]
+        }
+        inputs_for_autotune_nonresp_Region = {
+            'sampling_percentage_range': [0.1, 0.2, 0.3],
+            'proportion_range': [0.01, 0.05, 0.1],
+            'threshold_range': [10, 20, 30]
+        }
+
+        # All parameters used when the autotune function disabled
+        inputs_for_disabled_autotune_normal = [
+            'num_age_group',
+            'age_group_width'
+        ]
+        inputs_for_disabled_autotune_nonresp = [
+            'num_age_group',
+            'age_group_width',
+            'sampling_percentage',
+            'proportion',
+            'threshold'
+        ]
+
+        # Firstly remove all irrecognisable inputs
+        recognised_inputs = {}
+        irrecognisable_input = []
+        for input in kwargs:
+            if input in recognisable_inputs:
+                recognised_inputs[input] = kwargs[input]
+            else:
+                irrecognisable_input.append(input)
+
+        # Then selected the useful inputs for the function enabled
+        useful_inputs = {}
+        if hyperparameter_autotune:
+            if non_responder is False:
+
+                # Put all specified recognised inputs into useful inputs
+                # Discard the others
+                for input in recognised_inputs:
+                    if input in inputs_for_autotune_normal:
+                        useful_inputs[input] = recognised_inputs[input]
+                    else:
+                        irrecognisable_input.append(input)
+
+                # When some of the inputs are not specified, use default values stored
+                for input in inputs_for_autotune_normal:
+                    if input in useful_inputs:
+                        pass
+                    else:
+                        useful_inputs[input] = inputs_for_autotune_normal[input]
+            else:
+
+                # Since 'Region' do not need to iterate over age stuffs, define a new
+                # dict to contain these variables
+                useful_inputs_nonrespRange = {}
+
+                # Put all specified recognised inputs into useful inputs
+                # Discard the others
+                for input in recognised_inputs:
+                    if input in inputs_for_autotune_nonresp:
+                        useful_inputs[input] = recognised_inputs[input]
+                    else:
+                        irrecognisable_input.append(input)
+
+                    # Do the same for Region
+                    if input in inputs_for_autotune_nonresp_Region:
+                        useful_inputs_nonrespRange[input] = recognised_inputs[input]
+
+                # When some of the inputs are not specified, use default values stored
+                for input in inputs_for_autotune_nonresp:
+                    if input in useful_inputs:
+                        pass
+                    else:
+                        useful_inputs[input] = inputs_for_autotune_nonresp[input]
+
+                # Do the same for Region
+                for input in inputs_for_autotune_nonresp_Region:
+                    if input in useful_inputs_nonrespRange:
+                        pass
+                    else:
+                        useful_inputs_nonrespRange[input] = inputs_for_autotune_nonresp_Region[input]
+        else:
+            if non_responder:  # Since non-responders will need more inputs, divide into two situations
+                for input in recognised_inputs:
+                    if input in inputs_for_disabled_autotune_nonresp:
+                        useful_inputs[input] = recognised_inputs[input]
+                    else:
+                        irrecognisable_input.append(input)
+            else:
+                for input in recognised_inputs:
+                    if input in inputs_for_disabled_autotune_normal:
+                        useful_inputs[input] = recognised_inputs[input]
+                    else:
+                        irrecognisable_input.append(input)
+
+        # Print the unused inputs
+        if irrecognisable_input:
+            print_str = 'The following inputs provided are not used: '
+            for i in irrecognisable_input:
+                print_str += i
+                print_str += ', '
+            print_str = print_str[:-2]
+            print(print_str)
+
+        total_day_number = len(self.time_data)
+
+        # For methods, need to distinguish recognised ones
+        recognisable_methods = [
+            'AgeRegion',
+            'Age',
+            'Region',
+            'Base',
+            'AgeRegion-Same',
+            'Age-Same',
+            'Region-Same',
+            'Base-Same',
+            'AgeRegion-Random',
+            'Age-Random',
+            'Region-Random',
+            'Base-Random'
+        ]
+        recognised_methods = set()
+        irrecognisable = []
+        for method in methods:
+            if method in recognisable_methods:
+                if len(method.split('-')) == 1:
+                    recognised_methods.add(method + '-Random')
+                else:
+                    recognised_methods.add(method)
+            else:
+                irrecognisable.append(method)
+
+        # If non-responder function enabled, then all 'Same' method will be ignored
+        if non_responder:
+            for method in recognised_methods.copy():
+                if method[-4:] == 'Same':
+                    pop_method = recognised_methods.pop(method)
+                    irrecognisable.append(pop_method)
+                elif method[:-6] == 'Age' or 'Base':
+                    pop_method = recognised_methods.pop(method)
+                    irrecognisable.append(pop_method)
+
+        # Print all irrecognised methods
+        if irrecognisable:
+            print_str = 'The following methods provided are not used: '
+            for i in irrecognisable:
+                print_str += i
+                print_str += ', '
+            print_str = print_str[:-2]
+            print(print_str)
+
+        recognisable_methods = list(recognisable_methods)
+        # Prepare the inputs for each iteration
+        iteration_inputs = {
+            'sampling_interval': sampling_interval,
+            'total_day_number': total_day_number,
+            'non_responder': non_responder,
+            'hyperparameter_autotune': hyperparameter_autotune,
+            'recognised_methods': recognised_methods,
+            'sample_size': sample_size,
+            'useful_inputs': useful_inputs,
+            'metric': metric
+        }
+        if non_responder:
+            iteration_inputs['nonresprate'] = nonresprate
+            if hyperparameter_autotune:
+                if 'Region' in recognised_methods:
+                    iteration_inputs['useful_inputs_nonrespRange'] = useful_inputs_nonrespRange
+
+        # From here, enable multiprocessing
+        num_processes = multiprocessing.cpu_count()
+        with multiprocessing.Pool(processes=num_processes) as pool:
+            # Map the process_item function to the items
+            results = pool.map(self.wrapper_iteration_once, [iteration_inputs] * iteration)
+
+        # Average the result over all iterations
+        res = []
+        for j in len(results[0]):
+            res.append([])
+            for i in len(results[0][j]):
+                list_ite = []
+                for k in range(iteration):
+                    list_ite.append(results[k][j][i])
+                res[j].append(np.nanmean(list_ite))
+
+        # This last block is to print out the result
+        if hyperparameter_autotune is False:
+            # When autotune is off, each row only have one element
+            # So we can directly find max and print
+            output = []
+            for i in res:
+                output += i
+            max_index = output.index(max(output))
+            print('The best method is %s, with mean difference %s' % (recognisable_methods[max_index],
+                                                                      output[max_index]))
+        else:
+            # When autotune is on, each row have many elements
+            # Need to firstly find the max in each row(each method)
+            output = {}
+            for i in range(len(res)):
+                max_index = res[i].index(max(res[i]))
+                output[i] = res[i][max_index]
+                if non_responder is False:
+                    method = recognised_methods[i]
+                    method_string = method.split('-')
+
+                    # Print out the best combination parameters for different methods
+                    if method_string[0] == 'Base' or 'Region':
+                        print('%s method has mean difference %s' % (method, res[i][max_index]))
+                    elif method_string[0] == 'Age' or 'AgeRegion':
+                        all_ranges = []
+                        for key in useful_inputs:
+                            all_ranges.append(useful_inputs[key])
+                        all_combinations = list(product(all_ranges))
+                        best_parameter_value = all_combinations[max_index]
+                        print('The best %s method achieved when parameter is %s, with mean difference %s'
+                              % (method, best_parameter_value, res[i][max_index]))
+
+                else:
+                    method = recognisable_methods[i].split('-')[0]
+
+                    # Print out the best combination parameters for different methods
+                    if method == 'Region':
+                        all_ranges = []
+                        for key in useful_inputs_nonrespRange:
+                            all_ranges.append(useful_inputs_nonrespRange[input])
+                        all_combinations = list(product(all_ranges))
+                        best_parameter_value = all_combinations[max_index]
+                        print('The best %s method achieved when parameter is %s, with mean difference %s'
+                              % (method, best_parameter_value, res[i][max_index]))
+                    elif method == 'AgeRegion':
+                        all_ranges = []
+                        for key in useful_inputs:
+                            all_ranges.append(useful_inputs[key])
+                        all_combinations = list(product(all_ranges))
+                        best_parameter_value = all_combinations[max_index]
+                        print('The best %s method achieved when parameter is %s, with mean difference %s'
+                              % (method, best_parameter_value, res[i][max_index]))
+
+            # Find the best method among all methods, and print it out
+            max_index = max(output)
+            max_value = max(output.values())
+            print('The best method is %s, with mean difference %s' % (recognised_methods[max_index], max_value))
