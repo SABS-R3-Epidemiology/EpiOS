@@ -5,6 +5,7 @@ from unittest import TestCase
 from unittest.mock import patch
 from post_process import PostProcess
 import os
+import sys
 # from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
@@ -220,6 +221,36 @@ class TestDataProcess(TestCase):
         self.assertEqual(list(diff), [0, 0, 0, 0, 0, 0])
         assert os.path.exists(self.path + 'compare.png'), "Plot file was not saved"
 
+    def test_best_method_error(self):
+        with self.assertRaises(ValueError):
+            self.processor.best_method(
+                methods=[
+                    'Base-Same'
+                ],
+                sample_size=3,
+                hyperparameter_autotune=False,
+                non_responder=False,
+                sampling_interval=1,
+                iteration=1,
+                nonresprate=0.1,
+                metric='a',
+                parallel_computation=False,
+            )
+        with self.assertRaises(ValueError):
+            self.processor.best_method(
+                methods=[
+                    'a'
+                ],
+                sample_size=3,
+                hyperparameter_autotune=False,
+                non_responder=False,
+                sampling_interval=1,
+                iteration=1,
+                nonresprate=0.1,
+                metric='mean',
+                parallel_computation=False,
+            )
+
     @patch('builtins.print')
     def test_mock_print_normal(self, mock_print):
         kwargs = {
@@ -237,6 +268,141 @@ class TestDataProcess(TestCase):
         _ = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False,
                            non_responder=True, data_store_path=self.path, nonresprate=0, **kwargs)
         mock_print.assert_called_with("The following parameters provided are not used: a")
+
+    @patch('builtins.print')
+    def test_mock_print_best_method_parallel(self, mock_print):
+        remove = 0
+        kwargs = {
+            'num_age_group_range': [17],
+            'age_group_width_range': [5],
+            'sampling_percentage_range': [0.1],
+            'proportion_range': [0.01],
+            'threshold_range': [1],
+            'good': 1
+        }
+        main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
+        dir_name = os.path.dirname(main_module_path) + '/'
+        if os.path.exists(dir_name + 'temp_'):
+            remove = 1
+        else:
+            os.mkdir(dir_name + 'temp_')
+        self.processor.best_method(
+            methods=[
+                'AgeRegion',
+                'a'
+            ],
+            sample_size=3,
+            hyperparameter_autotune=False,
+            non_responder=False,
+            sampling_interval=1,
+            iteration=10,
+            nonresprate=0.1,
+            metric='max',
+            parallel_computation=True,
+            **kwargs
+        )
+        mock_print.assert_called()
+        if remove == 0:
+            os.rmdir(dir_name + 'temp_')
+
+    @patch('builtins.print')
+    def test_mock_print_best_method_nonparallel(self, mock_print):
+        np.random.seed(1)
+        kwargs = {
+            'num_age_group': 17,
+            'num_age_group_range': [17],
+            # 'age_group_width_range': [5],
+            'sampling_percentage_range': [0.1],
+            'proportion_range': [0.01],
+            'threshold_range': [1]
+        }
+        self.processor.best_method(
+            methods=[
+                'Base-Same',
+                'Base-Random',
+                'Age-Same',
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            hyperparameter_autotune=True,
+            non_responder=False,
+            sampling_interval=1,
+            iteration=1,
+            nonresprate=0.1,
+            metric='mean',
+            parallel_computation=False,
+            **kwargs
+        )
+        mock_print.assert_called()
+        np.random.seed(1)
+        kwargs = {
+            'num_age_group': 17,
+            'num_age_group_range': [17],
+            # 'age_group_width_range': [5],
+            # 'sampling_percentage_range': [0.1],
+            'proportion_range': [0.01],
+            'threshold_range': [1]
+        }
+        self.processor.best_method(
+            methods=[
+                'Base-Same',
+                'Base-Random',
+                'Region-Random',
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            hyperparameter_autotune=True,
+            non_responder=True,
+            sampling_interval=1,
+            iteration=1,
+            nonresprate=0.1,
+            metric='mean',
+            parallel_computation=False,
+            **kwargs
+        )
+        mock_print.assert_called()
+        np.random.seed(1)
+        kwargs = {
+            'num_age_group': 17,
+            'num_age_group_range': [17],
+            # 'age_group_width_range': [5],
+            'sampling_percentage_range': [0.1],
+            'proportion_range': [0.01],
+            'threshold_range': [1]
+        }
+        self.processor.best_method(
+            methods=[
+                'Base-Same',
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            hyperparameter_autotune=False,
+            non_responder=False,
+            sampling_interval=1,
+            iteration=1,
+            nonresprate=0.1,
+            metric='mean',
+            parallel_computation=False,
+            **kwargs
+        )
+        mock_print.assert_called()
+        np.random.seed(1)
+        self.processor.best_method(
+            methods=[
+                'Region-Random',
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            hyperparameter_autotune=False,
+            non_responder=True,
+            sampling_interval=1,
+            iteration=1,
+            nonresprate=0.1,
+            metric='max',
+            parallel_computation=False,
+            **kwargs
+        )
+        mock_print.assert_called()
 
     def tearDown(self) -> None:
         '''

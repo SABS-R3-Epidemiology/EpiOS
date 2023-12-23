@@ -1301,13 +1301,13 @@ class PostProcess():
                               % (method, best_parameter_value, res[i][min_index]))
 
                 else:
-                    method = recognisable_methods[i].split('-')[0]
+                    method = recognised_methods[i].split('-')[0]
 
                     # Print out the best combination parameters for different methods
                     if method == 'Region':
                         all_ranges = []
                         for key in useful_inputs_nonrespRange:
-                            all_ranges.append(useful_inputs_nonrespRange[input])
+                            all_ranges.append(useful_inputs_nonrespRange[key])
                         all_combinations = list(product(*all_ranges))
                         best_parameter_value = all_combinations[min_index]
                         print('The best %s method achieved when parameter is %s, with mean difference %s'
