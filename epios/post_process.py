@@ -614,8 +614,9 @@ class PostProcess():
             sample_size,
             useful_inputs,
             metric,
-            job_id,
-            temp_folder_name,
+            data_store_path=None,
+            job_id=None,
+            temp_folder_name=None,
             useful_inputs_nonrespRange=None,
             nonresprate=None
     ):
@@ -641,6 +642,10 @@ class PostProcess():
             A dictionary including all parameters used for sampling
         metric : str
             A specific string indicating the metric used to transform diff to a single value
+        job_id : int
+            An ID of the current job when multiprocessing is on
+        temp_folder_name : str
+            The name of the folder to store the files generated, it will be cleaned after
         useful_inputs_nonrespRange : dict
             When hyperparameter tuning is on, and non-responder is on, the 'Region' method requires different input.
             This dictionary include these inputs
@@ -656,10 +661,13 @@ class PostProcess():
             *The length of these lists are not the same since the number of combinations of parameters are different.*
         '''
         # Create a temperary folder to put temperary files under the path of __main__ files
-        main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
-        dir_name = os.path.dirname(main_module_path) + '/'
-        data_store_path = dir_name + temp_folder_name + '/job_id_' + str(job_id) + '/'
-        os.mkdir(data_store_path)
+        if job_id is not None:
+            main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
+            dir_name = os.path.dirname(main_module_path) + '/'
+            data_store_path = dir_name + temp_folder_name + '/job_id_' + str(job_id) + '/'
+            os.mkdir(data_store_path)
+        else:
+            data_store_path=data_store_path
 
         # Firstly define the time points to sample based on sampling-interval
         time_sample = list(np.arange(math.floor(total_day_number / sampling_interval))
@@ -711,7 +719,8 @@ class PostProcess():
                     res_across_methods.append(result_within_method)
 
                 # Output the final result and clean up
-                self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
+                if job_id is not None:
+                    self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
                 return res_across_methods
             else:
 
@@ -788,7 +797,8 @@ class PostProcess():
                                                **input_kwargs)
                                 result_within_method.append(self.diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
-                self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
+                if job_id is not None:
+                    self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
                 return res_across_methods
         else:
 
@@ -809,7 +819,8 @@ class PostProcess():
                                    **input_kwargs)
                     result_within_method.append(self.diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
-                self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
+                if job_id is not None:
+                    self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
                 return res_across_methods
             else:
                 res_across_methods = []
@@ -856,7 +867,8 @@ class PostProcess():
                                            **input_kwargs)
                             result_within_method.append(self.diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
-                self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
+                if job_id is not None:
+                    self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
                 return res_across_methods
 
     def clean_up(self, temp_folder_name, data_store_path):
@@ -886,7 +898,8 @@ class PostProcess():
 
     def best_method(self, methods, sample_size, hyperparameter_autotune=False,
                     non_responder=False, nonresprate=None, sampling_interval=7,
-                    metric='mean', iteration=100, **kwargs):
+                    parallel_computation=True, metric='mean', iteration=100,
+                    data_store_path='./input/', **kwargs):
         '''
         Print the best method among different methods provided.
 
@@ -1212,33 +1225,37 @@ class PostProcess():
             if hyperparameter_autotune:
                 if 'Region-Random' in recognised_methods:
                     iteration_inputs['useful_inputs_nonrespRange'] = useful_inputs_nonrespRange
+
         # Prepare the folder name to store the temperary data
-        temp_folder_name = 'temp_'
-        main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
-        dir_name = os.path.dirname(main_module_path) + '/'
-        while os.path.exists(dir_name + temp_folder_name):
-            temp_folder_name += 'a'
-        iteration_inputs['temp_folder_name'] = temp_folder_name
-        os.mkdir(dir_name + temp_folder_name)
+        if parallel_computation:
+            temp_folder_name = 'temp_'
+            main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
+            dir_name = os.path.dirname(main_module_path) + '/'
+            while os.path.exists(dir_name + temp_folder_name):
+                temp_folder_name += 'a'
+            iteration_inputs['temp_folder_name'] = temp_folder_name
+            os.mkdir(dir_name + temp_folder_name)
 
-        # From here, enable multiprocessing
-        # Firstly, prepare the input
-        multiprocessing_inputs = []
-        for i in range(iteration):
-            multiprocessing_input = iteration_inputs.copy()
-            multiprocessing_input['job_id'] = i
-            multiprocessing_inputs.append(multiprocessing_input)
-        num_processes = multiprocessing.cpu_count()
-        with multiprocessing.Pool(processes=num_processes) as pool:
-            # Map the process_item function to the items
-            results = pool.map(self.wrapper_iteration_once, multiprocessing_inputs)
+            # From here, enable multiprocessing
+            # Firstly, prepare the input
+            multiprocessing_inputs = []
+            for i in range(iteration):
+                multiprocessing_input = iteration_inputs.copy()
+                multiprocessing_input['job_id'] = i
+                multiprocessing_inputs.append(multiprocessing_input)
+            num_processes = multiprocessing.cpu_count()
+            with multiprocessing.Pool(processes=num_processes) as pool:
+                # Map the process_item function to the items
+                results = pool.map(self.wrapper_iteration_once, multiprocessing_inputs)
 
-        if os.path.exists(dir_name + temp_folder_name):
-            os.rmdir(dir_name + temp_folder_name)
-
-        # results = []
-        # for i in range(iteration):
-        #     results.append(self.iteration_once(**iteration_inputs))
+            if os.path.exists(dir_name + temp_folder_name):
+                os.rmdir(dir_name + temp_folder_name)
+        else:
+            # Here is when the multiprocessing is disabled
+            iteration_inputs['data_store_path'] = data_store_path
+            results = []
+            for i in range(iteration):
+                results.append(self.iteration_once(**iteration_inputs))
 
         # Average the result over all iterations
         res = []
