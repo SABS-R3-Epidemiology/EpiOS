@@ -5,6 +5,7 @@ from unittest import TestCase
 from sampler_age_region import SamplerAgeRegion
 import os
 from numpy.testing import assert_array_equal
+from unittest.mock import patch
 # from pandas.testing import assert_frame_equal
 
 
@@ -96,10 +97,7 @@ class TestDataProcess(TestCase):
     def test_additional_nonresponder(self):
         self.data3 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
                                           '0.2.0.0', '1.0.0.0'],
-                                   'age': [1, 81, 45, 33, 20, 60],
-                                   'cell': [0, 0, 0, 0, 0, 1],
-                                   'microcell': [0, 0, 0, 1, 2, 0],
-                                   'household': [0, 0, 1, 0, 0, 0]})
+                                   'age': [1, 81, 45, 33, 20, 60]})
         self.sampler3 = SamplerAgeRegion(data=self.data3, data_store_path=self.path)
         expected_res = np.zeros((2, 17))
         expected_res[0, 0] = 1
@@ -117,6 +115,104 @@ class TestDataProcess(TestCase):
             assert_array_equal(np.array(self.sampler3.additional_nonresponder(['0.0.0.1'], 1, 1)), expected_res)
         except AssertionError:
             self.fail('additional samples not generated as expected')
+
+    @patch('numpy.random.rand')
+    @patch('builtins.print')
+    def test_multinomial_fail(self, mock_print, mock_rand):
+        afterwards_rand = [0.05] * 100
+        mock_rand.side_effect = [0.02, 0.02, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5] + afterwards_rand
+        self.data4 = pd.DataFrame({
+            'ID': [
+                '0.0.0.0',
+                '0.0.0.1',
+                '1.0.0.0',
+                '1.0.0.1',
+                '2.0.0.0',
+                '2.0.0.1',
+                '2.0.0.2',
+                '2.0.0.3',
+                '2.0.0.4',
+                '2.0.0.5',
+                '2.0.0.6',
+                '2.0.0.7',
+                '2.0.0.8'
+            ],
+            'age': [
+                1,
+                6,
+                1,
+                6,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        })
+        self.sampler4 = SamplerAgeRegion(data=self.data4, data_store_path=self.path, num_age_group=2)
+        prob = [
+            0.03,
+            0.06,
+            0.03,
+            0.06,
+            0.82,
+            0
+        ]
+        self.sampler4.multinomial_draw(10, prob)
+        mock_print.assert_called_with('Multinomial draw failed for the first time. Retry with loose caps.')
+
+    @patch('numpy.random.rand')
+    @patch('builtins.print')
+    def test_multinomial_fail2(self, mock_print, mock_rand):
+        afterwards_rand = [0.05] * 100
+        mock_rand.side_effect = [0.005, 0.005, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5] + afterwards_rand
+        self.data5 = pd.DataFrame({
+            'ID': [
+                '0.0.0.0',
+                '0.0.0.1',
+                '0.0.0.2',
+                '0.0.0.3',
+                '0.0.0.4',
+                '0.0.0.5',
+                '0.0.0.6',
+                '0.0.0.7',
+                '0.0.0.8',
+                '0.0.0.9',
+                '0.0.0.10',
+                '1.0.0.0',
+                '1.0.0.1'
+            ],
+            'age': [
+                1,
+                6,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                1,
+                6
+            ]
+        })
+        self.sampler5 = SamplerAgeRegion(data=self.data5, data_store_path=self.path, num_age_group=3)
+        prob = [
+            0.01,
+            0.01,
+            0.86,
+            0.06,
+            0.06,
+            0
+        ]
+        self.sampler5.multinomial_draw(10, prob)
+        mock_print.assert_called_with('Multinomial draw failed for the first time. Retry with loose caps.')
 
     def tearDown(self) -> None:
         '''
