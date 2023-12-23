@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import math
 from itertools import product
-import multiprocessing
+# import multiprocessing
 from epios.sampler import Sampler
 from epios.sampler_age_region import SamplerAgeRegion
 from epios.sampler_age import SamplerAge
