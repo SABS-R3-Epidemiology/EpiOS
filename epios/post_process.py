@@ -713,7 +713,7 @@ class PostProcess():
                         # Age-unrelated, since the inputs are different
                         # For age-related, they need the num_age_group and
                         # age_group_width variables
-                        if method_string[0] == 'Base' or 'Region':
+                        if method_string[0] == 'Base' or method_string[0] == 'Region':
 
                             # Since there is no parameters to vary,
                             # So just like above, directly output
@@ -721,7 +721,7 @@ class PostProcess():
                             _, diff = self(method_string[0], sample_size,
                                            time_sample, **input_kwargs)
                             result_within_method.append(self.diff_processing(diff, metric))
-                        elif method_string[0] == 'Age' or 'AgeRegion':
+                        elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
 
                             # Now we have parameters to vary
                             # Firstly we should collect all parameters can vary
@@ -748,11 +748,11 @@ class PostProcess():
                         input_kwargs = {
                             'sample_strategy': 'Random'
                         }
-                        if method_string[0] == 'Base' or 'Region':
+                        if method_string[0] == 'Base' or method_string[0] == 'Region':
                             _, diff = self(method_string[0], sample_size,
                                            time_sample, **input_kwargs)
                             result_within_method.append(self.diff_processing(diff, metric))
-                        elif method_string[0] == 'Age' or 'AgeRegion':
+                        elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
                             all_ranges = []
                             for key in useful_inputs:
                                 all_ranges.append(useful_inputs[key])
@@ -765,6 +765,7 @@ class PostProcess():
                                 _, diff = self(method_string[0], sample_size,
                                                time_sample, **input_kwargs)
                                 result_within_method.append(self.diff_processing(diff, metric))
+                    res_across_methods.append(result_within_method)
                 return res_across_methods
         else:
 
@@ -827,6 +828,7 @@ class PostProcess():
                                            time_sample, non_responder=True,
                                            nonresprate=nonresprate, **input_kwargs)
                             result_within_method.append(self.diff_processing(diff, metric))
+                    res_across_methods.append(result_within_method)
                 return res_across_methods
 
     def wrapper_iteration_once(self, kwargs_dict):
@@ -1134,11 +1136,11 @@ class PostProcess():
         if non_responder:
             for method in recognised_methods.copy():
                 if method[-4:] == 'Same':
-                    pop_method = recognised_methods.pop(method)
-                    irrecognisable.append(pop_method)
-                elif method[:-6] == 'Age' or 'Base':
-                    pop_method = recognised_methods.pop(method)
-                    irrecognisable.append(pop_method)
+                    recognised_methods.remove(method)
+                    irrecognisable.append(method)
+                elif method[:-7] == 'Age' or method[:-7] == 'Base':
+                    recognised_methods.remove(method)
+                    irrecognisable.append(method)
 
         # Print all irrecognised methods
         if irrecognisable:
@@ -1149,7 +1151,10 @@ class PostProcess():
             print_str = print_str[:-2]
             print(print_str)
 
-        recognisable_methods = list(recognisable_methods)
+        recognised_methods = list(recognised_methods)
+        if len(recognised_methods) == 0:
+            raise ValueError('No valid method detected')
+
         # Prepare the inputs for each iteration
         iteration_inputs = {
             'sampling_interval': sampling_interval,
@@ -1168,16 +1173,19 @@ class PostProcess():
                     iteration_inputs['useful_inputs_nonrespRange'] = useful_inputs_nonrespRange
 
         # From here, enable multiprocessing
-        num_processes = multiprocessing.cpu_count()
-        with multiprocessing.Pool(processes=num_processes) as pool:
-            # Map the process_item function to the items
-            results = pool.map(self.wrapper_iteration_once, [iteration_inputs] * iteration)
+        # num_processes = multiprocessing.cpu_count()
+        # with multiprocessing.Pool(processes=num_processes) as pool:
+        #     # Map the process_item function to the items
+        #     results = pool.map(self.wrapper_iteration_once, [iteration_inputs] * iteration)
+        results = []
+        for i in range(iteration):
+            results.append(self.iteration_once(**iteration_inputs))
 
         # Average the result over all iterations
         res = []
-        for j in len(results[0]):
+        for j in range(len(results[0])):
             res.append([])
-            for i in len(results[0][j]):
+            for i in range(len(results[0][j])):
                 list_ite = []
                 for k in range(iteration):
                     list_ite.append(results[k][j][i])
@@ -1186,35 +1194,36 @@ class PostProcess():
         # This last block is to print out the result
         if hyperparameter_autotune is False:
             # When autotune is off, each row only have one element
-            # So we can directly find max and print
+            # So we can directly find min and print
             output = []
             for i in res:
                 output += i
-            max_index = output.index(max(output))
-            print('The best method is %s, with mean difference %s' % (recognisable_methods[max_index],
-                                                                      output[max_index]))
+            min_index = output.index(min(output))
+            print('The best method is %s, with mean difference %s' % (recognised_methods[min_index],
+                                                                      output[min_index]))
         else:
             # When autotune is on, each row have many elements
-            # Need to firstly find the max in each row(each method)
+            # Need to firstly find the min in each row(each method)
             output = {}
             for i in range(len(res)):
-                max_index = res[i].index(max(res[i]))
-                output[i] = res[i][max_index]
+                min_index = res[i].index(min(res[i]))
+                output[i] = res[i][min_index]
                 if non_responder is False:
                     method = recognised_methods[i]
                     method_string = method.split('-')
 
                     # Print out the best combination parameters for different methods
-                    if method_string[0] == 'Base' or 'Region':
-                        print('%s method has mean difference %s' % (method, res[i][max_index]))
-                    elif method_string[0] == 'Age' or 'AgeRegion':
+                    if method_string[0] == 'Base' or method_string[0] == 'Region':
+                        print('%s method has mean difference %s' % (method, res[i][min_index]))
+                    elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
                         all_ranges = []
                         for key in useful_inputs:
                             all_ranges.append(useful_inputs[key])
-                        all_combinations = list(product(all_ranges))
-                        best_parameter_value = all_combinations[max_index]
+                        all_combinations = list(product(*all_ranges))
+                        print(all_ranges)
+                        best_parameter_value = all_combinations[min_index]
                         print('The best %s method achieved when parameter is %s, with mean difference %s'
-                              % (method, best_parameter_value, res[i][max_index]))
+                              % (method, best_parameter_value, res[i][min_index]))
 
                 else:
                     method = recognisable_methods[i].split('-')[0]
@@ -1224,20 +1233,20 @@ class PostProcess():
                         all_ranges = []
                         for key in useful_inputs_nonrespRange:
                             all_ranges.append(useful_inputs_nonrespRange[input])
-                        all_combinations = list(product(all_ranges))
-                        best_parameter_value = all_combinations[max_index]
+                        all_combinations = list(product(*all_ranges))
+                        best_parameter_value = all_combinations[min_index]
                         print('The best %s method achieved when parameter is %s, with mean difference %s'
-                              % (method, best_parameter_value, res[i][max_index]))
+                              % (method, best_parameter_value, res[i][min_index]))
                     elif method == 'AgeRegion':
                         all_ranges = []
                         for key in useful_inputs:
                             all_ranges.append(useful_inputs[key])
-                        all_combinations = list(product(all_ranges))
-                        best_parameter_value = all_combinations[max_index]
+                        all_combinations = list(product(*all_ranges))
+                        best_parameter_value = all_combinations[min_index]
                         print('The best %s method achieved when parameter is %s, with mean difference %s'
-                              % (method, best_parameter_value, res[i][max_index]))
+                              % (method, best_parameter_value, res[i][min_index]))
 
             # Find the best method among all methods, and print it out
-            max_index = max(output)
-            max_value = max(output.values())
-            print('The best method is %s, with mean difference %s' % (recognised_methods[max_index], max_value))
+            min_index = min(output)
+            min_value = min(output.values())
+            print('The best method is %s, with mean difference %s' % (recognised_methods[min_index], min_value))

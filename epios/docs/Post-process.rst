@@ -39,8 +39,7 @@ Here is an example of using `PostProcess`:
     
     # Define the class instance
     postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data,
-                                    data_store_path='./input/', comparison=True,
-                                    non_responder=False)
+                                    data_store_path='./input/')
     
     # Define the input keywords for doing one single comparison
     sampling_kwargs = {
@@ -48,26 +47,31 @@ Here is an example of using `PostProcess`:
         'sample_strategy': 'Random'
     }
     result, diff = postprocess(sampling_method='AgeRegion', sample_size=3,
-                               time_sample=[0, 1, 2, 3], **sampling_kwargs)
+                               time_sample=[0, 1, 2, 3], comparison=True,
+                               non_responder=False, **sampling_kwargs)
     
     # Define the input keywards for finding the best method
     best_method_kwargs = {
         'age_group_width': [14, 17, 20]
     }
-    postprocess.best_method(
-        methods=[
-            'Age-Same',
-            'Region-Same',
-            'AgeRegion-Same',
-            'Age-Random',
-            'Region-Random',
-            'AgeRegion-Random'
-        ],
-        sample_size=3,
-        hyperparameter_autotune=True,
-        non_responder=False,
-        sampling_interval=1,
-        metric='mean',
-        iteration=100,
-        **best_method_kwargs
-    )
+    
+    if __name__ == '__main__':
+        postprocess.best_method(
+            methods=[
+                'Base-Same',
+                'Age-Same',
+                'Region-Same',
+                'AgeRegion-Same',
+                'Base-Random',
+                'Age-Random',
+                'Region-Random',
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            hyperparameter_autotune=True,
+            non_responder=False,
+            sampling_interval=1,
+            metric='mean',
+            iteration=100,
+            **best_method_kwargs
+        )

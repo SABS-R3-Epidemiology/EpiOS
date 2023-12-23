@@ -107,11 +107,11 @@ class SamplerAge(Sampler):
                 ite = df[df['age'] >= i * self.age_group_width]
                 ite = ite[ite['age'] < i * self.age_group_width + self.age_group_width]
                 max_num_age = len(ite)
-                cap_age.append(min(n * prob[i] + 0.01 * n, max_num_age))
+                cap_age.append(min(n * prob[i] + 0.01 * n + 1, max_num_age))
             else:
                 ite = df[df['age'] >= i * self.age_group_width]
                 max_num_age = len(ite)
-                cap_age.append(min(max(n * prob[i] + 0.01 * n, 1), max_num_age))
+                cap_age.append(min(n * prob[i] + 0.01 * n + 1, max_num_age))
         cap_age = [cap_age, list(np.arange(len(cap_age)))]
 
         threshold = []

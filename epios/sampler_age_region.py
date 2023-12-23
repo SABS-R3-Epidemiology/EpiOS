@@ -154,14 +154,14 @@ class SamplerAgeRegion(Sampler):
                 ite = df[df['age'] >= i * self.age_group_width]
                 ite = ite[ite['age'] < i * self.age_group_width + self.age_group_width]
                 max_num_age = len(ite)
-                cap_age.append(min(n * prob[:, i].sum() + 0.01 * n, max_num_age))
+                cap_age.append(min(n * prob[:, i].sum() + 0.01 * n + 1, max_num_age))
             else:
                 ite = df[df['age'] >= i * self.age_group_width]
                 max_num_age = len(ite)
-                cap_age.append(min(max(n * prob[:, i].sum() + 0.01 * n, 1), max_num_age))
+                cap_age.append(min(n * prob[:, i].sum() + 0.01 * n + 1, max_num_age))
         cap_age = [cap_age, list(np.arange(len(cap_age)))]
         for i in range(np.shape(prob)[0]):
-            cap_region.append(min(max(n * prob[i, :].sum() + 0.005 * n, 1),
+            cap_region.append(min(n * prob[i, :].sum() + 0.005 * n + 1,
                                   self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
         cap_region = [cap_region, list(np.arange(len(cap_region)))]
         prob = prob.reshape((1, -1))[0]
