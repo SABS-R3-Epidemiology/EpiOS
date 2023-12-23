@@ -14,6 +14,7 @@ Overview:
     :members: best_method
 
 Here is an example of using `PostProcess`:
+------------------------------------------
 
 .. code-block:: python
 
@@ -52,18 +53,19 @@ Here is an example of using `PostProcess`:
     
     # Define the input keywards for finding the best method
     best_method_kwargs = {
-        'age_group_width': [14, 17, 20]
+        'age_group_width_range': [14, 17, 20]
     }
     
-    if __name__ == '__main__':
+    # Suppose we want to compare among methods Age-Random, Base-Same,
+    # Base-Random, Region-Random and AgeRegion-Random
+
+    # And suppose we want to turn on the parallel computation to speed up
+    if __name__ == '__main__':  # This line can be omitted when not using parallel computation
         postprocess.best_method(
             methods=[
+                'Age',
                 'Base-Same',
-                'Age-Same',
-                'Region-Same',
-                'AgeRegion-Same',
                 'Base-Random',
-                'Age-Random',
                 'Region-Random',
                 'AgeRegion-Random'
             ],
@@ -71,7 +73,11 @@ Here is an example of using `PostProcess`:
             hyperparameter_autotune=True,
             non_responder=False,
             sampling_interval=1,
+            iteration=1,
+            # When considering non-responders, input the following line
+            # nonresprate=0.1,
             metric='mean',
-            iteration=100,
+            parallel_computation=True,
             **best_method_kwargs
         )
+    # Then the output will be printed

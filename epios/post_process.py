@@ -617,8 +617,8 @@ class PostProcess():
             data_store_path=None,
             job_id=None,
             temp_folder_name=None,
-            useful_inputs_nonrespRange=None,
-            nonresprate=None
+            nonresprate=None,
+            useful_inputs_nonrespRange=None
     ):
         '''
         The function to perform one iteration
@@ -643,14 +643,28 @@ class PostProcess():
         metric : str
             A specific string indicating the metric used to transform diff to a single value
         job_id : int
-            An ID of the current job when multiprocessing is on
+            An ID of the current job when multiprocessing is on,
+            when this value is None, it means the multiprocessing is off.
+            When we turn on multiprocessing, a value will be passed to this parameter.
+
+            Default = None
         temp_folder_name : str
-            The name of the folder to store the files generated, it will be cleaned after
+            The name of the folder to store the files generated, it will be cleaned after.
+            This is set to None by default, when we need multiprocessing, a value will be
+            passed to this parameter
+
+            Default = None
+        nonresprate : float between 0 and 1
+            The possibility of a person to be non-responders.
+            When we consider non-responders, a value will be passed to this parameter.
+
+            Default = None
         useful_inputs_nonrespRange : dict
             When hyperparameter tuning is on, and non-responder is on, the 'Region' method requires different input.
-            This dictionary include these inputs
-        nonresprate : float between 0 and 1
-            The possibility of a person to be non-responders
+            This dictionary include these inputs. When we consider non-responders, a value will be passed
+            to this parameter.
+
+            Default = None
 
         Output:
         -------
@@ -872,8 +886,25 @@ class PostProcess():
                 return res_across_methods
 
     def clean_up(self, temp_folder_name, data_store_path):
+        '''
+        This method is to clean up the temporary files generated during multiprocessing.
+        This is called within the method 'iteration_once' when multiprocessing is on.
+
+        Parameters:
+        -----------
+
+        temp_folder_name : str
+            The name of the file to store the files
+        data_store_path : str
+            The exact path to store the data
+        '''
+        # This is to locate the path from __main__
+        # This part can be unnecessary, but find the path from absolute path
+        # is to avoid weird names in some path names
         main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
         dir_name = os.path.dirname(main_module_path) + '/'
+
+        # From here, removing the job_id_i folder and its content
         if os.path.exists(dir_name + temp_folder_name):
             if os.path.exists(data_store_path):
                 if os.path.exists(data_store_path + 'pop_dist.json'):
@@ -933,6 +964,7 @@ class PostProcess():
             The size of sample
         hyperparameter_autotune : bool
             Whether or not to turn on the hyperparameter automatic tuning
+
             *For extra input, see documentation for parameter 'kwargs' below*
         non_responder : bool
             Whether or not to consider non-responders
@@ -950,6 +982,18 @@ class PostProcess():
         iteration : int
             The number of iterations to run and average the value of prediction to get
             a robust result
+        parallel_computation : bool
+            Whether or not to use multiprocessing to speed up this repeated process
+
+            Default = True
+
+            *Note: You cannot directly call this method when this is turned on, see example in documentation*
+        data_store_path : str
+            The path to store files generated during sampling when parallel computation is disabled
+
+            Default = './input/'
+
+            *This is used only when parallel computation is disabled*
         kwargs : dict
             A dictionary of parameters passed to process part
             The following parameters can be passed:
