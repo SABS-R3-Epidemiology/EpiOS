@@ -667,7 +667,7 @@ class PostProcess():
             data_store_path = dir_name + temp_folder_name + '/job_id_' + str(job_id) + '/'
             os.mkdir(data_store_path)
         else:
-            data_store_path=data_store_path
+            data_store_path = data_store_path
 
         # Firstly define the time points to sample based on sampling-interval
         time_sample = list(np.arange(math.floor(total_day_number / sampling_interval))
