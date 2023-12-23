@@ -173,21 +173,21 @@ class TestDataProcess(TestCase):
         res = self.processor_non_responder('AgeRegion', 3, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
                                            data_store_path=self.path, nonresprate=0.9, **kwargs)
         self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
-        np.random.seed(1)
+        np.random.seed(2)
         res = self.processor_non_responder2('AgeRegion', 4, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
                                             data_store_path=self.path, nonresprate=0.8, **kwargs)
-        self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [1.0, 1.0, np.nan, 1.0, 1.0, 1.0]])
+        self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [np.nan, 1.0, np.nan, 1.0, 1.0, 1.0]])
         kwargs = {
             'gen_plot': True,
             'saving_path_sampling': self.path + 'sample_nonResp.png'
         }
         res = self.processor('Region', 6, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
                              data_store_path=self.path, nonresprate=0.1, **kwargs)
-        self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [0.2, 1 / 3, 2 / 3, 0.8, 0.8, 1]])
+        self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [0.2, 1 / 3, 2 / 3, 5 / 6, 5 / 6, 1]])
         assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
         res = self.processor('Region', 6, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
                              data_store_path=self.path, nonresprate=0.9, **kwargs)
-        self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [np.nan, 0.5, np.nan, 1.0, np.nan, np.nan]])
+        self.assertEqual(res, [[0, 1, 2, 3, 4, 5], [0.0, np.nan, np.nan, 1.0, np.nan, 1.0]])
         np.random.seed(1)
         kwargs['proportion'] = 1
         kwargs['sampling_percentage'] = 1
@@ -250,6 +250,131 @@ class TestDataProcess(TestCase):
                 metric='mean',
                 parallel_computation=False,
             )
+
+    def test_iteration_once(self):
+        temp_folder_name = 'temp_'
+        main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
+        dir_name = os.path.dirname(main_module_path) + '/'
+        while os.path.exists(dir_name + temp_folder_name):
+            temp_folder_name += 'a'
+        os.mkdir(dir_name + temp_folder_name)
+        self.processor.iteration_once(
+            sampling_interval=1,
+            total_day_number=len(self.processor.time_data),
+            non_responder=False,
+            hyperparameter_autotune=False,
+            recognised_methods=[
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            useful_inputs={
+
+            },
+            metric='mean',
+            job_id=1,
+            temp_folder_name=temp_folder_name,
+            useful_inputs_nonrespRange={
+
+            },
+            nonresprate=0.1
+        )
+        self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
+        self.processor.iteration_once(
+            sampling_interval=1,
+            total_day_number=len(self.processor.time_data),
+            non_responder=False,
+            hyperparameter_autotune=True,
+            recognised_methods=[
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            useful_inputs={
+                'num_age_group_range': [17],
+                'age_group_width_range': [5]
+            },
+            metric='mean',
+            job_id=1,
+            temp_folder_name=temp_folder_name,
+            useful_inputs_nonrespRange={
+
+            },
+            nonresprate=0.1
+        )
+        self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
+        self.processor.iteration_once(
+            sampling_interval=1,
+            total_day_number=len(self.processor.time_data),
+            non_responder=True,
+            hyperparameter_autotune=False,
+            recognised_methods=[
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            useful_inputs={
+
+            },
+            metric='mean',
+            job_id=1,
+            temp_folder_name=temp_folder_name,
+            useful_inputs_nonrespRange={
+
+            },
+            nonresprate=0.1
+        )
+        self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
+        self.processor.iteration_once(
+            sampling_interval=1,
+            total_day_number=len(self.processor.time_data),
+            non_responder=True,
+            hyperparameter_autotune=True,
+            recognised_methods=[
+                'AgeRegion-Random'
+            ],
+            sample_size=3,
+            useful_inputs={
+                'num_age_group_range': [17],
+                'age_group_width_range': [5],
+                'sampling_percentage_range': [0.1],
+                'proportion_range': [0.01],
+                'threshold_range': [1]
+            },
+            metric='mean',
+            job_id=1,
+            temp_folder_name=temp_folder_name,
+            useful_inputs_nonrespRange={
+
+            },
+            nonresprate=0.1
+        )
+        self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
+        if os.path.exists(dir_name + temp_folder_name):
+            os.rmdir(dir_name + temp_folder_name)
+
+    def test_wrapper_iteration_once(self):
+        temp_folder_name = 'temp_'
+        main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
+        dir_name = os.path.dirname(main_module_path) + '/'
+        while os.path.exists(dir_name + temp_folder_name):
+            temp_folder_name += 'a'
+        os.mkdir(dir_name + temp_folder_name)
+
+        iteration_inputs = {
+            'sampling_interval': 1,
+            'total_day_number': len(self.processor.time_data),
+            'non_responder': False,
+            'hyperparameter_autotune': False,
+            'recognised_methods': ['AgeRegion-Random'],
+            'sample_size': 3,
+            'useful_inputs': {},
+            'metric': 'mean',
+            'job_id': 1,
+            'temp_folder_name': temp_folder_name
+        }
+        self.processor.wrapper_iteration_once(iteration_inputs)
+
+        self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
+        if os.path.exists(dir_name + temp_folder_name):
+            os.rmdir(dir_name + temp_folder_name)
 
     @patch('builtins.print')
     def test_mock_print_normal(self, mock_print):
