@@ -456,6 +456,7 @@ class TestDataProcess(TestCase):
             nonresprate=0.1,
             metric='mean',
             parallel_computation=False,
+            data_store_path=self.path,
             **kwargs
         )
         mock_print.assert_called()
@@ -483,6 +484,7 @@ class TestDataProcess(TestCase):
             nonresprate=0.1,
             metric='mean',
             parallel_computation=False,
+            data_store_path=self.path,
             **kwargs
         )
         mock_print.assert_called()
@@ -508,6 +510,7 @@ class TestDataProcess(TestCase):
             nonresprate=0.1,
             metric='mean',
             parallel_computation=False,
+            data_store_path=self.path,
             **kwargs
         )
         mock_print.assert_called()
@@ -525,6 +528,7 @@ class TestDataProcess(TestCase):
             nonresprate=0.1,
             metric='max',
             parallel_computation=False,
+            data_store_path=self.path,
             **kwargs
         )
         mock_print.assert_called()
