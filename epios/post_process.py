@@ -934,6 +934,22 @@ class PostProcess():
         '''
         Print the best method among different methods provided.
 
+        When hyper-parameter autotune is on, will firstly print the best parameter
+        combination and its performance of each method, then print the best method
+        across all methods.
+
+        The order of best parameter set printed follows the following ordering:
+            (
+            'num_age_group',
+            'age_group_width',
+            'sampling_percentage',
+            'proportion',
+            'threshold'
+            )
+
+            Parameter will be omitted if that parameter is not applicable for the
+            method.
+
         Features:
         ---------
 
@@ -1118,6 +1134,24 @@ class PostProcess():
             'sampling_percentage',
             'proportion',
             'threshold'
+        ]
+
+        # Parameter Ordering when hyperparameter autotune is on
+        inputs_ordering_normal = [
+            'num_age_group_range',
+            'age_group_width_range'
+        ]
+        inputs_ordering_nonrespRegion = [
+            'sampling_percentage_range',
+            'proportion_range',
+            'threshold_range'
+        ]
+        inputs_ordering_nonrespAgeRegion = [
+            'num_age_group_range',
+            'age_group_width_range',
+            'sampling_percentage_range',
+            'proportion_range',
+            'threshold_range'
         ]
 
         # Firstly remove all irrecognisable inputs
@@ -1319,8 +1353,8 @@ class PostProcess():
             for i in res:
                 output += i
             min_index = output.index(min(output))
-            print('The best method is %s, with mean difference %s' % (recognised_methods[min_index],
-                                                                      output[min_index]))
+            print('The best method is %s, with %s difference %s' % (recognised_methods[min_index],
+                                                                    metric, output[min_index]))
         else:
             # When autotune is on, each row have many elements
             # Need to firstly find the min in each row(each method)
@@ -1334,15 +1368,21 @@ class PostProcess():
 
                     # Print out the best combination parameters for different methods
                     if method_string[0] == 'Base' or method_string[0] == 'Region':
-                        print('%s method has mean difference %s' % (method, res[i][min_index]))
+                        print('%s method has %s difference %s' % (method, metric, res[i][min_index]))
                     elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
                         all_ranges = []
+                        ordering = []
                         for key in useful_inputs:
                             all_ranges.append(useful_inputs[key])
+                            ordering.append(inputs_ordering_normal.index(key))
                         all_combinations = list(product(*all_ranges))
                         best_parameter_value = all_combinations[min_index]
-                        print('The best %s method achieved when parameter is %s, with mean difference %s'
-                              % (method, best_parameter_value, res[i][min_index]))
+                        ordered_best_parameter_value = []
+                        for position in range(len(best_parameter_value)):
+                            reorder_position = ordering.index(position)
+                            ordered_best_parameter_value.append(best_parameter_value[reorder_position])
+                        print('The best %s method achieved when parameter is %s, with %s difference %s'
+                              % (method, tuple(ordered_best_parameter_value), metric, res[i][min_index]))
 
                 else:
                     method = recognised_methods[i].split('-')[0]
@@ -1350,22 +1390,34 @@ class PostProcess():
                     # Print out the best combination parameters for different methods
                     if method == 'Region':
                         all_ranges = []
+                        ordering = []
                         for key in useful_inputs_nonrespRange:
                             all_ranges.append(useful_inputs_nonrespRange[key])
+                            ordering.append(inputs_ordering_nonrespRegion.index(key))
                         all_combinations = list(product(*all_ranges))
                         best_parameter_value = all_combinations[min_index]
-                        print('The best %s method achieved when parameter is %s, with mean difference %s'
-                              % (method, best_parameter_value, res[i][min_index]))
+                        ordered_best_parameter_value = []
+                        for position in range(len(best_parameter_value)):
+                            reorder_position = ordering.index(position)
+                            ordered_best_parameter_value.append(best_parameter_value[reorder_position])
+                        print('The best %s method achieved when parameter is %s, with %s difference %s'
+                              % (method, tuple(ordered_best_parameter_value), metric, res[i][min_index]))
                     elif method == 'AgeRegion':
                         all_ranges = []
+                        ordering = []
                         for key in useful_inputs:
                             all_ranges.append(useful_inputs[key])
+                            ordering.append(inputs_ordering_nonrespAgeRegion.index(key))
                         all_combinations = list(product(*all_ranges))
                         best_parameter_value = all_combinations[min_index]
-                        print('The best %s method achieved when parameter is %s, with mean difference %s'
-                              % (method, best_parameter_value, res[i][min_index]))
+                        ordered_best_parameter_value = []
+                        for position in range(len(best_parameter_value)):
+                            reorder_position = ordering.index(position)
+                            ordered_best_parameter_value.append(best_parameter_value[reorder_position])
+                        print('The best %s method achieved when parameter is %s, with %s difference %s'
+                              % (method, tuple(ordered_best_parameter_value), metric, res[i][min_index]))
 
             # Find the best method among all methods, and print it out
             min_index = min(output)
             min_value = min(output.values())
-            print('The best method is %s, with mean difference %s' % (recognised_methods[min_index], min_value))
+            print('The best method is %s, with %s difference %s' % (recognised_methods[min_index], metric, min_value))
