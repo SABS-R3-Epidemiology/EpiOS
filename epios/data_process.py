@@ -48,14 +48,9 @@ class DataProcess():
         if mode == 'AgeRegion':
             self.gen_ageinfo = True
             self.gen_geoinfo = True
-        elif mode == 'Base':
-            self.gen_ageinfo = False
-            self.gen_ageinfo = False
         elif mode == 'Age':
             self.gen_ageinfo = True
-            self.gen_geoinfo = False
         elif mode == 'Region':
-            self.gen_ageinfo = False
             self.gen_geoinfo = True
         self.data = data.rename(columns={'id': 'ID', 'age_group': 'age'})
         self.pre_process(path=path, num_age_group=num_age_group, age_group_width=age_group_width)
@@ -72,7 +67,7 @@ class DataProcess():
         Output:
         -------
 
-        Will write three files(depending on the mode of processing chosen) into the given path.
+        Will write three files (depending on the mode of processing chosen) into the given path.
 
         The first one is data.csv, contains the data for each person.
 
@@ -94,15 +89,13 @@ class DataProcess():
                 else:
                     count_age[-1] += 1
                 person_id = row['ID']
-                splitted_id = person_id.split('.')
-                cell_num = int(splitted_id[0])
-                microcell_num = int(splitted_id[1])
-                household_num = int(splitted_id[2])
+                splitted_id = [int(i) for i in person_id.split('.')]
+                cell_num, microcell_num, household_num, _ = splitted_id
                 # Generation of each row of data.csv file
                 new_row = pd.DataFrame({'ID': person_id, 'age': row['age'], 'cell': cell_num,
                                         'microcell': microcell_num, 'household': household_num}, index=[0])
                 population_info = pd.concat([population_info, new_row], ignore_index=True)
-                key = '.'.join(splitted_id[:-1])
+                key = '.'.join([str(i) for i in splitted_id[:-1]])
                 try:
                     household_info[key] += 1
                 except KeyError:
@@ -111,10 +104,8 @@ class DataProcess():
 
             household_df = pd.DataFrame(columns=['cell', 'microcell', 'household', 'Susceptible'])
             for key, value in household_info.items():
-                splitted_id = key.split('.')
-                cell_num = int(splitted_id[0])
-                microcell_num = int(splitted_id[1])
-                household_num = int(splitted_id[2])
+                splitted_id = [int(i) for i in key.split('.')]
+                cell_num, microcell_num, household_num = splitted_id
                 # Generation of each row of microcells.csv file
                 new_row = pd.DataFrame({'cell': cell_num, 'microcell': microcell_num,
                                         'household': household_num, 'Susceptible': value}, index=[0])
@@ -148,14 +139,12 @@ class DataProcess():
             population_size = len(df)
             for index, row in df.iterrows():
                 person_id = row['ID']
-                splitted_id = person_id.split('.')
-                cell_num = int(splitted_id[0])
-                microcell_num = int(splitted_id[1])
-                household_num = int(splitted_id[2])
+                splitted_id = [int(i) for i in person_id.split('.')]
+                cell_num, microcell_num, household_num, _ = splitted_id
                 new_row = pd.DataFrame({'ID': person_id, 'cell': cell_num,
                                         'microcell': microcell_num, 'household': household_num}, index=[0])
                 population_info = pd.concat([population_info, new_row], ignore_index=True)
-                key = '.'.join(splitted_id[:-1])
+                key = '.'.join([str(i) for i in splitted_id[:-1]])
                 try:
                     household_info[key] += 1
                 except KeyError:
@@ -164,10 +153,8 @@ class DataProcess():
 
             household_df = pd.DataFrame(columns=['cell', 'microcell', 'household', 'Susceptible'])
             for key, value in household_info.items():
-                splitted_id = key.split('.')
-                cell_num = int(splitted_id[0])
-                microcell_num = int(splitted_id[1])
-                household_num = int(splitted_id[2])
+                splitted_id = [int(i) for i in key.split('.')]
+                cell_num, microcell_num, household_num = splitted_id
                 new_row = pd.DataFrame({'cell': cell_num, 'microcell': microcell_num,
                                         'household': household_num, 'Susceptible': value}, index=[0])
                 household_df = pd.concat([household_df, new_row], ignore_index=True)

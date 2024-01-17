@@ -51,6 +51,8 @@ class PostProcess():
 
         sampling_method : str
             A specific string tells which sampling method using
+            
+            Methods can be recognised: AgeRegion, Region, Age, Base
         sample_size : int
             The size of sample
         time_sample : list
@@ -125,10 +127,7 @@ class PostProcess():
                     params_not_used.append(i)
             if params_not_used:
                 print_str = 'The following parameters provided are not used: '
-                for i in params_not_used:
-                    print_str += i
-                    print_str += ', '
-                print_str = print_str[:-2]
+                print_str += ', '.join(params_not_used)
                 print(print_str)
 
             # Pass the parameters for sampling into the function
@@ -151,7 +150,7 @@ class PostProcess():
                         pass
                 diff = self.compare(time_sample=time_sample, **compare_input)
                 return res, diff
-            return res
+            return res, None
         else:  # For non-responders disabled
             # Almost the same script, see comments above
             sampling_params = ['sample_strategy', 'gen_plot', 'saving_path_sampling', 'num_age_group',
@@ -189,7 +188,7 @@ class PostProcess():
                         pass
                 diff = self.compare(time_sample=time_sample, **compare_input)
                 return res, diff
-            return res
+            return res, None
 
     def sampled_result(self, sampling_method, sample_size, time_sample, sample_strategy='Random',
                        gen_plot: bool = False, saving_path_sampling=None, num_age_group=17, age_group_width=5,
@@ -275,9 +274,9 @@ class PostProcess():
                 infected_rate = []
                 for i in range(len(time_sample)):
                     if i == 0:
-                        sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path)
+                        sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
                     else:
-                        sampler_class = SamplerAgeRegion(data_store_path=data_store_path, pre_process=False)
+                        sampler_class = SamplerRegion(data_store_path=data_store_path, pre_process=False)
                     people = sampler_class.sample(sample_size=sample_size)
                     X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
                                       false_positive=0, false_negative=0, threshold=None)
