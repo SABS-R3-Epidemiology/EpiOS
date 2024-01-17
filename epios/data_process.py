@@ -111,13 +111,10 @@ class DataProcess():
 
             household_df = pd.DataFrame(columns=['cell', 'microcell', 'household', 'Susceptible'])
             for key, value in household_info.items():
-                pos_dot = []
-                for i in range(len(key)):
-                    if key[i] == '.':
-                        pos_dot.append(i)
-                cell_num = int(key[0:pos_dot[0]])
-                microcell_num = int(key[pos_dot[0] + 1:pos_dot[1]])
-                household_num = int(key[pos_dot[1] + 1:])
+                splitted_id = key.split('.')
+                cell_num = int(splitted_id[0])
+                microcell_num = int(splitted_id[1])
+                household_num = int(splitted_id[2])
                 # Generation of each row of microcells.csv file
                 new_row = pd.DataFrame({'cell': cell_num, 'microcell': microcell_num,
                                         'household': household_num, 'Susceptible': value}, index=[0])
@@ -167,13 +164,10 @@ class DataProcess():
 
             household_df = pd.DataFrame(columns=['cell', 'microcell', 'household', 'Susceptible'])
             for key, value in household_info.items():
-                pos_dot = []
-                for i in range(len(key)):
-                    if key[i] == '.':
-                        pos_dot.append(i)
-                cell_num = int(key[0:pos_dot[0]])
-                microcell_num = int(key[pos_dot[0] + 1:pos_dot[1]])
-                household_num = int(key[pos_dot[1] + 1:])
+                splitted_id = key.split('.')
+                cell_num = int(splitted_id[0])
+                microcell_num = int(splitted_id[1])
+                household_num = int(splitted_id[2])
                 new_row = pd.DataFrame({'cell': cell_num, 'microcell': microcell_num,
                                         'household': household_num, 'Susceptible': value}, index=[0])
                 household_df = pd.concat([household_df, new_row], ignore_index=True)
