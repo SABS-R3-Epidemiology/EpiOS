@@ -30,37 +30,34 @@ class TestDataProcess(TestCase):
                                               '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                        'age': [1, 81, 45, 33, 20, 60]})
         self.time_data = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
-                                       '0.0.0.0': ['InfectASympt'] * 6,
-                                       '0.0.0.1': [0, 0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt'],
-                                       '0.0.1.0': [0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt',
-                                                   'InfectASympt'],
-                                       '0.1.0.0': [0, 0, 'InfectASympt', 'InfectASympt', 'InfectASympt',
-                                                   'InfectASympt'],
-                                       '0.2.0.0': [0, 'InfectASympt', 'InfectASympt', 'InfectASympt',
-                                                   'InfectASympt', 'InfectASympt'],
-                                       '1.0.0.0': [0, 0, 0, 0, 0, 'InfectASympt']})
+                                       '0.0.0.0': [3] * 6,
+                                       '0.0.0.1': [1, 1, 1, 3, 3, 3],
+                                       '0.0.1.0': [1, 1, 3, 3, 3, 3],
+                                       '0.1.0.0': [1, 1, 3, 3, 3, 3],
+                                       '0.2.0.0': [1, 3, 3, 3, 3, 3],
+                                       '1.0.0.0': [1, 1, 1, 1, 1, 3]})
         self.processor = PostProcess(self.demo_data, self.time_data)
         self.demo_data2 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                                '0.0.0.3', '0.0.0.4', '0.0.0.5'],
                                         'age': [1, 2, 1, 1, 1, 1]})
         self.time_data2 = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
-                                        '0.0.0.0': ['InfectASympt'] * 6,
-                                        '0.0.0.1': ['InfectASympt'] * 6,
-                                        '0.0.0.2': ['InfectASympt'] * 6,
-                                        '0.0.0.3': ['InfectASympt'] * 6,
-                                        '0.0.0.4': ['InfectASympt'] * 6,
-                                        '0.0.0.5': ['InfectASympt'] * 6})
+                                        '0.0.0.0': [3] * 6,
+                                        '0.0.0.1': [3] * 6,
+                                        '0.0.0.2': [3] * 6,
+                                        '0.0.0.3': [3] * 6,
+                                        '0.0.0.4': [3] * 6,
+                                        '0.0.0.5': [3] * 6})
         self.processor_non_responder = PostProcess(self.demo_data2, self.time_data2)
         self.demo_data3 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                                '1.0.0.0', '1.0.0.1', '1.0.0.2'],
                                         'age': [1, 2, 1, 1, 1, 1]})
         self.time_data3 = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
-                                        '0.0.0.0': ['InfectASympt'] * 6,
-                                        '0.0.0.1': ['InfectASympt'] * 6,
-                                        '0.0.0.2': ['InfectASympt'] * 6,
-                                        '1.0.0.0': ['InfectASympt'] * 6,
-                                        '1.0.0.1': ['InfectASympt'] * 6,
-                                        '1.0.0.2': ['InfectASympt'] * 6})
+                                        '0.0.0.0': [3] * 6,
+                                        '0.0.0.1': [3] * 6,
+                                        '0.0.0.2': [3] * 6,
+                                        '1.0.0.0': [3] * 6,
+                                        '1.0.0.1': [3] * 6,
+                                        '1.0.0.2': [3] * 6})
         self.processor_non_responder2 = PostProcess(self.demo_data3, self.time_data3)
 
     def test__init__(self):
@@ -69,19 +66,12 @@ class TestDataProcess(TestCase):
                                                                               '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                                                        'age': [1, 81, 45, 33, 20, 60]}))
             assert_frame_equal(self.processor.time_data, pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
-                                                                       '0.0.0.0': ['InfectASympt'] * 6,
-                                                                       '0.0.0.1': [0, 0, 0, 'InfectASympt',
-                                                                                   'InfectASympt', 'InfectASympt'],
-                                                                       '0.0.1.0': [0, 0, 'InfectASympt',
-                                                                                   'InfectASympt', 'InfectASympt',
-                                                                                   'InfectASympt'],
-                                                                       '0.1.0.0': [0, 0, 'InfectASympt',
-                                                                                   'InfectASympt',
-                                                                                   'InfectASympt', 'InfectASympt'],
-                                                                       '0.2.0.0': [0, 'InfectASympt', 'InfectASympt',
-                                                                                   'InfectASympt', 'InfectASympt',
-                                                                                   'InfectASympt'],
-                                                                       '1.0.0.0': [0, 0, 0, 0, 0, 'InfectASympt']}))
+                                                                       '0.0.0.0': [3] * 6,
+                                                                       '0.0.0.1': [1, 1, 1, 3, 3, 3],
+                                                                       '0.0.1.0': [1, 1, 3, 3, 3, 3],
+                                                                       '0.1.0.0': [1, 1, 3, 3, 3, 3],
+                                                                       '0.2.0.0': [1, 3, 3, 3, 3, 3],
+                                                                       '1.0.0.0': [1, 1, 1, 1, 1, 3]}))
         except AssertionError:
             self.fail('init function error')
 
