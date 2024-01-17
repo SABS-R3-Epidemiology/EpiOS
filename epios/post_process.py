@@ -119,12 +119,7 @@ class PostProcess():
             total_params = set(sampling_params + compare_params)
 
             # Print the unused variable names
-            params_not_used = []
-            for i in kwargs:
-                if i in total_params:
-                    pass
-                else:
-                    params_not_used.append(i)
+            params_not_used = [param for param in kwargs if param not in total_params]
             if params_not_used:
                 print_str = 'The following parameters provided are not used: '
                 print_str += ', '.join(params_not_used)
@@ -570,7 +565,7 @@ class PostProcess():
         # Find the difference between estimated infection level and the real one
         diff = np.array(true_result) - result_scaled
         if gen_plot:
-            plt.plot(time_sample, result_scaled, label='Predicted result')
+            plt.plot(time_sample, result_scaled, label='Predicted result', linestyle='--')
             plt.plot(time_sample, true_result, label='True result')
             plt.plot(time_sample, diff, label='Difference')
             plt.legend()
@@ -906,12 +901,9 @@ class PostProcess():
         # From here, removing the job_id_i folder and its content
         if os.path.exists(dir_name + temp_folder_name):
             if os.path.exists(data_store_path):
-                if os.path.exists(data_store_path + 'pop_dist.json'):
-                    os.remove(data_store_path + 'pop_dist.json')
-                if os.path.exists(data_store_path + 'microcells.csv'):
-                    os.remove(data_store_path + 'microcells.csv')
-                if os.path.exists(data_store_path + 'data.csv'):
-                    os.remove(data_store_path + 'data.csv')
+                for file in ['pop_dist.json', 'microcells.csv', 'data.csv']:
+                    if os.path.exists(data_store_path + file):
+                        os.remove(data_store_path + file)
                 os.rmdir(data_store_path)
 
     def wrapper_iteration_once(self, kwargs_dict):
@@ -1229,10 +1221,7 @@ class PostProcess():
         # Print the unused inputs
         if irrecognisable_input:
             print_str = 'The following inputs provided are not used: '
-            for i in irrecognisable_input:
-                print_str += i
-                print_str += ', '
-            print_str = print_str[:-2]
+            print_str += ', '.join(irrecognisable_input)
             print(print_str)
 
         total_day_number = len(self.time_data)

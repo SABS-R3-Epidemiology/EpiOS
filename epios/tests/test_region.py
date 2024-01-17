@@ -95,12 +95,9 @@ class TestDataProcess(TestCase):
 
         '''
         if os.path.exists(self.path):
-            if os.path.exists(self.path + 'pop_dist.json'):
-                os.remove(self.path + 'pop_dist.json')
-            if os.path.exists(self.path + 'microcells.csv'):
-                os.remove(self.path + 'microcells.csv')
-            if os.path.exists(self.path + 'data.csv'):
-                os.remove(self.path + 'data.csv')
+            for file in ['pop_dist.json', 'microcells.csv', 'data.csv']:
+                if os.path.exists(self.path + file):
+                    os.remove(self.path + file)
             os.rmdir(self.path)
 
 
