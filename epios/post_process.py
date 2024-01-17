@@ -560,12 +560,12 @@ class PostProcess():
         # Get the true result from self.time_data
         true_result = []
         for t in time_sample:
-            num = self.time_data.iloc[t].value_counts().get('InfectASympt', 0)
-            num += self.time_data.iloc[t].value_counts().get('InfectMild', 0)
-            num += self.time_data.iloc[t].value_counts().get('InfectGP', 0)
-            num += self.time_data.iloc[t].value_counts().get('InfectHosp', 0)
-            num += self.time_data.iloc[t].value_counts().get('InfectICU', 0)
-            num += self.time_data.iloc[t].value_counts().get('InfectICURecov', 0)
+            num = self.time_data.iloc[t].value_counts().get(3, 0)
+            num += self.time_data.iloc[t].value_counts().get(4, 0)
+            num += self.time_data.iloc[t].value_counts().get(5, 0)
+            num += self.time_data.iloc[t].value_counts().get(6, 0)
+            num += self.time_data.iloc[t].value_counts().get(7, 0)
+            num += self.time_data.iloc[t].value_counts().get(8, 0)
             true_result.append(num)
 
         # Find the difference between estimated infection level and the real one

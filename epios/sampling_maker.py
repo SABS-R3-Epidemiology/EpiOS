@@ -24,7 +24,7 @@ class SamplingMaker():
 
     def __init__(self, nonresprate=0, keeptrack=False, TheData=None,
                  false_positive=0, false_negative=0, threshold=None):
-        self.recognised = ['InfectASympt', 'InfectMild', 'InfectGP', 'InfectHosp', 'InfectICU', 'InfectICURecov']
+        self.recognised = [3, 4, 5, 6, 7, 8]
         self.nonresprate = nonresprate
         self.keeptrack = keeptrack
         self.TheData = TheData

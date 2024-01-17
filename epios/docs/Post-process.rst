@@ -13,8 +13,8 @@ Overview:
     :special-members: __call__
     :members: best_method
 
-Here is an example of using `PostProcess`:
-------------------------------------------
+Here is an example of using `PostProcess`
+-----------------------------------------
 
 .. code-block:: python
 
@@ -22,21 +22,8 @@ Here is an example of using `PostProcess`:
     import pandas as pd
 
     # Define the simulation output data
-    demo_data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
-                                     '0.1.0.0', '0.2.0.0', '1.0.0.0'],
-                              'age': [1, 81, 45, 33, 20, 60]})
-    time_data = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
-                              '0.0.0.0': ['InfectASympt'] * 6,
-                              '0.0.0.1': [0, 0, 0, 'InfectASympt', 'InfectASympt',
-                                          'InfectASympt'],
-                              '0.0.1.0': [0, 0, 'InfectASympt', 'InfectASympt',
-                                          'InfectASympt', 'InfectASympt'],
-                              '0.1.0.0': [0, 0, 'InfectASympt', 'InfectASympt',
-                                          'InfectASympt', 'InfectASympt'],
-                              '0.2.0.0': [0, 'InfectASympt', 'InfectASympt',
-                                          'InfectASympt', 'InfectASympt',
-                                          'InfectASympt'],
-                              '1.0.0.0': [0, 0, 0, 0, 0, 'InfectASympt']})
+    demo_data = pd.read_csv('demographics_processed.csv')
+    time_data = pd.read_csv('inf_status_history.csv')
     
     # Define the class instance
     postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data,

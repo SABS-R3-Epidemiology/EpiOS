@@ -57,7 +57,7 @@ class DataProcess():
         elif mode == 'Region':
             self.gen_ageinfo = False
             self.gen_geoinfo = True
-        self.data = data
+        self.data = data.rename(columns={'id': 'ID', 'age_group': 'age'})
         self.pre_process(path=path, num_age_group=num_age_group, age_group_width=age_group_width)
 
     def pre_process(self, path='./input/', num_age_group=None, age_group_width=None):
