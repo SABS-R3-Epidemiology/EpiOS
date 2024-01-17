@@ -22,8 +22,8 @@ class Sampler(DataProcess):
 
         *The last group includes age >= some threshold*
     age_group_width : int
-        This will beused when age stratification is enabled,
-        indicating the width of each age group(except for the last group)
+        This will be used when age stratification is enabled,
+        indicating the width of each age group (except for the last group)
     mode : str
         This indicates the specific mode to process the data.
         This should be the name of the modes that can be identified.
