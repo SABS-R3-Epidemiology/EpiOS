@@ -1,4 +1,4 @@
-from epios.sampler import Sampler
+from epios import Sampler
 import pandas as pd
 import numpy as np
 

@@ -1,4 +1,4 @@
-from epios.data_process import DataProcess
+from epios import DataProcess
 import numpy as np
 import pandas as pd
 

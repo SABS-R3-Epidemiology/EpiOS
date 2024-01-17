@@ -6,11 +6,11 @@ from itertools import product
 import multiprocessing
 import sys
 import os
-from epios.sampler import Sampler
-from epios.sampler_age_region import SamplerAgeRegion
-from epios.sampler_age import SamplerAge
-from epios.sampler_region import SamplerRegion
-from epios.sampling_maker import SamplingMaker
+from epios import Sampler
+from epios import SamplerAgeRegion
+from epios import SamplerAge
+from epios import SamplerRegion
+from epios import SamplingMaker
 
 
 class PostProcess():
@@ -51,7 +51,7 @@ class PostProcess():
 
         sampling_method : str
             A specific string tells which sampling method using
-            
+
             Methods can be recognised: AgeRegion, Region, Age, Base
         sample_size : int
             The size of sample
