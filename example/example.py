@@ -1,6 +1,6 @@
 import epios
 import pandas as pd
-import numpy as np # noqa
+# import numpy as np
 
 # demo_data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
 #                                     '0.1.0.0', '0.2.0.0', '1.0.0.0'],
