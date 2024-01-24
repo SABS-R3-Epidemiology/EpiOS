@@ -59,6 +59,8 @@ class TestDataProcess(TestCase):
                                         '1.0.0.1': [3] * 6,
                                         '1.0.0.2': [3] * 6})
         self.processor_non_responder2 = PostProcess(self.demo_data3, self.time_data3)
+        self.range6 = [i for i in range(6)]
+        self.zero6 = [0] * 6
 
     def test__init__(self):
         try:
@@ -81,26 +83,26 @@ class TestDataProcess(TestCase):
             'gen_plot': True,
             'saving_path_sampling': self.path + 'sample.png'
         }
-        res = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False, data_store_path=self.path, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        res = self.processor('AgeRegion', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Age', 6, [0, 1, 2, 3, 4, 5], comparison=False, data_store_path=self.path, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        res = self.processor('Age', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Region', 6, [0, 1, 2, 3, 4, 5], comparison=False, data_store_path=self.path, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        res = self.processor('Region', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Base', 6, [0, 1, 2, 3, 4, 5], comparison=False, data_store_path=self.path, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        res = self.processor('Base', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         with self.assertRaises(ValueError):
-            res = self.processor('a', 6, [0, 1, 2, 3, 4, 5], comparison=False, data_store_path=self.path, **kwargs)
+            res = self.processor('a', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
 
     def test_sampled_result_r(self):
         if os.path.exists(self.path + 'sample.png'):
@@ -111,83 +113,83 @@ class TestDataProcess(TestCase):
             'gen_plot': True,
             'saving_path_sampling': self.path + 'sample.png'
         }
-        res = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False,
+        res = self.processor('AgeRegion', 6, self.range6, comparison=False,
                              data_store_path=self.path, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Age', 6, [0, 1, 2, 3, 4, 5], comparison=False, data_store_path=self.path, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        res = self.processor('Age', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Region', 6, [0, 1, 2, 3, 4, 5], comparison=False,
+        res = self.processor('Region', 6, self.range6, comparison=False,
                              data_store_path=self.path, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Base', 6, [0, 1, 2, 3, 4, 5], comparison=False, data_store_path=self.path, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        res = self.processor('Base', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
 
     def test_sampled_non_responder(self):
         with self.assertRaises(ValueError):
-            self.processor('Age', 6, [0, 1, 2, 3, 4, 5], comparison=False,
+            self.processor('Age', 6, self.range6, comparison=False,
                            data_store_path=self.path, non_responder=True, nonresprate=0)
         with self.assertRaises(ValueError):
-            self.processor('Base', 6, [0, 1, 2, 3, 4, 5], comparison=False,
+            self.processor('Base', 6, self.range6, comparison=False,
                            data_store_path=self.path, non_responder=True, nonresprate=0)
         with self.assertRaises(ValueError):
-            self.processor('a', 6, [0, 1, 2, 3, 4, 5], comparison=False,
+            self.processor('a', 6, self.range6, comparison=False,
                            data_store_path=self.path, non_responder=True, nonresprate=0)
         with self.assertRaises(ValueError):
-            self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False,
+            self.processor('AgeRegion', 6, self.range6, comparison=False,
                            data_store_path=self.path, non_responder=True)
         np.random.seed(1)
         kwargs = {
             'gen_plot': True,
             'saving_path_sampling': self.path + 'sample_nonResp.png'
         }
-        res = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
+        res = self.processor('AgeRegion', 6, self.range6, comparison=False, non_responder=True,
                              data_store_path=self.path, nonresprate=0.1, **kwargs)
-        self.assertAlmostEqual(res[0], [[0, 1, 2, 3, 4, 5], [1 / 6, 0.4, 2 / 3, 5 / 6, 1, 1]])
+        self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 0.4, 2 / 3, 5 / 6, 1, 1]])
         assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
-        res = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
+        res = self.processor('AgeRegion', 6, self.range6, comparison=False, non_responder=True,
                              data_store_path=self.path, nonresprate=0.9, **kwargs)
-        self.assertEqual(res[0], [[0, 1, 2, 3, 4, 5], [0.0, np.nan, np.nan, 1.0, np.nan, np.nan]])
+        self.assertEqual(res[0], [self.range6, [0.0, np.nan, np.nan, 1.0, np.nan, np.nan]])
         np.random.seed(1)
         kwargs['proportion'] = 1
         kwargs['sampling_percentage'] = 1
-        res = self.processor_non_responder('AgeRegion', 3, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
+        res = self.processor_non_responder('AgeRegion', 3, self.range6, comparison=False, non_responder=True,
                                            data_store_path=self.path, nonresprate=0.9, **kwargs)
-        self.assertEqual(res[0], [[0, 1, 2, 3, 4, 5], [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
+        self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
         np.random.seed(2)
-        res = self.processor_non_responder2('AgeRegion', 4, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
+        res = self.processor_non_responder2('AgeRegion', 4, self.range6, comparison=False, non_responder=True,
                                             data_store_path=self.path, nonresprate=0.8, **kwargs)
-        self.assertEqual(res[0], [[0, 1, 2, 3, 4, 5], [np.nan, 1.0, np.nan, 1.0, 1.0, 1.0]])
+        self.assertEqual(res[0], [self.range6, [np.nan, 1.0, np.nan, 1.0, 1.0, 1.0]])
         kwargs = {
             'gen_plot': True,
             'saving_path_sampling': self.path + 'sample_nonResp.png'
         }
-        res = self.processor('Region', 6, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
+        res = self.processor('Region', 6, self.range6, comparison=False, non_responder=True,
                              data_store_path=self.path, nonresprate=0.1, **kwargs)
-        self.assertEqual(res[0], [[0, 1, 2, 3, 4, 5], [0.2, 1 / 3, 2 / 3, 5 / 6, 5 / 6, 1]])
+        self.assertEqual(res[0], [self.range6, [0.2, 1 / 3, 2 / 3, 5 / 6, 5 / 6, 1]])
         assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
-        res = self.processor('Region', 6, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
+        res = self.processor('Region', 6, self.range6, comparison=False, non_responder=True,
                              data_store_path=self.path, nonresprate=0.9, **kwargs)
-        self.assertEqual(res[0], [[0, 1, 2, 3, 4, 5], [0.0, np.nan, np.nan, 1.0, np.nan, 1.0]])
+        self.assertEqual(res[0], [self.range6, [0.0, np.nan, np.nan, 1.0, np.nan, 1.0]])
         np.random.seed(1)
         kwargs['proportion'] = 1
         kwargs['sampling_percentage'] = 1
-        res = self.processor_non_responder('Region', 3, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
+        res = self.processor_non_responder('Region', 3, self.range6, comparison=False, non_responder=True,
                                            data_store_path=self.path, nonresprate=0.9, **kwargs)
-        self.assertEqual(res[0], [[0, 1, 2, 3, 4, 5], [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
+        self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
         np.random.seed(1)
-        res = self.processor_non_responder2('Region', 4, [0, 1, 2, 3, 4, 5], comparison=False, non_responder=True,
+        res = self.processor_non_responder2('Region', 4, self.range6, comparison=False, non_responder=True,
                                             data_store_path=self.path, nonresprate=0.9, **kwargs)
-        self.assertEqual(res[0], [[0, 1, 2, 3, 4, 5], [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
+        self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
 
     def test_compare(self):
         kwargs = {
@@ -195,9 +197,9 @@ class TestDataProcess(TestCase):
             'saving_path_compare': self.path + 'compare.png',
             'gen_plot': True
         }
-        _, diff = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=True,
+        _, diff = self.processor('AgeRegion', 6, self.range6, comparison=True,
                                  data_store_path=self.path, **kwargs)
-        self.assertEqual(list(diff), [0, 0, 0, 0, 0, 0])
+        self.assertEqual(list(diff), self.zero6)
         assert os.path.exists(self.path + 'compare.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'compare.png'):
             os.remove(self.path + 'compare.png')
@@ -205,10 +207,10 @@ class TestDataProcess(TestCase):
             'saving_path_compare': self.path + 'compare.png',
             'gen_plot': True
         }
-        _, diff = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=True,
+        _, diff = self.processor('AgeRegion', 6, self.range6, comparison=True,
                                  non_responder=True, nonresprate=0,
                                  data_store_path=self.path, **kwargs)
-        self.assertEqual(list(diff), [0, 0, 0, 0, 0, 0])
+        self.assertEqual(list(diff), self.zero6)
         assert os.path.exists(self.path + 'compare.png'), "Plot file was not saved"
 
     def test_best_method_error(self):
@@ -248,7 +250,7 @@ class TestDataProcess(TestCase):
         while os.path.exists(dir_name + temp_folder_name):
             temp_folder_name += 'a'
         os.mkdir(dir_name + temp_folder_name)
-        self.processor.iteration_once(
+        self.processor._iteration_once(
             sampling_interval=1,
             total_day_number=len(self.processor.time_data),
             non_responder=False,
@@ -269,7 +271,7 @@ class TestDataProcess(TestCase):
             nonresprate=0.1
         )
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
-        self.processor.iteration_once(
+        self.processor._iteration_once(
             sampling_interval=1,
             total_day_number=len(self.processor.time_data),
             non_responder=False,
@@ -291,7 +293,7 @@ class TestDataProcess(TestCase):
             nonresprate=0.1
         )
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
-        self.processor.iteration_once(
+        self.processor._iteration_once(
             sampling_interval=1,
             total_day_number=len(self.processor.time_data),
             non_responder=True,
@@ -312,7 +314,7 @@ class TestDataProcess(TestCase):
             nonresprate=0.1
         )
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
-        self.processor.iteration_once(
+        self.processor._iteration_once(
             sampling_interval=1,
             total_day_number=len(self.processor.time_data),
             non_responder=True,
@@ -360,7 +362,7 @@ class TestDataProcess(TestCase):
             'job_id': 1,
             'temp_folder_name': temp_folder_name
         }
-        self.processor.wrapper_iteration_once(iteration_inputs)
+        self.processor._wrapper_iteration_once(iteration_inputs)
 
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
         if os.path.exists(dir_name + temp_folder_name):
@@ -371,7 +373,7 @@ class TestDataProcess(TestCase):
         kwargs = {
             'a': 1
         }
-        _ = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5],
+        _ = self.processor('AgeRegion', 6, self.range6,
                            data_store_path=self.path, comparison=False, **kwargs)
         mock_print.assert_called_with("The following parameters provided are not used: a")
 
@@ -380,7 +382,7 @@ class TestDataProcess(TestCase):
         kwargs = {
             'a': 1
         }
-        _ = self.processor('AgeRegion', 6, [0, 1, 2, 3, 4, 5], comparison=False,
+        _ = self.processor('AgeRegion', 6, self.range6, comparison=False,
                            non_responder=True, data_store_path=self.path, nonresprate=0, **kwargs)
         mock_print.assert_called_with("The following parameters provided are not used: a")
 

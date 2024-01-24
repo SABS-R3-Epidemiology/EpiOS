@@ -132,7 +132,7 @@ class PostProcess():
                     sampling_input[i] = kwargs[i]
                 except KeyError:
                     pass
-            res = self.sampled_non_responder(sampling_method=sampling_method, sample_size=sample_size,
+            res = self._sampled_non_responder(sampling_method=sampling_method, sample_size=sample_size,
                                              time_sample=time_sample, nonresprate=nonresprate,
                                              data_store_path=data_store_path, **sampling_input)
             # Pass the parameters for comparison into the function
@@ -143,7 +143,7 @@ class PostProcess():
                         compare_input[i] = kwargs[i]
                     except KeyError:
                         pass
-                diff = self.compare(time_sample=time_sample, **compare_input)
+                diff = self._compare(time_sample=time_sample, **compare_input)
                 return res, diff
             return res, None
         else:  # For non-responders disabled
@@ -171,7 +171,7 @@ class PostProcess():
                     sampling_input[i] = kwargs[i]
                 except KeyError:
                     pass
-            res = self.sampled_result(sampling_method=sampling_method, sample_size=sample_size,
+            res = self._sampled_result(sampling_method=sampling_method, sample_size=sample_size,
                                       time_sample=time_sample, data_store_path=data_store_path,
                                       **sampling_input)
             if comparison:
@@ -181,11 +181,11 @@ class PostProcess():
                         compare_input[i] = kwargs[i]
                     except KeyError:
                         pass
-                diff = self.compare(time_sample=time_sample, **compare_input)
+                diff = self._compare(time_sample=time_sample, **compare_input)
                 return res, diff
             return res, None
 
-    def sampled_result(self, sampling_method, sample_size, time_sample, sample_strategy='Random',
+    def _sampled_result(self, sampling_method, sample_size, time_sample, sample_strategy='Random',
                        gen_plot: bool = False, saving_path_sampling=None, num_age_group=17, age_group_width=5,
                        data_store_path='./input/'):
         '''
@@ -320,7 +320,7 @@ class PostProcess():
         self.result = infected_rate
         return res
 
-    def sampled_non_responder(self, sampling_method, sample_size, time_sample, nonresprate,
+    def _sampled_non_responder(self, sampling_method, sample_size, time_sample, nonresprate,
                               gen_plot: bool = False, saving_path_sampling=None, sampling_percentage=0.1,
                               proportion=0.01, threshold=None, num_age_group=17, age_group_width=5,
                               data_store_path='./input/'):
@@ -541,7 +541,7 @@ class PostProcess():
         self.result = infected_rate
         return res
 
-    def compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path_compare=None):
+    def _compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path_compare=None):
         '''
         Generate a graph comparing the difference between predicted and real infection level
         This method should not be used directly, it is integrated within the __callable__ method
@@ -576,7 +576,7 @@ class PostProcess():
                 plt.savefig(saving_path_compare)
         return diff
 
-    def diff_processing(self, diff, metric):
+    def _diff_processing(self, diff, metric):
         '''
         Function for transforming the diff into a value according to different metric
 
@@ -584,7 +584,7 @@ class PostProcess():
         -----------
 
         diff : list
-            The diff from compare method
+            The diff from _compare method
         metric : str
             A specific string specifying the method used to transform
 
@@ -598,7 +598,7 @@ class PostProcess():
         elif metric == 'max':
             return max(np.abs(diff))
 
-    def iteration_once(
+    def _iteration_once(
             self,
             sampling_interval,
             total_day_number,
@@ -671,8 +671,8 @@ class PostProcess():
         # Create a temperary folder to put temperary files under the path of __main__ files
         if job_id is not None:
             main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
-            dir_name = os.path.dirname(main_module_path) + '/'
-            data_store_path = dir_name + temp_folder_name + '/job_id_' + str(job_id) + '/'
+            dir_name = os.path.dirname(main_module_path)
+            data_store_path = os.path.join(dir_name, temp_folder_name, 'job_id_' + str(job_id))
             os.mkdir(data_store_path)
         else:
             data_store_path = data_store_path
@@ -709,7 +709,7 @@ class PostProcess():
                                        **input_kwargs)
 
                         # Process the diff according to the metric provided
-                        result_within_method.append(self.diff_processing(diff, metric))
+                        result_within_method.append(self._diff_processing(diff, metric))
                     elif method_string[1] == 'Random':
                         # The following part is almost same as above
                         input_kwargs = {
@@ -720,7 +720,7 @@ class PostProcess():
                         _, diff = self(method_string[0], sample_size,
                                        time_sample, data_store_path=data_store_path,
                                        **input_kwargs)
-                        result_within_method.append(self.diff_processing(diff, metric))
+                        result_within_method.append(self._diff_processing(diff, metric))
 
                     # For different methods, we have a list to contain its result,
                     # I do this because there will be different parameter pairs to repeat
@@ -728,7 +728,7 @@ class PostProcess():
 
                 # Output the final result and clean up
                 if job_id is not None:
-                    self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
+                    self._clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
                 return res_across_methods
             else:
 
@@ -756,7 +756,7 @@ class PostProcess():
                             _, diff = self(method_string[0], sample_size,
                                            time_sample, data_store_path=data_store_path,
                                            **input_kwargs)
-                            result_within_method.append(self.diff_processing(diff, metric))
+                            result_within_method.append(self._diff_processing(diff, metric))
                         elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
 
                             # Now we have parameters to vary
@@ -779,7 +779,7 @@ class PostProcess():
                                 _, diff = self(method_string[0], sample_size,
                                                time_sample, data_store_path=data_store_path,
                                                **input_kwargs)
-                                result_within_method.append(self.diff_processing(diff, metric))
+                                result_within_method.append(self._diff_processing(diff, metric))
                     elif method_string[1] == 'Random':
                         # Exactly the same logic as above
                         input_kwargs = {
@@ -789,7 +789,7 @@ class PostProcess():
                             _, diff = self(method_string[0], sample_size,
                                            time_sample, data_store_path=data_store_path,
                                            **input_kwargs)
-                            result_within_method.append(self.diff_processing(diff, metric))
+                            result_within_method.append(self._diff_processing(diff, metric))
                         elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
                             all_ranges = []
                             for key in useful_inputs:
@@ -803,10 +803,10 @@ class PostProcess():
                                 _, diff = self(method_string[0], sample_size,
                                                time_sample, data_store_path=data_store_path,
                                                **input_kwargs)
-                                result_within_method.append(self.diff_processing(diff, metric))
+                                result_within_method.append(self._diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
                 if job_id is not None:
-                    self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
+                    self._clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
                 return res_across_methods
         else:
 
@@ -825,10 +825,10 @@ class PostProcess():
                                    time_sample, non_responder=True,
                                    nonresprate=nonresprate, data_store_path=data_store_path,
                                    **input_kwargs)
-                    result_within_method.append(self.diff_processing(diff, metric))
+                    result_within_method.append(self._diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
                 if job_id is not None:
-                    self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
+                    self._clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
                 return res_across_methods
             else:
                 res_across_methods = []
@@ -856,7 +856,7 @@ class PostProcess():
                                            time_sample, non_responder=True,
                                            nonresprate=nonresprate, data_store_path=data_store_path,
                                            **input_kwargs)
-                            result_within_method.append(self.diff_processing(diff, metric))
+                            result_within_method.append(self._diff_processing(diff, metric))
                     elif method_string[0] == 'AgeRegion':
 
                         # Here is just the normal case
@@ -873,16 +873,16 @@ class PostProcess():
                                            time_sample, non_responder=True,
                                            nonresprate=nonresprate, data_store_path=data_store_path,
                                            **input_kwargs)
-                            result_within_method.append(self.diff_processing(diff, metric))
+                            result_within_method.append(self._diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
                 if job_id is not None:
-                    self.clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
+                    self._clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
                 return res_across_methods
 
-    def clean_up(self, temp_folder_name, data_store_path):
+    def _clean_up(self, temp_folder_name, data_store_path):
         '''
         This method is to clean up the temporary files generated during multiprocessing.
-        This is called within the method 'iteration_once' when multiprocessing is on.
+        This is called within the method '_iteration_once' when multiprocessing is on.
 
         Parameters:
         -----------
@@ -896,27 +896,27 @@ class PostProcess():
         # This part can be unnecessary, but find the path from absolute path
         # is to avoid weird names in some path names
         main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
-        dir_name = os.path.dirname(main_module_path) + '/'
+        dir_name = os.path.dirname(main_module_path)
 
         # From here, removing the job_id_i folder and its content
-        if os.path.exists(dir_name + temp_folder_name):
+        if os.path.exists(os.path.join(dir_name, temp_folder_name)):
             if os.path.exists(data_store_path):
                 for file in ['pop_dist.json', 'microcells.csv', 'data.csv']:
                     if os.path.exists(data_store_path + file):
                         os.remove(data_store_path + file)
                 os.rmdir(data_store_path)
 
-    def wrapper_iteration_once(self, kwargs_dict):
+    def _wrapper_iteration_once(self, kwargs_dict):
         '''
-        Since the input variables of iteration_once may be different, need this function to wrap up these inputs
+        Since the input variables of _iteration_once may be different, need this function to wrap up these inputs
 
         Parameters:
         -----------
 
         kwargs_dict : dict
-            A dictionary of inputs of 'iteration_once'
+            A dictionary of inputs of '_iteration_once'
         '''
-        return self.iteration_once(**kwargs_dict)
+        return self._iteration_once(**kwargs_dict)
 
     def best_method(self, methods, sample_size, hyperparameter_autotune=False,
                     non_responder=False, nonresprate=None, sampling_interval=7,
@@ -1296,11 +1296,11 @@ class PostProcess():
         if parallel_computation:
             temp_folder_name = 'temp_'
             main_module_path = os.path.abspath(sys.modules['__main__'].__file__)
-            dir_name = os.path.dirname(main_module_path) + '/'
-            while os.path.exists(dir_name + temp_folder_name):
+            dir_name = os.path.dirname(main_module_path)
+            while os.path.exists(os.path.join(dir_name, temp_folder_name)):
                 temp_folder_name += 'a'
             iteration_inputs['temp_folder_name'] = temp_folder_name
-            os.mkdir(dir_name + temp_folder_name)
+            os.mkdir(os.path.join(dir_name, temp_folder_name))
 
             # From here, enable multiprocessing
             # Firstly, prepare the input
@@ -1312,16 +1312,16 @@ class PostProcess():
             num_processes = multiprocessing.cpu_count()
             with multiprocessing.Pool(processes=num_processes) as pool:
                 # Map the process_item function to the items
-                results = pool.map(self.wrapper_iteration_once, multiprocessing_inputs)
+                results = pool.map(self._wrapper_iteration_once, multiprocessing_inputs)
 
-            if os.path.exists(dir_name + temp_folder_name):
-                os.rmdir(dir_name + temp_folder_name)
+            if os.path.exists(os.path.join(dir_name, temp_folder_name)):
+                os.rmdir(os.path.join(dir_name, temp_folder_name))
         else:
             # Here is when the multiprocessing is disabled
             iteration_inputs['data_store_path'] = data_store_path
             results = []
             for i in range(iteration):
-                results.append(self.iteration_once(**iteration_inputs))
+                results.append(self._iteration_once(**iteration_inputs))
 
         # Average the result over all iterations
         res = []

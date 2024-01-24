@@ -196,6 +196,14 @@ class SamplerAgeRegion(Sampler):
         prob_copy = prob.copy()
         threshold_copy = threshold.copy()
 
+        # You can see there are some cap_retry above.
+        # The reason to set up this is because:
+        # With the cap for rows/columns may lead to a situation
+        # where there is no solution to allocate the number of samples
+        # under these constraints.
+        # When this situation happens, I just loose the constraint
+        # to the case which must have a solution and
+        # print out a message saying there is going to be a retry.
         retry_number = 0
         retry = True
         while retry_number <= 2 and retry is True:
