@@ -133,8 +133,8 @@ class PostProcess():
                 except KeyError:
                     pass
             res = self._sampled_non_responder(sampling_method=sampling_method, sample_size=sample_size,
-                                             time_sample=time_sample, nonresprate=nonresprate,
-                                             data_store_path=data_store_path, **sampling_input)
+                                              time_sample=time_sample, nonresprate=nonresprate,
+                                              data_store_path=data_store_path, **sampling_input)
             # Pass the parameters for comparison into the function
             if comparison:
                 compare_input = {}
@@ -172,8 +172,8 @@ class PostProcess():
                 except KeyError:
                     pass
             res = self._sampled_result(sampling_method=sampling_method, sample_size=sample_size,
-                                      time_sample=time_sample, data_store_path=data_store_path,
-                                      **sampling_input)
+                                       time_sample=time_sample, data_store_path=data_store_path,
+                                       **sampling_input)
             if comparison:
                 compare_input = {}
                 for i in compare_params:
@@ -186,8 +186,8 @@ class PostProcess():
             return res, None
 
     def _sampled_result(self, sampling_method, sample_size, time_sample, sample_strategy='Random',
-                       gen_plot: bool = False, saving_path_sampling=None, num_age_group=17, age_group_width=5,
-                       data_store_path='./input/'):
+                        gen_plot: bool = False, saving_path_sampling=None, num_age_group=17, age_group_width=5,
+                        data_store_path='./input/'):
         '''
         This is a method to generate the sampled result and plot a figure
         This method should not be used directly, it is integrated within the __callable__ method
@@ -321,9 +321,9 @@ class PostProcess():
         return res
 
     def _sampled_non_responder(self, sampling_method, sample_size, time_sample, nonresprate,
-                              gen_plot: bool = False, saving_path_sampling=None, sampling_percentage=0.1,
-                              proportion=0.01, threshold=None, num_age_group=17, age_group_width=5,
-                              data_store_path='./input/'):
+                               gen_plot: bool = False, saving_path_sampling=None, sampling_percentage=0.1,
+                               proportion=0.01, threshold=None, num_age_group=17, age_group_width=5,
+                               data_store_path='./input/'):
         '''
         This is a method to generate the sampled result and plot a figure when considering non-responders
         This method should not be used directly, it is integrated within the __callable__ method
