@@ -489,18 +489,19 @@ class SamplerAgeRegion(Sampler):
 
         # Determine the cap for each age-region groups
         additional_sample = list(np.zeros((num_region_group, num_age_group), dtype=int))
-        cap_block = []
-        for i in range(len(nonRespNum)):
-            pos_age = i % num_age_group
-            pos_region = math.floor(i / num_age_group)
-            ite = df[df['cell'] == pos_region]
-            if pos_age != num_age_group - 1:
-                ite = ite[ite['age'] >= pos_age * self.age_group_width]
-                ite = ite[ite['age'] < pos_age * self.age_group_width + self.age_group_width]
-            else:
-                ite = ite[ite['age'] >= pos_age * self.age_group_width]
-            cap_block.append(len(ite))
-        cap_block = np.array(cap_block).reshape((-1, num_age_group))
+        if res:
+            cap_block = []
+            for i in range(len(nonRespNum)):
+                pos_age = i % num_age_group
+                pos_region = math.floor(i / num_age_group)
+                ite = df[df['cell'] == pos_region]
+                if pos_age != num_age_group - 1:
+                    ite = ite[ite['age'] >= pos_age * self.age_group_width]
+                    ite = ite[ite['age'] < pos_age * self.age_group_width + self.age_group_width]
+                else:
+                    ite = ite[ite['age'] >= pos_age * self.age_group_width]
+                cap_block.append(len(ite))
+            cap_block = np.array(cap_block).reshape((-1, num_age_group))
 
         # Determine the number of additional samples from the above groups
         for i in res:

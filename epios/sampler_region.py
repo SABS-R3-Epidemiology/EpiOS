@@ -289,11 +289,12 @@ class SamplerRegion(Sampler):
 
         # Determine the cap for each region groups
         additional_sample = [0] * num_region_group
-        cap_region = []
-        for i in range(len(nonRespNum)):
-            pos_region = i
-            ite = df[df['cell'] == pos_region]
-            cap_region.append(len(ite))
+        if res:
+            cap_region = []
+            for i in range(len(nonRespNum)):
+                pos_region = i
+                ite = df[df['cell'] == pos_region]
+                cap_region.append(len(ite))
 
         # Determine the number of additional samples from the above groups
         for i in res:
