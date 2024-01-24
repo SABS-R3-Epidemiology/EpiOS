@@ -26,7 +26,7 @@ class TestSM(TestCase):
             self.assertEqual(SamplingMaker(false_negative=1).testresult(a), 'Negative')
 
     def test_nonresponders(self):
-        self.assertEqual(SamplingMaker(nonresprate=1).testresult(None), 'NonResponder')
+        self.assertEqual(SamplingMaker(non_resp_rate=1).testresult(None), 'NonResponder')
 
     def test__call__(self):
         t = [0, 2]

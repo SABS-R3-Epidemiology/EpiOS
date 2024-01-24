@@ -42,7 +42,7 @@ class PostProcess():
         self.time_data = time_data
 
     def __call__(self, sampling_method, sample_size, time_sample, non_responder=False, comparison=True,
-                 nonresprate=None, data_store_path='./input/', **kwargs):
+                 non_resp_rate=None, data_store_path='./input/', **kwargs):
         '''
         Make this class callable to run the post process part just by calling the instance
 
@@ -109,7 +109,7 @@ class PostProcess():
 
         '''
         if non_responder:  # For non-responders enabled
-            if nonresprate is None:
+            if non_resp_rate is None:
                 raise ValueError('You have to input the non-response rate when considering non-responders')
 
             # Select all useful variable names provided in kwargs
@@ -133,7 +133,7 @@ class PostProcess():
                 except KeyError:
                     pass
             res = self._sampled_non_responder(sampling_method=sampling_method, sample_size=sample_size,
-                                              time_sample=time_sample, nonresprate=nonresprate,
+                                              time_sample=time_sample, non_resp_rate=non_resp_rate,
                                               data_store_path=data_store_path, **sampling_input)
             # Pass the parameters for comparison into the function
             if comparison:
@@ -203,7 +203,7 @@ class PostProcess():
                 people = sampler_class.sample(sample_size=sample_size)
 
                 # Get results of each people sampled
-                X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
+                X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X(time_sample, people)
 
@@ -222,7 +222,7 @@ class PostProcess():
                     people = sampler_class.sample(sample_size=sample_size)
 
                     # Get the results of each people sampled
-                    X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
+                    X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
 
@@ -235,7 +235,7 @@ class PostProcess():
                 sampler_class = SamplerAge(data=self.demo_data, data_store_path=data_store_path,
                                            num_age_group=num_age_group, age_group_width=age_group_width)
                 people = sampler_class.sample(sample_size=sample_size)
-                X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
+                X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X(time_sample, people)
                 for i in range(len(time_sample)):
@@ -250,7 +250,7 @@ class PostProcess():
                         sampler_class = SamplerAge(data_store_path=data_store_path, pre_process=False,
                                                    num_age_group=num_age_group, age_group_width=age_group_width)
                     people = sampler_class.sample(sample_size=sample_size)
-                    X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
+                    X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
                     infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
@@ -260,7 +260,7 @@ class PostProcess():
                 infected_rate = []
                 sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
                 people = sampler_class.sample(sample_size=sample_size)
-                X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
+                X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X(time_sample, people)
                 for i in range(len(time_sample)):
@@ -273,7 +273,7 @@ class PostProcess():
                     else:
                         sampler_class = SamplerRegion(data_store_path=data_store_path, pre_process=False)
                     people = sampler_class.sample(sample_size=sample_size)
-                    X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
+                    X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
                     infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
@@ -283,7 +283,7 @@ class PostProcess():
                 infected_rate = []
                 sampler_class = Sampler(data=self.demo_data, data_store_path=data_store_path)
                 people = sampler_class.sample(sample_size=sample_size)
-                X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
+                X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X(time_sample, people)
                 for i in range(len(time_sample)):
@@ -296,7 +296,7 @@ class PostProcess():
                     else:
                         sampler_class = Sampler(data_store_path=data_store_path, pre_process=False)
                     people = sampler_class.sample(sample_size=sample_size)
-                    X = SamplingMaker(nonresprate=0, keeptrack=True, TheData=self.time_data,
+                    X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
                     infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
@@ -320,7 +320,7 @@ class PostProcess():
         self.result = infected_rate
         return res
 
-    def _sampled_non_responder(self, sampling_method, sample_size, time_sample, nonresprate,
+    def _sampled_non_responder(self, sampling_method, sample_size, time_sample, non_resp_rate,
                                gen_plot: bool = False, saving_path_sampling=None, sampling_percentage=0.1,
                                proportion=0.01, threshold=None, num_age_group=17, age_group_width=5,
                                data_store_path='./input/'):
@@ -346,7 +346,7 @@ class PostProcess():
                     people = sampler_class.sample(sample_size=sample_size)
 
                 # Get the results of people sampled
-                X = SamplingMaker(nonresprate=nonresprate, keeptrack=True, TheData=self.time_data,
+                X = SamplingMaker(non_resp_rate=non_resp_rate, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X([time_sample[i]], people)
 
@@ -442,11 +442,11 @@ class PostProcess():
 
                 # After each sample, we need to generate the additional samples for sampling next time
                 # based on the non-responders' IDs of this time's sample
-                nonRespID = []
+                non_resp_id = []
                 for j in range(len(ite.columns)):
                     if ite.iloc[0, j] == 'NonResponder':
-                        nonRespID.append(ite.columns[j])
-                additional_sample = sampler_class.additional_nonresponder(nonRespID=nonRespID,
+                        non_resp_id.append(ite.columns[j])
+                additional_sample = sampler_class.additional_nonresponder(non_resp_id=non_resp_id,
                                                                           sampling_percentage=sampling_percentage,
                                                                           proportion=proportion, threshold=threshold)
         elif sampling_method == 'Age':  # Age stratification does not support non-responders
@@ -463,7 +463,7 @@ class PostProcess():
                     people = sampler_class.sample(sample_size=sample_size, additional_sample=additional_sample)
                 except NameError:
                     people = sampler_class.sample(sample_size=sample_size)
-                X = SamplingMaker(nonresprate=nonresprate, keeptrack=True, TheData=self.time_data,
+                X = SamplingMaker(non_resp_rate=non_resp_rate, keeptrack=True, TheData=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X([time_sample[i]], people)
                 try:
@@ -512,11 +512,11 @@ class PostProcess():
                         infected_rate_ite = np.nan
                     infected_rate.append(infected_rate_ite)
 
-                nonRespID = []
+                non_resp_id = []
                 for j in range(len(ite.columns)):
                     if ite.iloc[0, j] == 'NonResponder':
-                        nonRespID.append(ite.columns[j])
-                additional_sample = sampler_class.additional_nonresponder(nonRespID=nonRespID,
+                        non_resp_id.append(ite.columns[j])
+                additional_sample = sampler_class.additional_nonresponder(non_resp_id=non_resp_id,
                                                                           sampling_percentage=sampling_percentage,
                                                                           proportion=proportion, threshold=threshold)
         elif sampling_method == 'Base':  # Completely random sampling does not support non-responders
@@ -611,7 +611,7 @@ class PostProcess():
             data_store_path=None,
             job_id=None,
             temp_folder_name=None,
-            nonresprate=None,
+            non_resp_rate=None,
             useful_inputs_nonrespRange=None
     ):
         '''
@@ -648,7 +648,7 @@ class PostProcess():
             passed to this parameter
 
             Default = None
-        nonresprate : float between 0 and 1
+        non_resp_rate : float between 0 and 1
             The possibility of a person to be non-responders.
             When we consider non-responders, a value will be passed to this parameter.
 
@@ -823,7 +823,7 @@ class PostProcess():
                         input_kwargs[input] = useful_inputs[input]
                     _, diff = self(method_string[0], sample_size,
                                    time_sample, non_responder=True,
-                                   nonresprate=nonresprate, data_store_path=data_store_path,
+                                   non_resp_rate=non_resp_rate, data_store_path=data_store_path,
                                    **input_kwargs)
                     result_within_method.append(self._diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
@@ -854,7 +854,7 @@ class PostProcess():
                                 count += 1
                             _, diff = self(method_string[0], sample_size,
                                            time_sample, non_responder=True,
-                                           nonresprate=nonresprate, data_store_path=data_store_path,
+                                           non_resp_rate=non_resp_rate, data_store_path=data_store_path,
                                            **input_kwargs)
                             result_within_method.append(self._diff_processing(diff, metric))
                     elif method_string[0] == 'AgeRegion':
@@ -871,7 +871,7 @@ class PostProcess():
                                 count += 1
                             _, diff = self(method_string[0], sample_size,
                                            time_sample, non_responder=True,
-                                           nonresprate=nonresprate, data_store_path=data_store_path,
+                                           non_resp_rate=non_resp_rate, data_store_path=data_store_path,
                                            **input_kwargs)
                             result_within_method.append(self._diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
@@ -919,7 +919,7 @@ class PostProcess():
         return self._iteration_once(**kwargs_dict)
 
     def best_method(self, methods, sample_size, hyperparameter_autotune=False,
-                    non_responder=False, nonresprate=None, sampling_interval=7,
+                    non_responder=False, non_resp_rate=None, sampling_interval=7,
                     parallel_computation=True, metric='mean', iteration=100,
                     data_store_path='./input/', **kwargs):
         '''
@@ -1287,7 +1287,7 @@ class PostProcess():
             'metric': metric
         }
         if non_responder:
-            iteration_inputs['nonresprate'] = nonresprate
+            iteration_inputs['non_resp_rate'] = non_resp_rate
             if hyperparameter_autotune:
                 if 'Region-Random' in recognised_methods:
                     iteration_inputs['useful_inputs_nonrespRange'] = useful_inputs_nonrespRange

@@ -428,14 +428,14 @@ class SamplerAgeRegion(Sampler):
                         res.append(ite_sample[k])
         return res
 
-    def additional_nonresponder(self, nonRespID: list, sampling_percentage=0.1, proportion=0.01, threshold=None):
+    def additional_nonresponder(self, non_resp_id: list, sampling_percentage=0.1, proportion=0.01, threshold=None):
         '''
         Generate the additional samples according to the non-responder IDs
 
         Parameters:
         -----------
 
-        nonRespID : list
+        non_resp_id : list
             A list containing the non-responder IDs
         sampling_percentage : float, between 0 and 1
             The proportion of additional samples taken from a specific age-regional group
@@ -459,11 +459,11 @@ class SamplerAgeRegion(Sampler):
         df = self.data
         n = num_age_group * num_region_group
 
-        # Transform the nonRespID to nonRespNum to contain the number of non-responders
+        # Transform the non_resp_id to nonRespNum to contain the number of non-responders
         # in each age-region group
 
         nonRespNum = [0] * (num_age_group * num_region_group)
-        for i in nonRespID:
+        for i in non_resp_id:
             age = df[df['ID'] == i]['age'].values[0]
             if math.floor(age / self.age_group_width) < num_age_group - 1:
                 age_group_pos = math.floor(age / self.age_group_width)

@@ -137,13 +137,13 @@ class TestDataProcess(TestCase):
     def test_sampled_non_responder(self):
         with self.assertRaises(ValueError):
             self.processor('Age', 6, self.range6, comparison=False,
-                           data_store_path=self.path, non_responder=True, nonresprate=0)
+                           data_store_path=self.path, non_responder=True, non_resp_rate=0)
         with self.assertRaises(ValueError):
             self.processor('Base', 6, self.range6, comparison=False,
-                           data_store_path=self.path, non_responder=True, nonresprate=0)
+                           data_store_path=self.path, non_responder=True, non_resp_rate=0)
         with self.assertRaises(ValueError):
             self.processor('a', 6, self.range6, comparison=False,
-                           data_store_path=self.path, non_responder=True, nonresprate=0)
+                           data_store_path=self.path, non_responder=True, non_resp_rate=0)
         with self.assertRaises(ValueError):
             self.processor('AgeRegion', 6, self.range6, comparison=False,
                            data_store_path=self.path, non_responder=True)
@@ -153,42 +153,42 @@ class TestDataProcess(TestCase):
             'saving_path_sampling': self.path + 'sample_nonResp.png'
         }
         res = self.processor('AgeRegion', 6, self.range6, comparison=False, non_responder=True,
-                             data_store_path=self.path, nonresprate=0.1, **kwargs)
+                             data_store_path=self.path, non_resp_rate=0.1, **kwargs)
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 0.4, 2 / 3, 5 / 6, 1, 1]])
         assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
         res = self.processor('AgeRegion', 6, self.range6, comparison=False, non_responder=True,
-                             data_store_path=self.path, nonresprate=0.9, **kwargs)
+                             data_store_path=self.path, non_resp_rate=0.9, **kwargs)
         self.assertEqual(res[0], [self.range6, [0.0, np.nan, np.nan, 1.0, np.nan, np.nan]])
         np.random.seed(1)
         kwargs['proportion'] = 1
         kwargs['sampling_percentage'] = 1
         res = self.processor_non_responder('AgeRegion', 3, self.range6, comparison=False, non_responder=True,
-                                           data_store_path=self.path, nonresprate=0.9, **kwargs)
+                                           data_store_path=self.path, non_resp_rate=0.9, **kwargs)
         self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
         np.random.seed(2)
         res = self.processor_non_responder2('AgeRegion', 4, self.range6, comparison=False, non_responder=True,
-                                            data_store_path=self.path, nonresprate=0.8, **kwargs)
+                                            data_store_path=self.path, non_resp_rate=0.8, **kwargs)
         self.assertEqual(res[0], [self.range6, [np.nan, 1.0, np.nan, 1.0, 1.0, 1.0]])
         kwargs = {
             'gen_plot': True,
             'saving_path_sampling': self.path + 'sample_nonResp.png'
         }
         res = self.processor('Region', 6, self.range6, comparison=False, non_responder=True,
-                             data_store_path=self.path, nonresprate=0.1, **kwargs)
+                             data_store_path=self.path, non_resp_rate=0.1, **kwargs)
         self.assertEqual(res[0], [self.range6, [0.2, 1 / 3, 2 / 3, 5 / 6, 5 / 6, 1]])
         assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
         res = self.processor('Region', 6, self.range6, comparison=False, non_responder=True,
-                             data_store_path=self.path, nonresprate=0.9, **kwargs)
+                             data_store_path=self.path, non_resp_rate=0.9, **kwargs)
         self.assertEqual(res[0], [self.range6, [0.0, np.nan, np.nan, 1.0, np.nan, 1.0]])
         np.random.seed(1)
         kwargs['proportion'] = 1
         kwargs['sampling_percentage'] = 1
         res = self.processor_non_responder('Region', 3, self.range6, comparison=False, non_responder=True,
-                                           data_store_path=self.path, nonresprate=0.9, **kwargs)
+                                           data_store_path=self.path, non_resp_rate=0.9, **kwargs)
         self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
         np.random.seed(1)
         res = self.processor_non_responder2('Region', 4, self.range6, comparison=False, non_responder=True,
-                                            data_store_path=self.path, nonresprate=0.9, **kwargs)
+                                            data_store_path=self.path, non_resp_rate=0.9, **kwargs)
         self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
 
     def test_compare(self):
@@ -208,7 +208,7 @@ class TestDataProcess(TestCase):
             'gen_plot': True
         }
         _, diff = self.processor('AgeRegion', 6, self.range6, comparison=True,
-                                 non_responder=True, nonresprate=0,
+                                 non_responder=True, non_resp_rate=0,
                                  data_store_path=self.path, **kwargs)
         self.assertEqual(list(diff), self.zero6)
         assert os.path.exists(self.path + 'compare.png'), "Plot file was not saved"
@@ -224,7 +224,7 @@ class TestDataProcess(TestCase):
                 non_responder=False,
                 sampling_interval=1,
                 iteration=1,
-                nonresprate=0.1,
+                non_resp_rate=0.1,
                 metric='a',
                 parallel_computation=False,
             )
@@ -238,7 +238,7 @@ class TestDataProcess(TestCase):
                 non_responder=False,
                 sampling_interval=1,
                 iteration=1,
-                nonresprate=0.1,
+                non_resp_rate=0.1,
                 metric='mean',
                 parallel_computation=False,
             )
@@ -268,7 +268,7 @@ class TestDataProcess(TestCase):
             useful_inputs_nonrespRange={
 
             },
-            nonresprate=0.1
+            non_resp_rate=0.1
         )
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
         self.processor._iteration_once(
@@ -290,7 +290,7 @@ class TestDataProcess(TestCase):
             useful_inputs_nonrespRange={
 
             },
-            nonresprate=0.1
+            non_resp_rate=0.1
         )
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
         self.processor._iteration_once(
@@ -311,7 +311,7 @@ class TestDataProcess(TestCase):
             useful_inputs_nonrespRange={
 
             },
-            nonresprate=0.1
+            non_resp_rate=0.1
         )
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
         self.processor._iteration_once(
@@ -336,7 +336,7 @@ class TestDataProcess(TestCase):
             useful_inputs_nonrespRange={
 
             },
-            nonresprate=0.1
+            non_resp_rate=0.1
         )
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
         if os.path.exists(dir_name + temp_folder_name):
@@ -383,7 +383,7 @@ class TestDataProcess(TestCase):
             'a': 1
         }
         _ = self.processor('AgeRegion', 6, self.range6, comparison=False,
-                           non_responder=True, data_store_path=self.path, nonresprate=0, **kwargs)
+                           non_responder=True, data_store_path=self.path, non_resp_rate=0, **kwargs)
         mock_print.assert_called_with("The following parameters provided are not used: a")
 
     @patch('builtins.print')
@@ -413,7 +413,7 @@ class TestDataProcess(TestCase):
             non_responder=False,
             sampling_interval=1,
             iteration=10,
-            nonresprate=0.1,
+            non_resp_rate=0.1,
             metric='max',
             parallel_computation=True,
             **kwargs
@@ -445,7 +445,7 @@ class TestDataProcess(TestCase):
             non_responder=False,
             sampling_interval=1,
             iteration=1,
-            nonresprate=0.1,
+            non_resp_rate=0.1,
             metric='mean',
             parallel_computation=False,
             data_store_path=self.path,
@@ -473,7 +473,7 @@ class TestDataProcess(TestCase):
             non_responder=True,
             sampling_interval=1,
             iteration=1,
-            nonresprate=0.1,
+            non_resp_rate=0.1,
             metric='mean',
             parallel_computation=False,
             data_store_path=self.path,
@@ -499,7 +499,7 @@ class TestDataProcess(TestCase):
             non_responder=False,
             sampling_interval=1,
             iteration=1,
-            nonresprate=0.1,
+            non_resp_rate=0.1,
             metric='mean',
             parallel_computation=False,
             data_store_path=self.path,
@@ -517,7 +517,7 @@ class TestDataProcess(TestCase):
             non_responder=True,
             sampling_interval=1,
             iteration=1,
-            nonresprate=0.1,
+            non_resp_rate=0.1,
             metric='max',
             parallel_computation=False,
             data_store_path=self.path,

@@ -234,14 +234,14 @@ class SamplerRegion(Sampler):
                     res.append(ite_sample[k])
         return res
 
-    def additional_nonresponder(self, nonRespID: list, sampling_percentage=0.1, proportion=0.01, threshold=None):
+    def additional_nonresponder(self, non_resp_id: list, sampling_percentage=0.1, proportion=0.01, threshold=None):
         '''
         Generate the additional samples according to the non-responder IDs
 
         Parameters:
         -----------
 
-        nonRespID : list
+        non_resp_id : list
             A list containing the non-responder IDs
         sampling_percentage : float, between 0 and 1
             The proportion of additional samples taken from a specific regional group
@@ -264,11 +264,11 @@ class SamplerRegion(Sampler):
         df = self.data
         n = num_region_group
 
-        # Transform the nonRespID to nonRespNum to contain the number of non-responders
+        # Transform the non_resp_id to nonRespNum to contain the number of non-responders
         # in each region group
 
         nonRespNum = [0] * (num_region_group)
-        for i in nonRespID:
+        for i in non_resp_id:
             region_group_pos = df[df['ID'] == i]['cell'].values[0]
             pos_nonRespRate = region_group_pos
             nonRespNum[pos_nonRespRate] += 1

@@ -15,7 +15,7 @@ age_group_width = 5
 # If non-responder function is turned on, need to specify non-responder ID
 # for each sampling
 nonResp = False
-nonRespID = []
+non_resp_id = []
 # The proportion of additional samples
 # taken from a specific age-regional group caused by non-responders
 sampling_percentage = 0.1

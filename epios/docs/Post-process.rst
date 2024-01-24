@@ -62,7 +62,7 @@ Here is an example of using `PostProcess`
             sampling_interval=1,
             iteration=1,
             # When considering non-responders, input the following line
-            # nonresprate=0.1,
+            # non_resp_rate=0.1,
             metric='mean',
             parallel_computation=True,
             **best_method_kwargs

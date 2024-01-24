@@ -7,7 +7,7 @@ class SamplingMaker():
     Parameters:
     -----------
 
-    nonresprate : float, between 0 and 1
+    non_resp_rate : float, between 0 and 1
         The probability of a person that do not respond
     keeptrack : bool
         Whether or not to change people sampled at each time point
@@ -22,10 +22,10 @@ class SamplingMaker():
 
     '''
 
-    def __init__(self, nonresprate=0, keeptrack=False, TheData=None,
+    def __init__(self, non_resp_rate=0, keeptrack=False, TheData=None,
                  false_positive=0, false_negative=0, threshold=None):
         self.recognised = [3, 4, 5, 6, 7, 8]
-        self.nonresprate = nonresprate
+        self.non_resp_rate = non_resp_rate
         self.keeptrack = keeptrack
         self.TheData = TheData
         self.false_positive = false_positive
@@ -33,7 +33,7 @@ class SamplingMaker():
         self.threshold = threshold
 
     def testresult(self, load):
-        if bool(binomial(1, self.nonresprate)):
+        if bool(binomial(1, self.non_resp_rate)):
             return 'NonResponder'
         if self.threshold is None:
             if load in self.recognised:
