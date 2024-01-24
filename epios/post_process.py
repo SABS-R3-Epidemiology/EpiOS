@@ -106,6 +106,10 @@ class PostProcess():
                     The path to store data generated during sampling
 
                     Default = ./input/
+                seed : int or None
+                    The seed for random numbers
+
+                    Default = None
 
         '''
         if non_responder:  # For non-responders enabled
@@ -114,7 +118,7 @@ class PostProcess():
 
             # Select all useful variable names provided in kwargs
             sampling_params = ['gen_plot', 'saving_path_sampling', 'num_age_group', 'age_group_width',
-                               'sampling_percentage', 'proportion', 'threshold']
+                               'sampling_percentage', 'proportion', 'threshold', 'seed']
             compare_params = ['scale_method', 'saving_path_compare', 'gen_plot']
             total_params = set(sampling_params + compare_params)
 
@@ -149,7 +153,7 @@ class PostProcess():
         else:  # For non-responders disabled
             # Almost the same script, see comments above
             sampling_params = ['sample_strategy', 'gen_plot', 'saving_path_sampling', 'num_age_group',
-                               'age_group_width']
+                               'age_group_width', 'seed']
             compare_params = ['scale_method', 'saving_path_compare', 'gen_plot']
             total_params = set(sampling_params + compare_params)
             params_not_used = []
@@ -187,12 +191,14 @@ class PostProcess():
 
     def _sampled_result(self, sampling_method, sample_size, time_sample, sample_strategy='Random',
                         gen_plot: bool = False, saving_path_sampling=None, num_age_group=17, age_group_width=5,
-                        data_store_path='./input/'):
+                        data_store_path='./input/', seed=None):
         '''
         This is a method to generate the sampled result and plot a figure
         This method should not be used directly, it is integrated within the __callable__ method
 
         '''
+        if seed is not None:
+            np.random.seed(seed)
         if sampling_method == 'AgeRegion':  # For both age and region stratification
             if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
                 infected_rate = []
@@ -323,12 +329,14 @@ class PostProcess():
     def _sampled_non_responder(self, sampling_method, sample_size, time_sample, non_resp_rate,
                                gen_plot: bool = False, saving_path_sampling=None, sampling_percentage=0.1,
                                proportion=0.01, threshold=None, num_age_group=17, age_group_width=5,
-                               data_store_path='./input/'):
+                               data_store_path='./input/', seed=None):
         '''
         This is a method to generate the sampled result and plot a figure when considering non-responders
         This method should not be used directly, it is integrated within the __callable__ method
 
         '''
+        if seed is not None:
+            np.random.seed(seed)
         if sampling_method == 'AgeRegion':  # Both age and region stratification
 
             # Only Random sample strategies

@@ -130,6 +130,7 @@ class TestDataProcess(TestCase):
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
+        kwargs['seed'] = 1
         res = self.processor('Base', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
@@ -159,13 +160,13 @@ class TestDataProcess(TestCase):
         res = self.processor('AgeRegion', 6, self.range6, comparison=False, non_responder=True,
                              data_store_path=self.path, non_resp_rate=0.9, **kwargs)
         self.assertEqual(res[0], [self.range6, [0.0, np.nan, np.nan, 1.0, np.nan, np.nan]])
-        np.random.seed(1)
         kwargs['proportion'] = 1
         kwargs['sampling_percentage'] = 1
+        kwargs['seed'] = 1
         res = self.processor_non_responder('AgeRegion', 3, self.range6, comparison=False, non_responder=True,
                                            data_store_path=self.path, non_resp_rate=0.9, **kwargs)
         self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
-        np.random.seed(2)
+        kwargs['seed'] = 2
         res = self.processor_non_responder2('AgeRegion', 4, self.range6, comparison=False, non_responder=True,
                                             data_store_path=self.path, non_resp_rate=0.8, **kwargs)
         self.assertEqual(res[0], [self.range6, [np.nan, 1.0, np.nan, 1.0, 1.0, 1.0]])
