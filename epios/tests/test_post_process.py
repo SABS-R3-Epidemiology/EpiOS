@@ -59,6 +59,17 @@ class TestDataProcess(TestCase):
                                         '1.0.0.1': [3] * 6,
                                         '1.0.0.2': [3] * 6})
         self.processor_non_responder2 = PostProcess(self.demo_data3, self.time_data3)
+        self.demo_data4 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
+                                               '1.0.0.0', '1.0.0.1', '2.0.0.0'],
+                                        'age': [1, 6, 11, 16, 21, 26]})
+        self.time_data4 = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
+                                        '0.0.0.0': [3] * 6,
+                                        '0.0.0.1': [3] * 6,
+                                        '0.0.0.2': [3] * 6,
+                                        '1.0.0.0': [3] * 6,
+                                        '1.0.0.1': [3] * 6,
+                                        '2.0.0.0': [3] * 6})
+        self.processor_non_responder3 = PostProcess(self.demo_data4, self.time_data4)
         self.range6 = [i for i in range(6)]
         self.zero6 = [0] * 6
 
@@ -74,143 +85,148 @@ class TestDataProcess(TestCase):
                                                                        '0.1.0.0': [1, 1, 3, 3, 3, 3],
                                                                        '0.2.0.0': [1, 3, 3, 3, 3, 3],
                                                                        '1.0.0.0': [1, 1, 1, 1, 1, 3]}))
+            assert_frame_equal(self.processor.predict.demo_data, pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+                                                                                      '0.1.0.0', '0.2.0.0', '1.0.0.0'],
+                                                                               'age': [1, 81, 45, 33, 20, 60]}))
+            assert_frame_equal(self.processor.predict.time_data, pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
+                                                                               '0.0.0.0': [3] * 6,
+                                                                               '0.0.0.1': [1, 1, 1, 3, 3, 3],
+                                                                               '0.0.1.0': [1, 1, 3, 3, 3, 3],
+                                                                               '0.1.0.0': [1, 1, 3, 3, 3, 3],
+                                                                               '0.2.0.0': [1, 3, 3, 3, 3, 3],
+                                                                               '1.0.0.0': [1, 1, 1, 1, 1, 3]}))
         except AssertionError:
             self.fail('init function error')
 
     def test_sampled_result_s(self):
-        kwargs = {
-            'sample_strategy': 'Same',
-            'gen_plot': True,
-            'saving_path_sampling': self.path + 'sample.png'
-        }
-        res = self.processor('AgeRegion', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        res = self.processor.predict.AgeRegion(6, self.range6, comparison=False, data_store_path=self.path,
+                                               sample_strategy='Same', gen_plot=True,
+                                               saving_path_sampling=self.path + 'sample.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Age', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        res = self.processor.predict.Age(6, self.range6, comparison=False, data_store_path=self.path,
+                                         sample_strategy='Same', gen_plot=True,
+                                         saving_path_sampling=self.path + 'sample.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Region', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        res = self.processor.predict.Region(6, self.range6, comparison=False, data_store_path=self.path,
+                                            sample_strategy='Same', gen_plot=True,
+                                            saving_path_sampling=self.path + 'sample.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Base', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        res = self.processor.predict.Base(6, self.range6, comparison=False, data_store_path=self.path,
+                                          sample_strategy='Same', gen_plot=True,
+                                          saving_path_sampling=self.path + 'sample.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
-        with self.assertRaises(ValueError):
-            res = self.processor('a', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
 
     def test_sampled_result_r(self):
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
         np.random.seed(1)
-        kwargs = {
-            'sample_strategy': 'Random',
-            'gen_plot': True,
-            'saving_path_sampling': self.path + 'sample.png'
-        }
-        res = self.processor('AgeRegion', 6, self.range6, comparison=False,
-                             data_store_path=self.path, **kwargs)
+        res = self.processor.predict.AgeRegion(6, self.range6, comparison=False, data_store_path=self.path,
+                                               sample_strategy='Random', gen_plot=True,
+                                               saving_path_sampling=self.path + 'sample.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Age', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        res = self.processor.predict.Age(6, self.range6, comparison=False, data_store_path=self.path,
+                                         sample_strategy='Random', gen_plot=True,
+                                         saving_path_sampling=self.path + 'sample.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        res = self.processor('Region', 6, self.range6, comparison=False,
-                             data_store_path=self.path, **kwargs)
+        res = self.processor.predict.Region(6, self.range6, comparison=False, data_store_path=self.path,
+                                            sample_strategy='Random', gen_plot=True,
+                                            saving_path_sampling=self.path + 'sample.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
-        kwargs['seed'] = 1
-        res = self.processor('Base', 6, self.range6, comparison=False, data_store_path=self.path, **kwargs)
+        res = self.processor.predict.Base(6, self.range6, comparison=False, data_store_path=self.path,
+                                          sample_strategy='Random', gen_plot=True, seed=1,
+                                          saving_path_sampling=self.path + 'sample.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
 
     def test_sampled_non_responder(self):
         with self.assertRaises(ValueError):
-            self.processor('Age', 6, self.range6, comparison=False,
-                           data_store_path=self.path, non_responder=True, non_resp_rate=0)
-        with self.assertRaises(ValueError):
-            self.processor('Base', 6, self.range6, comparison=False,
-                           data_store_path=self.path, non_responder=True, non_resp_rate=0)
-        with self.assertRaises(ValueError):
-            self.processor('a', 6, self.range6, comparison=False,
-                           data_store_path=self.path, non_responder=True, non_resp_rate=0)
-        with self.assertRaises(ValueError):
-            self.processor('AgeRegion', 6, self.range6, comparison=False,
-                           data_store_path=self.path, non_responder=True)
+            self.processor.predict.AgeRegion(6, self.range6, comparison=False, data_store_path=self.path,
+                                             non_responder=True)
         np.random.seed(1)
-        kwargs = {
-            'gen_plot': True,
-            'saving_path_sampling': self.path + 'sample_nonResp.png'
-        }
-        res = self.processor('AgeRegion', 6, self.range6, comparison=False, non_responder=True,
-                             data_store_path=self.path, non_resp_rate=0.1, **kwargs)
+        res = self.processor.predict.AgeRegion(6, self.range6, comparison=False, data_store_path=self.path,
+                                               gen_plot=True, non_resp_rate=0.1, non_responder=True,
+                                               saving_path_sampling=self.path + 'sample_nonResp.png')
         self.assertAlmostEqual(res[0], [self.range6, [1 / 6, 0.4, 2 / 3, 5 / 6, 1, 1]])
         assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
-        res = self.processor('AgeRegion', 6, self.range6, comparison=False, non_responder=True,
-                             data_store_path=self.path, non_resp_rate=0.9, **kwargs)
+        res = self.processor.predict.AgeRegion(6, self.range6, comparison=False, data_store_path=self.path,
+                                               gen_plot=True, non_resp_rate=0.9, non_responder=True,
+                                               saving_path_sampling=self.path + 'sample_nonResp.png')
         self.assertEqual(res[0], [self.range6, [0.0, np.nan, np.nan, 1.0, np.nan, np.nan]])
-        kwargs['proportion'] = 1
-        kwargs['sampling_percentage'] = 1
-        kwargs['seed'] = 1
-        res = self.processor_non_responder('AgeRegion', 3, self.range6, comparison=False, non_responder=True,
-                                           data_store_path=self.path, non_resp_rate=0.9, **kwargs)
+        res = self.processor_non_responder.predict.AgeRegion(3, self.range6, comparison=False,
+                                                             data_store_path=self.path, gen_plot=True,
+                                                             non_resp_rate=0.9, non_responder=True,
+                                                             proportion=1, sampling_percentage=1, seed=1,
+                                                             saving_path_sampling=self.path + 'sample_nonResp.png')
         self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
-        kwargs['seed'] = 2
-        res = self.processor_non_responder2('AgeRegion', 4, self.range6, comparison=False, non_responder=True,
-                                            data_store_path=self.path, non_resp_rate=0.8, **kwargs)
-        self.assertEqual(res[0], [self.range6, [np.nan, 1.0, np.nan, 1.0, 1.0, 1.0]])
-        kwargs = {
-            'gen_plot': True,
-            'saving_path_sampling': self.path + 'sample_nonResp.png'
-        }
-        res = self.processor('Region', 6, self.range6, comparison=False, non_responder=True,
-                             data_store_path=self.path, non_resp_rate=0.1, **kwargs)
-        self.assertEqual(res[0], [self.range6, [0.2, 1 / 3, 2 / 3, 5 / 6, 5 / 6, 1]])
+        res = self.processor_non_responder2.predict.AgeRegion(4, self.range6, comparison=False,
+                                                              data_store_path=self.path,
+                                                              gen_plot=True, non_resp_rate=0.8,
+                                                              non_responder=True, seed=2,
+                                                              saving_path_sampling=self.path + 'sample_nonResp.png')
+        self.assertEqual(res[0], [self.range6, [np.nan, 1.0, np.nan, 1.0, 1.0, np.nan]])
+        res = self.processor.predict.Region(6, self.range6, comparison=False, data_store_path=self.path,
+                                            gen_plot=True, non_resp_rate=0.1, non_responder=True,
+                                            saving_path_sampling=self.path + 'sample_nonResp.png')
+        self.assertEqual(res[0], [self.range6, [1 / 6, 1 / 3, 2 / 3, 5 / 6, 5 / 6, 1]])
         assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
-        res = self.processor('Region', 6, self.range6, comparison=False, non_responder=True,
-                             data_store_path=self.path, non_resp_rate=0.9, **kwargs)
+        res = self.processor.predict.Region(6, self.range6, comparison=False, data_store_path=self.path,
+                                            gen_plot=True, non_resp_rate=0.9, non_responder=True,
+                                            saving_path_sampling=self.path + 'sample_nonResp.png')
         self.assertEqual(res[0], [self.range6, [0.0, np.nan, np.nan, 1.0, np.nan, 1.0]])
         np.random.seed(1)
-        kwargs['proportion'] = 1
-        kwargs['sampling_percentage'] = 1
-        res = self.processor_non_responder('Region', 3, self.range6, comparison=False, non_responder=True,
-                                           data_store_path=self.path, non_resp_rate=0.9, **kwargs)
-        self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
+        res = self.processor_non_responder.predict.Region(3, self.range6, comparison=False,
+                                                          data_store_path=self.path, gen_plot=True,
+                                                          non_resp_rate=0.7, non_responder=True,
+                                                          proportion=1, sampling_percentage=1,
+                                                          saving_path_sampling=self.path + 'sample_nonResp.png')
+        self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, np.nan, 1.0]])
         np.random.seed(1)
-        res = self.processor_non_responder2('Region', 4, self.range6, comparison=False, non_responder=True,
-                                            data_store_path=self.path, non_resp_rate=0.9, **kwargs)
-        self.assertEqual(res[0], [self.range6, [1.0, 1.0, 1.0, 1.0, 1.0, np.nan]])
+        res = self.processor_non_responder3.predict.AgeRegion(6, self.range6, comparison=False,
+                                                              data_store_path=self.path, gen_plot=True,
+                                                              non_resp_rate=0.8, non_responder=True,
+                                                              sampling_percentage=1,
+                                                              saving_path_sampling=self.path + 'sample_nonResp.png')
+        self.assertEqual(res[0], [self.range6, [np.nan, 1.0, 1.0, 1.0, np.nan, 1.0]])
 
     def test_compare(self):
-        kwargs = {
-            'sample_strategy': 'Same',
-            'saving_path_compare': self.path + 'compare.png',
-            'gen_plot': True
-        }
-        _, diff = self.processor('AgeRegion', 6, self.range6, comparison=True,
-                                 data_store_path=self.path, **kwargs)
+        _, diff = self.processor.predict.AgeRegion(6, self.range6, comparison=True,
+                                                   data_store_path=self.path, gen_plot=True,
+                                                   sample_strategy='Same',
+                                                   saving_path_compare=self.path + 'compare.png')
         self.assertEqual(list(diff), self.zero6)
         assert os.path.exists(self.path + 'compare.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'compare.png'):
             os.remove(self.path + 'compare.png')
-        kwargs = {
-            'saving_path_compare': self.path + 'compare.png',
-            'gen_plot': True
-        }
-        _, diff = self.processor('AgeRegion', 6, self.range6, comparison=True,
-                                 non_responder=True, non_resp_rate=0,
-                                 data_store_path=self.path, **kwargs)
+        _, diff = self.processor.predict.AgeRegion(6, self.range6, comparison=True,
+                                                   data_store_path=self.path, gen_plot=True,
+                                                   non_responder=True, non_resp_rate=0,
+                                                   saving_path_compare=self.path + 'compare.png')
+        self.assertEqual(list(diff), self.zero6)
+        assert os.path.exists(self.path + 'compare.png'), "Plot file was not saved"
+        if os.path.exists(self.path + 'compare.png'):
+            os.remove(self.path + 'compare.png')
+        _, diff = self.processor.predict.Age(6, self.range6, comparison=True,
+                                             data_store_path=self.path, gen_plot=True,
+                                             saving_path_compare=self.path + 'compare.png')
         self.assertEqual(list(diff), self.zero6)
         assert os.path.exists(self.path + 'compare.png'), "Plot file was not saved"
 
@@ -368,24 +384,6 @@ class TestDataProcess(TestCase):
         self.assertFalse(os.path.exists(dir_name + temp_folder_name + '/job_id_1'))
         if os.path.exists(dir_name + temp_folder_name):
             os.rmdir(dir_name + temp_folder_name)
-
-    @patch('builtins.print')
-    def test_mock_print_normal(self, mock_print):
-        kwargs = {
-            'a': 1
-        }
-        _ = self.processor('AgeRegion', 6, self.range6,
-                           data_store_path=self.path, comparison=False, **kwargs)
-        mock_print.assert_called_with("The following parameters provided are not used: a")
-
-    @patch('builtins.print')
-    def test_mock_print_non_responder(self, mock_print):
-        kwargs = {
-            'a': 1
-        }
-        _ = self.processor('AgeRegion', 6, self.range6, comparison=False,
-                           non_responder=True, data_store_path=self.path, non_resp_rate=0, **kwargs)
-        mock_print.assert_called_with("The following parameters provided are not used: a")
 
     @patch('builtins.print')
     def test_mock_print_best_method_parallel(self, mock_print):
