@@ -220,7 +220,7 @@ class PostProcess():
 
                     # Get the results of people sampled
                     X = SamplingMaker(non_resp_rate=non_resp_rate, keeptrack=True, TheData=self.time_data,
-                                    false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
 
                     # After each sample, now deal with the additional samples
@@ -299,7 +299,7 @@ class PostProcess():
                                 # Then add positive cases from other groups(without additional samples)
                                 # Then we can calculate this robust infected rate
                                 infected_rate.append((spaces_posi + other_posi)
-                                                    / (spaces + len(people) - count_total - other_nonResp))
+                                                     / (spaces + len(people) - count_total - other_nonResp))
                             else:  # If there is no one in these groups responded
                                 try:
                                     # Then try to use other groups' data to be the infected rate
@@ -311,7 +311,7 @@ class PostProcess():
                         # Then directly calculate the infected rate as the output
                         try:
                             infected_rate_ite = (ite.iloc[0].value_counts().get('Positive', 0)
-                                                / (ite.iloc[0].value_counts().get('Positive', 0)
+                                                 / (ite.iloc[0].value_counts().get('Positive', 0)
                                                     + ite.iloc[0].value_counts().get('Negative', 0)))
                         except ZeroDivisionError:
                             # There is the possibility that all people do not respond,
@@ -326,8 +326,8 @@ class PostProcess():
                         if ite.iloc[0, j] == 'NonResponder':
                             non_resp_id.append(ite.columns[j])
                     additional_sample = sampler_class.additional_nonresponder(non_resp_id=non_resp_id,
-                                                                            sampling_percentage=sampling_percentage,
-                                                                            proportion=proportion, threshold=threshold)
+                                                                              sampling_percentage=sampling_percentage,
+                                                                              proportion=proportion, threshold=threshold)
             else:
                 if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
                     infected_rate = []
@@ -342,7 +342,7 @@ class PostProcess():
 
                     # Get results of each people sampled
                     X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
-                                    false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=0, false_negative=0, threshold=None)
                     ite = X(time_sample, people)
 
                     # Output the infected rate
@@ -367,7 +367,7 @@ class PostProcess():
 
                         # Get the results of each people sampled
                         X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
-                                        false_positive=0, false_negative=0, threshold=None)
+                                          false_positive=0, false_negative=0, threshold=None)
                         ite = X([time_sample[i]], people)
 
                         # Output the infected rate
@@ -443,7 +443,7 @@ class PostProcess():
 
                     # Get the results of each people sampled
                     X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
-                                    false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
 
                     # Output the infected rate
@@ -543,10 +543,10 @@ class PostProcess():
             except KeyError:
                 pass
         res, diff = self._sampled_result(sampling_method=sampling_method, sample_size=sample_size,
-                                            time_sample=time_sample, non_resp_rate=non_resp_rate,
-                                            data_store_path=data_store_path,
-                                            comparison=comparison, non_responder=non_responder,
-                                            **sampling_input)
+                                         time_sample=time_sample, non_resp_rate=non_resp_rate,
+                                         data_store_path=data_store_path,
+                                         comparison=comparison, non_responder=non_responder,
+                                         **sampling_input)
         return res, diff
 
     def _sampled_result(self, sampling_method, sample_size, time_sample, sample_strategy='Random',
