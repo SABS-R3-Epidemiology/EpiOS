@@ -112,7 +112,7 @@ class PostProcess():
                 The path to save figure showing predicted infection level
 
                 Default = None
-            saving_path_compare : 
+            saving_path_compare : str
                 The path to save figure showing comparison between predicted
                 and true infection level
 
@@ -218,7 +218,7 @@ class PostProcess():
                 The path to save figure showing predicted infection level
 
                 Default = None
-            saving_path_compare : 
+            saving_path_compare : str
                 The path to save figure showing comparison between predicted
                 and true infection level
 
@@ -304,7 +304,7 @@ class PostProcess():
                 The path to save figure showing predicted infection level
 
                 Default = None
-            saving_path_compare : 
+            saving_path_compare : str
                 The path to save figure showing comparison between predicted
                 and true infection level
 
@@ -386,7 +386,7 @@ class PostProcess():
                 The path to save figure showing predicted infection level
 
                 Default = None
-            saving_path_compare : 
+            saving_path_compare : str
                 The path to save figure showing comparison between predicted
                 and true infection level
 
