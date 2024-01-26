@@ -204,13 +204,15 @@ class PostProcess():
                     if i == 0:
                         if sampling_method == 'AgeRegion':
                             sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
-                                                             num_age_group=num_age_group, age_group_width=age_group_width)
+                                                             num_age_group=num_age_group,
+                                                             age_group_width=age_group_width)
                         else:
                             sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
                     else:
                         if sampling_method == 'AgeRegion':
                             sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
-                                                             num_age_group=num_age_group, age_group_width=age_group_width)
+                                                             num_age_group=num_age_group,
+                                                             age_group_width=age_group_width)
                         else:
                             sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
                     try:
@@ -327,7 +329,8 @@ class PostProcess():
                             non_resp_id.append(ite.columns[j])
                     additional_sample = sampler_class.additional_nonresponder(non_resp_id=non_resp_id,
                                                                               sampling_percentage=sampling_percentage,
-                                                                              proportion=proportion, threshold=threshold)
+                                                                              proportion=proportion,
+                                                                              threshold=threshold)
             else:
                 if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
                     infected_rate = []
@@ -353,14 +356,17 @@ class PostProcess():
                     for i in range(len(time_sample)):  # Sample at each sample time points
                         if i == 0:  # First time sampling, need pre_process
                             if sampling_method == 'AgeRegion':
-                                sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
-                                                                 num_age_group=num_age_group, age_group_width=age_group_width)
+                                sampler_class = SamplerAgeRegion(data=self.demo_data,
+                                                                 data_store_path=data_store_path,
+                                                                 num_age_group=num_age_group,
+                                                                 age_group_width=age_group_width)
                             else:
                                 sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
                         else:  # After the data process, we can directly read files processed at the first time
                             if sampling_method == 'AgeRegion':
                                 sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
-                                                                 num_age_group=num_age_group, age_group_width=age_group_width)
+                                                                 num_age_group=num_age_group,
+                                                                 age_group_width=age_group_width)
                             else:
                                 sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
                         people = sampler_class.sample(sample_size=sample_size)
