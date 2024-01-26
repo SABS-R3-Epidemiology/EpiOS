@@ -465,6 +465,13 @@ class PostProcess():
                                       age_group_width=5, data_store_path='./input/', sampling_percentage=0.1,
                                       proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
                                       scale_method='proportional'):
+            '''
+            This is the function really doing work.
+
+            The reason why this wrapper function is set up is to reduce repeated code.
+
+            The Region and AgeRegion methods share very similar code structures.
+            '''
             if seed is not None:
                 np.random.seed(seed)
 
@@ -682,6 +689,13 @@ class PostProcess():
                               age_group_width=5, data_store_path='./input/',
                               seed=None, saving_path_compare=None,
                               scale_method='proportional'):
+            '''
+            This is the function really doing work.
+
+            The reason why this wrapper function is set up is to reduce repeated code.
+
+            The Age and Base methods share very similar code structures.
+            '''
             if seed is not None:
                 np.random.seed(seed)
 
@@ -1056,71 +1070,46 @@ class PostProcess():
                 for method in recognised_methods:
                     result_within_method = []
                     method_string = method.split('-')
-                    if method_string[1] == 'Same':
-                        input_kwargs = {
-                            'sample_strategy': 'Same'
-                        }
+                    input_kwargs = {
+                        'sample_strategy': method_string[1]
+                    }
 
-                        # Here, we need to distuiguish between Age-related and
-                        # Age-unrelated, since the inputs are different
-                        # For age-related, they need the num_age_group and
-                        # age_group_width variables
-                        if method_string[0] == 'Base' or method_string[0] == 'Region':
+                    # Here, we need to distuiguish between Age-related and
+                    # Age-unrelated, since the inputs are different
+                    # For age-related, they need the num_age_group and
+                    # age_group_width variables
+                    if method_string[0] == 'Base' or method_string[0] == 'Region':
 
-                            # Since there is no parameters to vary,
-                            # So just like above, directly output
-                            # the result
+                        # Since there is no parameters to vary,
+                        # So just like above, directly output
+                        # the result
+                        _, diff = self(method_string[0], sample_size,
+                                       time_sample, data_store_path=data_store_path,
+                                       **input_kwargs)
+                        result_within_method.append(self._diff_processing(diff, metric))
+                    elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
+
+                        # Now we have parameters to vary
+                        # Firstly we should collect all parameters can vary
+                        # And put their ranges into a list
+                        all_ranges = []
+                        for key in useful_inputs:
+                            all_ranges.append(useful_inputs[key])
+
+                        # Use this list to generate all possible combinations
+                        # of different parameters
+                        all_combinations = list(product(*all_ranges))
+
+                        # For each combination, do a sampling and output result
+                        for combination in all_combinations:
+                            count = 0
+                            for key in useful_inputs:
+                                input_kwargs[key[:-6]] = combination[count]
+                                count += 1
                             _, diff = self(method_string[0], sample_size,
                                            time_sample, data_store_path=data_store_path,
                                            **input_kwargs)
                             result_within_method.append(self._diff_processing(diff, metric))
-                        elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
-
-                            # Now we have parameters to vary
-                            # Firstly we should collect all parameters can vary
-                            # And put their ranges into a list
-                            all_ranges = []
-                            for key in useful_inputs:
-                                all_ranges.append(useful_inputs[key])
-
-                            # Use this list to generate all possible combinations
-                            # of different parameters
-                            all_combinations = list(product(*all_ranges))
-
-                            # For each combination, do a sampling and output result
-                            for combination in all_combinations:
-                                count = 0
-                                for key in useful_inputs:
-                                    input_kwargs[key[:-6]] = combination[count]
-                                    count += 1
-                                _, diff = self(method_string[0], sample_size,
-                                               time_sample, data_store_path=data_store_path,
-                                               **input_kwargs)
-                                result_within_method.append(self._diff_processing(diff, metric))
-                    elif method_string[1] == 'Random':
-                        # Exactly the same logic as above
-                        input_kwargs = {
-                            'sample_strategy': 'Random'
-                        }
-                        if method_string[0] == 'Base' or method_string[0] == 'Region':
-                            _, diff = self(method_string[0], sample_size,
-                                           time_sample, data_store_path=data_store_path,
-                                           **input_kwargs)
-                            result_within_method.append(self._diff_processing(diff, metric))
-                        elif method_string[0] == 'Age' or method_string[0] == 'AgeRegion':
-                            all_ranges = []
-                            for key in useful_inputs:
-                                all_ranges.append(useful_inputs[key])
-                            all_combinations = list(product(*all_ranges))
-                            for combination in all_combinations:
-                                count = 0
-                                for key in useful_inputs:
-                                    input_kwargs[key[:-6]] = combination[count]
-                                    count += 1
-                                _, diff = self(method_string[0], sample_size,
-                                               time_sample, data_store_path=data_store_path,
-                                               **input_kwargs)
-                                result_within_method.append(self._diff_processing(diff, metric))
                     res_across_methods.append(result_within_method)
                 if job_id is not None:
                     self._clean_up(temp_folder_name=temp_folder_name, data_store_path=data_store_path)
