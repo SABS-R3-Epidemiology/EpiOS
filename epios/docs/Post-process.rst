@@ -5,13 +5,18 @@ Post-process
 .. currentmodule:: epios
 
 Overview:
+---------
 
 - :class:`PostProcess`
 
-
 .. autoclass:: PostProcess
-    :special-members: __call__
-    :members: best_method
+   :members: best_method
+   :private-members: predict
+
+   .. autoclass:: predict
+      :members: AgeRegion, Region, Age, Base
+
+
 
 Here is an example of using `PostProcess`
 -----------------------------------------
@@ -29,14 +34,13 @@ Here is an example of using `PostProcess`
     postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data,
                                     data_store_path='./input/')
     
-    # Define the input keywords for doing one single comparison
-    sampling_kwargs = {
-        'gen_plot': True,
-        'sample_strategy': 'Random'
-    }
-    result, diff = postprocess(sampling_method='AgeRegion', sample_size=3,
-                               time_sample=[0, 1, 2, 3], comparison=True,
-                               non_responder=False, **sampling_kwargs)
+    # Do prediction and comparison based age-region stratification
+    result, diff = postprocess.predict.AgeRegion(sample_size=3,
+                                                 time_sample=[0, 1, 2, 3],
+                                                 comparison=True,
+                                                 non_responder=False,
+                                                 gen_plot=True,
+                                                 sample_strategy='Random')
     
     # Define the input keywards for finding the best method
     best_method_kwargs = {

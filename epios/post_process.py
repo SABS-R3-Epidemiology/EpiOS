@@ -23,7 +23,7 @@ class PostProcess():
     -----------
 
     Define an instance and input the demographical and time data of the population
-    Then use __call__ method directly to generate plots and comparison
+    Then use self.predict to generate plots and comparison
 
     To define an instance of PostProcess, you need the following inputs:
 
@@ -40,11 +40,32 @@ class PostProcess():
     def __init__(self, demo_data: pd.DataFrame, time_data: pd.DataFrame):
         self.demo_data = demo_data
         self.time_data = time_data
-        self.predict = self._predict(demo_data=demo_data, time_data=time_data)
+        self.predict = self.predict(demo_data=demo_data, time_data=time_data)
 
-    class _predict():
+    class predict():
+        '''
+        This sub-class is to automatically sample the population at several given time points.
+
+        This sub-class is automatically defined when an instance of PostProcess is defined.
+
+        To use this class, call methods defined under this class to sample and generate plots.
+
+        Parameters:
+        -----------
+
+        demo_data : pandas.DataFrame
+            The geographical data of the population
+        time_data : pandas.DataFrame
+            The infection data of the population at different time points
+
+        '''
 
         def __init__(self, demo_data: pd.DataFrame, time_data: pd.DataFrame):
+            '''
+            This is to put the information within the PostProcess class into this sub-class.
+
+            This will be automatically run when an instance of PostProcess is defined.
+            '''
             self.demo_data = demo_data
             self.time_data = time_data
 
@@ -54,6 +75,84 @@ class PostProcess():
                       age_group_width=5, data_store_path='./input/', sampling_percentage=0.1,
                       proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
                       scale_method='proportional'):
+            '''
+            This class is to sample and plot figures using both age and region stratification.
+
+            Parameters:
+            -----------
+
+            sample_size : int
+                The size of sample
+            time_sample : list
+                A list of time points to sample the population
+            non_responder : bool
+                Turn on or off the non-responder function
+
+                Default = False
+            non_resp_rate : float between 0 and 1
+                The probability that a person does not respond
+
+                Default = None
+            comparison : bool
+                Turn on or off the comparison between the sampled result and the true result
+
+                Default = True
+            sample_strategy : str
+                A specific string indicating whether want to change sampled people
+                between each sampling
+
+                Strings can be identified: ['Random', 'Same']
+
+                Default = 'Random'
+            gen_plot : bool
+                Whether or not to generate plots
+
+                Default = False
+            saving_path_sampling : str
+                The path to save figure showing predicted infection level
+
+                Default = None
+            saving_path_compare : 
+                The path to save figure showing comparison between predicted
+                and true infection level
+
+                Default = None
+            num_age_group : int
+                Indicating how many age groups are there.
+
+                *The last group includes age >= some threshold*
+
+                Default = 17
+            age_group_width : int
+                Indicating the width of each age group(except for the last group)
+
+                Default = 5
+            scale_method : str
+                Specific string telling how to compare the sampled data with the true population
+
+                Default = 'proportional'
+            sampling_percentage : float, between 0 and 1
+                The proportion of additional samples taken from a specific (age-)regional group
+
+                Default = 0.1 (Only for non-responders)
+            proportion : float, between 0 and 1
+                The proportion of total groups to be sampled additionally
+
+                Default = 0.01 (Only for non-responders)
+            threshold : NoneType or Int
+                The lowest number of groups to be sampled additionally
+
+                Default = None (Only for non-responders)
+            data_store_path : str
+                The path to store data generated during sampling
+
+                Default = ./input/
+            seed : int or None
+                The seed for random numbers
+
+                Default = None
+
+            '''
             res, diff = self._wrapper_Region_AgeRegion(
                 sampling_method='AgeRegion',
                 sample_size=sample_size,
@@ -82,6 +181,74 @@ class PostProcess():
                    data_store_path='./input/', sampling_percentage=0.1,
                    proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
                    scale_method='proportional'):
+            '''
+            This class is to sample and plot figures using both age and region stratification.
+
+            Parameters:
+            -----------
+
+            sample_size : int
+                The size of sample
+            time_sample : list
+                A list of time points to sample the population
+            non_responder : bool
+                Turn on or off the non-responder function
+
+                Default = False
+            non_resp_rate : float between 0 and 1
+                The probability that a person does not respond
+
+                Default = None
+            comparison : bool
+                Turn on or off the comparison between the sampled result and the true result
+
+                Default = True
+            sample_strategy : str
+                A specific string indicating whether want to change sampled people
+                between each sampling
+
+                Strings can be identified: ['Random', 'Same']
+
+                Default = 'Random'
+            gen_plot : bool
+                Whether or not to generate plots
+
+                Default = False
+            saving_path_sampling : str
+                The path to save figure showing predicted infection level
+
+                Default = None
+            saving_path_compare : 
+                The path to save figure showing comparison between predicted
+                and true infection level
+
+                Default = None
+            scale_method : str
+                Specific string telling how to compare the sampled data with the true population
+
+                Default = 'proportional'
+            sampling_percentage : float, between 0 and 1
+                The proportion of additional samples taken from a specific (age-)regional group
+
+                Default = 0.1 (Only for non-responders)
+            proportion : float, between 0 and 1
+                The proportion of total groups to be sampled additionally
+
+                Default = 0.01 (Only for non-responders)
+            threshold : NoneType or Int
+                The lowest number of groups to be sampled additionally
+
+                Default = None (Only for non-responders)
+            data_store_path : str
+                The path to store data generated during sampling
+
+                Default = ./input/
+            seed : int or None
+                The seed for random numbers
+
+                Default = None
+
+            '''
             res, diff = self._wrapper_Region_AgeRegion(
                 sampling_method='Region',
                 sample_size=sample_size,
@@ -108,6 +275,64 @@ class PostProcess():
                 age_group_width=5, data_store_path='./input/',
                 seed=None, saving_path_compare=None,
                 scale_method='proportional'):
+            '''
+            This class is to sample and plot figures using both age and region stratification.
+
+            Parameters:
+            -----------
+
+            sample_size : int
+                The size of sample
+            time_sample : list
+                A list of time points to sample the population
+            comparison : bool
+                Turn on or off the comparison between the sampled result and the true result
+
+                Default = True
+            sample_strategy : str
+                A specific string indicating whether want to change sampled people
+                between each sampling
+
+                Strings can be identified: ['Random', 'Same']
+
+                Default = 'Random'
+            gen_plot : bool
+                Whether or not to generate plots
+
+                Default = False
+            saving_path_sampling : str
+                The path to save figure showing predicted infection level
+
+                Default = None
+            saving_path_compare : 
+                The path to save figure showing comparison between predicted
+                and true infection level
+
+                Default = None
+            num_age_group : int
+                Indicating how many age groups are there.
+
+                *The last group includes age >= some threshold*
+
+                Default = 17
+            age_group_width : int
+                Indicating the width of each age group(except for the last group)
+
+                Default = 5
+            scale_method : str
+                Specific string telling how to compare the sampled data with the true population
+
+                Default = 'proportional'
+            data_store_path : str
+                The path to store data generated during sampling
+
+                Default = ./input/
+            seed : int or None
+                The seed for random numbers
+
+                Default = None
+
+            '''
             res, diff = self._wrapper_Age_Base(
                 sampling_method='Age',
                 sample_size=sample_size,
@@ -132,6 +357,54 @@ class PostProcess():
                  age_group_width=5, data_store_path='./input/',
                  seed=None, saving_path_compare=None,
                  scale_method='proportional'):
+            '''
+            This class is to sample and plot figures using both age and region stratification.
+
+            Parameters:
+            -----------
+
+            sample_size : int
+                The size of sample
+            time_sample : list
+                A list of time points to sample the population
+            comparison : bool
+                Turn on or off the comparison between the sampled result and the true result
+
+                Default = True
+            sample_strategy : str
+                A specific string indicating whether want to change sampled people
+                between each sampling
+
+                Strings can be identified: ['Random', 'Same']
+
+                Default = 'Random'
+            gen_plot : bool
+                Whether or not to generate plots
+
+                Default = False
+            saving_path_sampling : str
+                The path to save figure showing predicted infection level
+
+                Default = None
+            saving_path_compare : 
+                The path to save figure showing comparison between predicted
+                and true infection level
+
+                Default = None
+            scale_method : str
+                Specific string telling how to compare the sampled data with the true population
+
+                Default = 'proportional'
+            data_store_path : str
+                The path to store data generated during sampling
+
+                Default = ./input/
+            seed : int or None
+                The seed for random numbers
+
+                Default = None
+
+            '''
             res, diff = self._wrapper_Age_Base(
                 sampling_method='Base',
                 sample_size=sample_size,
@@ -153,7 +426,8 @@ class PostProcess():
         def _compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path_compare=None):
             '''
             Generate a graph comparing the difference between predicted and real infection level
-            This method should not be used directly, it is integrated within the __callable__ method
+            This method should not be used directly, it is integrated within methods AgeRegion, Age,
+            Region and Base.
 
             '''
             # Based on the input, use different scale method to estimate the true infection number
@@ -481,7 +755,8 @@ class PostProcess():
     def __call__(self, sampling_method, sample_size, time_sample, non_responder=False, comparison=True,
                  non_resp_rate=None, data_store_path='./input/', **kwargs):
         '''
-        Make this class callable to run the post process part just by calling the instance
+        This method need not to be called directly.
+        This is mainly to be compatible with the following methods _iteration_once and best_method
 
         Parameters:
         -----------
@@ -527,10 +802,6 @@ class PostProcess():
                     The lowest number of groups to be sampled additionally
 
                     Default = None (Only for non-responders)
-                data_store_path : str
-                    The path to store data generated during sampling
-
-                    Default = ./input/
                 seed : int or None
                     The seed for random numbers
 
