@@ -16,7 +16,7 @@ class TestRS(TestCase):
             self.assertEqual(ReScaler(false_positive=1, false_negative=1)(x), 1 - x)
 
     def test_smooth(self):
-        x=array([1.0, 2.0, 3.0])
+        x = array([1.0, 2.0, 3.0])
         try:
             ReScaler(smoothing=lambda x: 1)(x)
             raise Exception('shall not work')
