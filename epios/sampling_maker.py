@@ -53,7 +53,6 @@ class SamplingMaker():
         self.keep_track = keep_track
         self.data = data
 
-
     def __call__(self, sampling_times, people):
 
         '''
@@ -72,18 +71,17 @@ class SamplingMaker():
         '''
 
         if self.keep_track:
-            STATUSES = self.data.loc[sampling_times,people]
+            STATUSES = self.data.loc[sampling_times, people]
             return STATUSES.apply(lambda x: list(map(self.testresult, x)))
         else:
             # STATUSES is an iterator that returns the loads of the next group of people selected for testing
-            # SINGLETEST is a function that maps testresult on the loads of a group of people, returning the actial results
+            # SINGLETEST is a function that maps testresult on the loads of a group of people
             times_people = zip(sampling_times, people)
             STATUSES = map(lambda t: self.data.loc[[t[0]], t[1]], times_people)
             SINGLETEST = lambda x: x.apply(lambda x: list(map(self.testresult, x)))
             return list(map(SINGLETEST, STATUSES))
 
-
-    def testresult(self,load):
+    def testresult(self, load):
 
         '''
         Method to return the result for one test
