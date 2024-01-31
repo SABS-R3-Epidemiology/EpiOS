@@ -36,7 +36,7 @@ class SamplingMaker():
 
     '''
 
-    def __init__(self, nonresprate=0, keeptrack=False, TheData=None,
+    def __init__(self, nonresprate=0, keep_track=False, data=None,
                  false_positive=0, false_negative=0, threshold=None):
         self.recognised = ['InfectASympt', 'InfectMild', 'InfectGP', 'InfectHosp', 'InfectICU', 'InfectICURecov']
         self.threshold = threshold
