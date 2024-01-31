@@ -31,11 +31,12 @@ class TestSM(TestCase):
     def test__call__(self):
         t = [0, 2]
         X = SamplingMaker(keep_track=True, threshold=0.5, data=pd.DataFrame({0: [0, 0, 1],
-                                                                               1: [1, 1, 0], 2: [2, 2, 2]}))
+                                                                             1: [1, 1, 0],
+                                                                             2: [2, 2, 2]}))
         self.assertFalse((X(t, [0, 1]) != pd.DataFrame({0: ['Negative', 'Positive'],
                                                         1: ['Positive', 'Negative']}, index=[0, 2])).any(axis=None))
         X = SamplingMaker(data=pd.DataFrame({0: ['Susceptible', 'Susceptible', 'InfectASympt'],
-                                                1: ['InfectASympt', 'InfectASympt', 'Susceptible'], 2: [2, 2, 2]}))
+                                             1: ['InfectASympt', 'InfectASympt', 'Susceptible'], 2: [2, 2, 2]}))
         self.assertFalse((X(t, [[0, 1], [0, 1]])[0] != pd.DataFrame({0: 'Negative',
                                                                      1: 'Positive'}, index=[0])).any(axis=None))
         self.assertFalse((X(t, [[0, 1], [0, 1]])[1] != pd.DataFrame({0: 'Positive',

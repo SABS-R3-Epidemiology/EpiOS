@@ -8,9 +8,9 @@ class TestRS(TestCase):
     def test__call__(self):
         x = rand()
         self.assertEqual(ReScaler()(x), x)
-        self.assertEqual(ReScaler(false_positive = 1, false_negative = 1)(x), 1 - x)
+        self.assertEqual(ReScaler(false_positive=1, false_negative=1)(x), 1 - x)
         try:
-            ReScaler(false_positive = x, false_negative = 1-x)
+            ReScaler(false_positive=x, false_negative=1 - x)
             raise Exception('shall not work')
         except:
             pass
