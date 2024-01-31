@@ -2,7 +2,7 @@ from numpy.random import binomial
 
 
 class SamplingMaker():
-    
+
     '''
     Class to return the results of sampling
     ---------------------------------------
@@ -11,7 +11,7 @@ class SamplingMaker():
             The probability that the result of a test is 'NonResponder',
             despite infectious status and viral load.
             Default is zero.
-        threshold (float or None): 
+        threshold (float or None):
             If the viral load is higher then the threshold,
             then the result of the test will be positive,
             otherwise it will be negative.
@@ -34,8 +34,8 @@ class SamplingMaker():
         data (pandas.DataFrame):
             index is the list of times the simulation ran.
             columns is the list of IDs of the entire populations.
-            If threshold is None this contains the infectious statuses of the entire population through the all simulation
-            Otherwise this contains the viral loads of the entire population through the all simulation
+            If threshold is None this contains the infectious statuses of the entire population.
+            Otherwise this contains the viral loads of the entire population.
     Methods:
         __init__: fills the fields above.
         __call__: returns the results for all the planned tests.
@@ -77,8 +77,8 @@ class SamplingMaker():
         else:
             # STATUSES is an iterator that returns the loads of the next group of people selected for testing
             # SINGLETEST is a function that maps testresult on the loads of a group of people, returning the actial results
-            times_people=zip(sampling_times, people)
-            STATUSES = map(lambda t:self.data.loc[[t[0]],t[1]],times_people)
+            times_people = zip(sampling_times, people)
+            STATUSES = map(lambda t: self.data.loc[[t[0]], t[1]], times_people)
             SINGLETEST = lambda x: x.apply(lambda x: list(map(self.testresult, x)))
             return list(map(SINGLETEST, STATUSES))
 
