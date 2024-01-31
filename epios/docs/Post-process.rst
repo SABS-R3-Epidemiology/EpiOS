@@ -61,7 +61,7 @@ Here is an example of using `PostProcess`
             sample_size=3,
             hyperparameter_autotune=True,
             non_responder=False,
-            sampling_interval=1,
+            sampling_interval=7,
             iteration=1,
             # When considering non-responders, input the following line
             # non_resp_rate=0.1,
