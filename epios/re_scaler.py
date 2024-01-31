@@ -36,20 +36,20 @@ class ReScaler():
 
     def __call__(self, observation, times=None):
         estimates = (array(observation) - self.false_positive) / (1 - self.false_negative - self.false_positive)
-        if self.smoothing == None:
+        if self.smoothing is None:
             return estimates
         elif times is None:
             raise Exception('please insert times of sampling')
         else:
-            smooth_estimate=[]
+            smooth_estimate = []
             for n in range(len(times)):
                 temp = array([self.smoohting(times[n] - times[k]) for k in range(n+1)])
                 a = temp.sum()
-                b = (temp*times[0:n+1]).sum()
-                c = (temp*(times[0:n+1]**2)).sum()
-                A = (temp*estimates[0:n+1]).sum()
-                B = (temp*times[0:n+1]*estimates[0:n+1]).sum()
-                m0 = (A*c-B*b) / (a*c - b**2)
-                m1 = (B*a-A*b) / (a*c - b**2)
-                smooth_estimate.append(m0 + m1*times[n])
+                b = (temp * times[0:n + 1]).sum()
+                c = (temp * (times[0:n + 1]**2)).sum()
+                A = (temp * estimates[0:n + 1]).sum()
+                B = (temp * times[0:n + 1]*estimates[0:n + 1]).sum()
+                m0 = (A * c - B * b) / (a * c - b**2)
+                m1 = (B * a - A * b) / (a * c - b**2)
+                smooth_estimate.append(m0 + m1 * times[n])
             return array(smooth_estimate)
