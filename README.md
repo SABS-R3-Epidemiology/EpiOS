@@ -90,7 +90,8 @@ pip install -e path/to/pyEpiabm
  # Base-Random, Region-Random and AgeRegion-Random
 
  # And suppose we want to turn on the parallel computation to speed up
-   if __name__ == '__main__':  # This line can be omitted when not using parallel computation
+   if __name__ == '__main__':
+      # This 'if' statement can be omitted when not using parallel computation
       postprocess.best_method(
          methods=[
                'Age',
