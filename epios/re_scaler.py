@@ -41,9 +41,9 @@ class ReScaler():
         elif times is None:
             raise Exception('please insert times of sampling')
         else:
-            smooth_estimate = []
-            for n in range(len(times)):
-                temp = array([self.smoohting(times[n] - times[k]) for k in range(n + 1)])
+            smooth_estimate = [estimates[0]]
+            for n in range(1, len(times)):
+                temp = array([self.smoothing(times[n] - times[k]) for k in range(n + 1)])
                 a = temp.sum()
                 b = (temp * times[0:n + 1]).sum()
                 c = (temp * (times[0:n + 1]**2)).sum()
