@@ -15,4 +15,5 @@ class TestRS(TestCase):
         try:
             ReScaler(false_positive=x, false_negative=1-x)
             raise Exception('shall not work')
-        except: pass
+        except:
+            pass
