@@ -10,9 +10,9 @@ Overview:
 
 .. autoclass:: PostProcess
    :members: best_method
-   :private-members: prediction
+   :private-members: Prediction
 
-   .. autoclass:: prediction
+   .. autoclass:: Prediction
       :members: AgeRegion, Region, Age, Base
 
 
