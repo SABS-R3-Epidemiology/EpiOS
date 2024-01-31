@@ -40,9 +40,9 @@ class PostProcess():
     def __init__(self, demo_data: pd.DataFrame, time_data: pd.DataFrame):
         self.demo_data = demo_data
         self.time_data = time_data
-        self.predict = self.predict(demo_data=demo_data, time_data=time_data)
+        self.predict = self.prediction(demo_data=demo_data, time_data=time_data)
 
-    class predict():
+    class prediction():
         '''
         This sub-class is to automatically sample the population at several given time points.
 
