@@ -36,8 +36,8 @@ class SamplingMaker():
 
     '''
 
-    def __init__(self, nonresp_rate=0, keep_track=False, data=None, false_positive=0, false_negative=0, threshold=None):
-        self.nonresp_rate = nonresp_rate
+    def __init__(self, nonresprate=0, keeptrack=False, TheData=None,
+                 false_positive=0, false_negative=0, threshold=None):
         self.recognised = ['InfectASympt', 'InfectMild', 'InfectGP', 'InfectHosp', 'InfectICU', 'InfectICURecov']
         self.threshold = threshold
         self.false_positive = false_positive
@@ -87,13 +87,13 @@ class SamplingMaker():
 
         if bool(binomial(1, self.nonresp_rate)):
             return 'NonResponder'
-        if self.threshold == None:
+        if self.threshold is None:
             if load in self.recognised:
                 p = 1 - self.false_negative
             else:
                 p = self.false_positive
         else:
-            if load>self.threshold:
+            if load > self.threshold:
                 p = 1 - self.false_negative
             else:
                 p = self.false_positive

@@ -1,4 +1,4 @@
-from data_process import DataProcess
+from epios.data_process import DataProcess
 import numpy as np
 import pandas as pd
 
@@ -45,5 +45,36 @@ class Sampler(DataProcess):
         if sample_size > population_size:
             raise ValueError('Sample size should <= population size')
         choice = np.random.choice(np.arange(population_size), size=sample_size, replace=False)
-        res = list(self.data['ID'])[choice]
+        res = []
+        sample = list(self.data['ID'])
+        for i in choice:
+            res.append(sample[i])
         return res
+
+    def person_allowed(self, sample: list, choice: str, threshold: int = 3):
+        """ function to see if the sampled person should be included in the generic sample
+
+        Args:
+            sample (list): list of people who have already been chosen
+            choice (str): string id of the person being sampled
+            threshold (int): the cap on the number of people sampled per household
+        """
+
+        # get the household of the person
+        choice_household = '.'.join(choice.split('.')[:-1])
+
+        # list of samples only showing first three numbers, e.g. "0.0.0" or "0.2.1"
+        sample = ['.'.join(s.split('.')[:-1]) for s in sample]
+
+        # get number of times that household is in sample list
+        sample_count = sample.count(choice_household)
+
+        # if adding this sample would exceed threshold then reject
+        if sample_count >= threshold:
+
+            return False
+
+        # otherwise, return true
+        else:
+
+            return True
