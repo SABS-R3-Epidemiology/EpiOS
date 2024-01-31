@@ -1,5 +1,4 @@
 from math import nan
-import pandas as pd
 import unittest
 from unittest import TestCase
 from numpy.random import rand

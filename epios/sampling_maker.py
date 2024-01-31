@@ -8,18 +8,25 @@ class SamplingMaker():
     ---------------------------------------
     Parameters:
         nonresp_rate (float between 0 and 1):
-            The probability that the result of a test is 'NonResponder' despite infectious status and viral load.
+            The probability that the result of a test is 'NonResponder',
+            despite infectious status and viral load.
             Default is zero.
         threshold (float or None): 
-            If the viral load is higher then the threshold, then the result of the test will be positive, otherwise it will be negative.
+            If the viral load is higher then the threshold,
+            then the result of the test will be positive,
+            otherwise it will be negative.
             Default is None (see recognised below)
         recognised:
-            If threshold is None then the result is supposed to be positive if the infectious status is one of the recognised.
+            If threshold is None,
+            then the result is supposed to be positive,
+            when the infectious status is one of the recognised.
         false_positive (float between 0 and 1):
-            If the result is supposed to be negative, then it will be positive with probability false_positive.
+            If the result is supposed to be negative,
+            then it will be positive with probability false_positive.
             Default is zero.
         false_negative (float between 0 and 1):
-            If the result is supposed to be positive, then it will be positive with probability false_negative.
+            If the result is supposed to be positive,
+            then it will be positive with probability false_negative.
             Default is zero.
         keep_track (boolean):
             If this is True, the same group of people is tested at each timestep.
@@ -38,7 +45,7 @@ class SamplingMaker():
 
     def __init__(self, nonresp_rate=0, keep_track=False, data=None,
                  false_positive=0, false_negative=0, threshold=None):
-        self.nonresp_rate=nonresp_rate
+        self.nonresp_rate = nonresp_rate
         self.recognised = ['InfectASympt', 'InfectMild', 'InfectGP', 'InfectHosp', 'InfectICU', 'InfectICURecov']
         self.threshold = threshold
         self.false_positive = false_positive
@@ -73,7 +80,7 @@ class SamplingMaker():
             times_people=zip(sampling_times, people)
             STATUSES = map(lambda t:self.data.loc[[t[0]],t[1]],times_people)
             SINGLETEST = lambda x: x.apply(lambda x: list(map(self.testresult, x)))
-            return list(map(SINGLETEST,STATUSES))
+            return list(map(SINGLETEST, STATUSES))
 
 
     def testresult(self,load):
