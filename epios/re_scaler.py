@@ -11,8 +11,8 @@ class ReScaler():
     If smoothing is set, then the estimates are further manipulated
     the problem is, given arrays T[k],Y[k] for k in range(n),
     and given a function w then one wants to minimize the cost
-    m0[n],m1[n]=argmin(sum(w(T[n]-T[k])*(Y[k]-m0-m1*T[k])**2 for k in range(n+1)))
-    this corresponds to solve
+    m0[n],m1[n]=argmin(sum(w(T[n]-T[k])*(Y[k]-m0-m1*T[k])**2 for k in range(n+1))).
+    This corresponds to solve
         m0*a+m1*b=A
         m1*b+m2*c=B
     with
@@ -23,7 +23,15 @@ class ReScaler():
         B=sum(w(T[n]-T[k])*Y[k]*T[k] for k in range(n+1))
     that is
         m0=(A*c-B*b)/(a*c-b**2)
-        m1=(B*a-A*b)/(a*c-b**2)
+        m1=(B*a-A*b)/(a*c-b**2).
+    This is a weighted least square difference probrem where,
+    the solution is a line approximating the prevalence of the infection,
+    focusing on the more recent estimates, that are more reliable.
+    However it is not clear which w could be better for this purpose.
+    As well the resulting estimate can be negative, which might be undesirable.
+    It is also not clear whether the weights shall be multiplied by some factor,
+    for example Z[k]*(1-Z[k]) would stress that,
+    the debiased estimates are more reliable when the tests are less variating.
     '''
 
     def __init__(self, false_positive=0, false_negative=0, smoothing=None):
