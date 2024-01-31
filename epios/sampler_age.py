@@ -214,7 +214,7 @@ class SamplerAge(Sampler):
                 ite = ite[ite['age'] < j * self.age_group_width + self.age_group_width]
             else:
                 ite = df[df['age'] >= j * self.age_group_width]
-            ite_sample = list(ite['ID'])
+            ite_sample = list(ite['id'])
             choice = np.random.choice(np.arange(len(ite_sample)), size=num_sample[j], replace=False)
             for k in choice:
                 res.append(ite_sample[k])

@@ -26,7 +26,7 @@ class TestDataProcess(TestCase):
             os.mkdir(self.path[2:-1])
         except FileExistsError:
             raise FileExistsError('Directory already exists, terminated not to overwrite anything!')
-        self.demo_data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+        self.demo_data = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                               '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                        'age': [1, 81, 45, 33, 20, 60]})
         self.time_data = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
@@ -37,7 +37,7 @@ class TestDataProcess(TestCase):
                                        '0.2.0.0': [1, 3, 3, 3, 3, 3],
                                        '1.0.0.0': [1, 1, 1, 1, 1, 3]})
         self.processor = PostProcess(self.demo_data, self.time_data)
-        self.demo_data2 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
+        self.demo_data2 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                                '0.0.0.3', '0.0.0.4', '0.0.0.5'],
                                         'age': [1, 2, 1, 1, 1, 1]})
         self.time_data2 = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
@@ -48,7 +48,7 @@ class TestDataProcess(TestCase):
                                         '0.0.0.4': [3] * 6,
                                         '0.0.0.5': [3] * 6})
         self.processor_non_responder = PostProcess(self.demo_data2, self.time_data2)
-        self.demo_data3 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
+        self.demo_data3 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                                '1.0.0.0', '1.0.0.1', '1.0.0.2'],
                                         'age': [1, 2, 1, 1, 1, 1]})
         self.time_data3 = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
@@ -59,7 +59,7 @@ class TestDataProcess(TestCase):
                                         '1.0.0.1': [3] * 6,
                                         '1.0.0.2': [3] * 6})
         self.processor_non_responder2 = PostProcess(self.demo_data3, self.time_data3)
-        self.demo_data4 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
+        self.demo_data4 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                                '1.0.0.0', '1.0.0.1', '2.0.0.0'],
                                         'age': [1, 6, 11, 16, 21, 26]})
         self.time_data4 = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
@@ -75,7 +75,7 @@ class TestDataProcess(TestCase):
 
     def test__init__(self):
         try:
-            assert_frame_equal(self.processor.demo_data, pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+            assert_frame_equal(self.processor.demo_data, pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                                                               '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                                                        'age': [1, 81, 45, 33, 20, 60]}))
             assert_frame_equal(self.processor.time_data, pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
@@ -85,7 +85,7 @@ class TestDataProcess(TestCase):
                                                                        '0.1.0.0': [1, 1, 3, 3, 3, 3],
                                                                        '0.2.0.0': [1, 3, 3, 3, 3, 3],
                                                                        '1.0.0.0': [1, 1, 1, 1, 1, 3]}))
-            assert_frame_equal(self.processor.predict.demo_data, pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+            assert_frame_equal(self.processor.predict.demo_data, pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                                                                       '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                                                                'age': [1, 81, 45, 33, 20, 60]}))
             assert_frame_equal(self.processor.predict.time_data, pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],

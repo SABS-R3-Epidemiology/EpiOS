@@ -20,7 +20,7 @@ class TestDataProcess(TestCase):
             os.mkdir(self.path[2:-1])
         except FileExistsError:
             raise FileExistsError('Directory already exists, terminated not to overwrite anything!')
-        self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
+        self.data = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
                                          '0.2.0.0', '1.0.0.0'], 'age': [1, 101, 45, 33, 20, 60]})
         self.processor = DataProcess(self.data, path=self.path)
         self.expected_json = [1 / 6, 0.0, 0.0, 0.0, 1 / 6, 0.0, 1 / 6, 0.0, 0.0,
@@ -29,7 +29,7 @@ class TestDataProcess(TestCase):
                                                    'microcell': [0, 0, 1, 2, 0],
                                                    'household': [0, 1, 0, 0, 0],
                                                    'Susceptible': [2, 1, 1, 1, 1]})
-        self.expected_df_population = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1',
+        self.expected_df_population = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1',
                                                            '0.0.1.0', '0.1.0.0',
                                                            '0.2.0.0', '1.0.0.0'],
                                                     'age': [1, 101, 45, 33, 20, 60],
@@ -87,7 +87,7 @@ class TestDataProcess(TestCase):
             os.remove(self.path + 'data.csv')
 
     def test_data_process_region(self):
-        self.expected_df_population = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1',
+        self.expected_df_population = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1',
                                                            '0.0.1.0', '0.1.0.0',
                                                            '0.2.0.0', '1.0.0.0'],
                                                     'cell': [0, 0, 0, 0, 0, 1],

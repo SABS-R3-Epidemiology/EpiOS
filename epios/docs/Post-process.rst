@@ -26,12 +26,11 @@ Here is an example of using `PostProcess`
     import pandas as pd
 
     # Define the simulation output data
-    demo_data = pd.read_csv('demographics_processed.csv')
+    demo_data = pd.read_csv('demographics.csv')
     time_data = pd.read_csv('inf_status_history.csv')
     
     # Define the class instance
-    postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data,
-                                    data_store_path='./input/')
+    postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
     
     # Do prediction and comparison based age-region stratification
     result, diff = postprocess.predict.AgeRegion(sample_size=3,

@@ -450,7 +450,7 @@ class PostProcess():
             if gen_plot:
                 plt.plot(time_sample, result_scaled, label='Predicted result', linestyle='--')
                 plt.plot(time_sample, true_result, label='True result')
-                plt.plot(time_sample, diff, label='Difference')
+                plt.plot(time_sample, np.abs(diff), label='Absolute difference')
                 plt.legend()
                 plt.xlabel('Time')
                 plt.ylabel('Population')
@@ -546,7 +546,7 @@ class PostProcess():
                             for id in people:
                                 if sampling_method == 'AgeRegion':
                                     region_pos = int(id.split('.')[0])
-                                    age_value = self.demo_data[self.demo_data['ID'] == id]['age'].values[0]
+                                    age_value = self.demo_data[self.demo_data['id'] == id]['age'].values[0]
                                     age_pos = min(num_age_group - 1, math.floor(age_value / age_group_width))
                                     indexer = (region_pos, age_pos)
                                 else:

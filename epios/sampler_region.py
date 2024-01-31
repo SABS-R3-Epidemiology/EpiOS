@@ -214,7 +214,7 @@ class SamplerRegion(Sampler):
         # Then generate a list of IDs of the samples
         for i in range(len(num_sample)):
             ite = df[df['cell'] == i]
-            ite_sample = list(ite['ID'])
+            ite_sample = list(ite['id'])
             if household_criterion:
                 count = 0
                 while count < num_sample[i]:
@@ -269,7 +269,7 @@ class SamplerRegion(Sampler):
 
         nonRespNum = [0] * (num_region_group)
         for i in non_resp_id:
-            region_group_pos = df[df['ID'] == i]['cell'].values[0]
+            region_group_pos = df[df['id'] == i]['cell'].values[0]
             pos_nonRespRate = region_group_pos
             nonRespNum[pos_nonRespRate] += 1
 

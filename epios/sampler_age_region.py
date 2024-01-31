@@ -408,7 +408,7 @@ class SamplerAgeRegion(Sampler):
                 else:
                     ite = df[df['cell'] == i]
                     ite = ite[ite['age'] >= j * self.age_group_width]
-                ite_sample = list(ite['ID'])
+                ite_sample = list(ite['id'])
                 if household_criterion:
                     count = 0
                     while count < num_sample[i, j]:
@@ -464,12 +464,12 @@ class SamplerAgeRegion(Sampler):
 
         nonRespNum = [0] * (num_age_group * num_region_group)
         for i in non_resp_id:
-            age = df[df['ID'] == i]['age'].values[0]
+            age = df[df['id'] == i]['age'].values[0]
             if math.floor(age / self.age_group_width) < num_age_group - 1:
                 age_group_pos = math.floor(age / self.age_group_width)
             else:
                 age_group_pos = num_age_group - 1
-            region_group_pos = df[df['ID'] == i]['cell'].values[0]
+            region_group_pos = df[df['id'] == i]['cell'].values[0]
             pos_nonRespRate = region_group_pos * num_age_group + age_group_pos
             nonRespNum[pos_nonRespRate] += 1
 

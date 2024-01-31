@@ -2,24 +2,19 @@ import epios
 import pandas as pd
 # import numpy as np
 
-# demo_data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+# demo_data = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
 #                                     '0.1.0.0', '0.2.0.0', '1.0.0.0'],
 #                             'age': [1, 81, 45, 33, 20, 60]})
 # time_data = pd.DataFrame({'time': [0, 1, 2, 3, 4, 5],
-#                             '0.0.0.0': ['InfectASympt'] * 6,
-#                             '0.0.0.1': [0, 0, 0, 'InfectASympt', 'InfectASympt',
-#                                         'InfectASympt'],
-#                             '0.0.1.0': [0, 0, 'InfectASympt', 'InfectASympt',
-#                                         'InfectASympt', 'InfectASympt'],
-#                             '0.1.0.0': [0, 0, 'InfectASympt', 'InfectASympt',
-#                                         'InfectASympt', 'InfectASympt'],
-#                             '0.2.0.0': [0, 'InfectASympt', 'InfectASympt',
-#                                         'InfectASympt', 'InfectASympt',
-#                                         'InfectASympt'],
-#                             '1.0.0.0': [0, 0, 0, 0, 0, 'InfectASympt']})
+#                             '0.0.0.0': [3] * 6,
+#                             '0.0.0.1': [0, 0, 0, 3, 3, 3],
+#                             '0.0.1.0': [0, 0, 3, 3, 3, 3],
+#                             '0.1.0.0': [0, 0, 3, 3, 3, 3],
+#                             '0.2.0.0': [0, 3, 3, 3, 3, 3],
+#                             '1.0.0.0': [0, 0, 0, 0, 0, 3]})
 
 # This assumes the python venv is installed under epios folder
-demo_data = pd.read_csv('./example/demographics_processed.csv')
+demo_data = pd.read_csv('./example/demographics.csv')
 time_data = pd.read_csv('./example/inf_status_history.csv')
 
 # Define the class instance
@@ -55,7 +50,7 @@ if __name__ == '__main__':
         non_responder=False,
         sampling_interval=1,
         iteration=10,
-        non_resp_rate=0.1,
+        # non_resp_rate=0.1,
         metric='mean',
         parallel_computation=False,
         **kwargs

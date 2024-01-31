@@ -24,7 +24,7 @@ class TestDataProcess(TestCase):
             os.mkdir(self.path[2:-1])
         except FileExistsError:
             raise FileExistsError('Directory already exists, terminated not to overwrite anything!')
-        self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+        self.data = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                          '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                   'age': [1, 81, 45, 33, 20, 60]})
         self.sampler = SamplerAge(data=self.data, data_store_path=self.path)
@@ -59,7 +59,7 @@ class TestDataProcess(TestCase):
                                                                        '0.0.1.0', '1.0.0.0', '0.0.0.1'])
 
     def test_sample2(self):
-        self.data1 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+        self.data1 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                           '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                    'age': [1, 2, 45, 33, 20, 60]})
         self.sampler1 = SamplerAge(data=self.data1, data_store_path=self.path)

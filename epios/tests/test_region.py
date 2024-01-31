@@ -24,7 +24,7 @@ class TestDataProcess(TestCase):
             os.mkdir(self.path[2:-1])
         except FileExistsError:
             raise FileExistsError('Directory already exists, terminated not to overwrite anything!')
-        self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+        self.data = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                          '0.1.0.0', '0.2.0.0', '1.0.0.0']})
         self.sampler = SamplerRegion(data=self.data, data_store_path=self.path)
 
@@ -63,7 +63,7 @@ class TestDataProcess(TestCase):
                          ['0.0.1.0', '0.0.0.0', '0.0.0.1', '0.1.0.0', '0.2.0.0', '1.0.0.0'])
 
     def test_sample2(self):
-        self.data2 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
+        self.data2 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                           '0.0.0.3', '0.0.0.4', '0.0.0.5']})
         self.sampler2 = SamplerRegion(data=self.data2, data_store_path=self.path)
         np.random.seed(1)
@@ -73,7 +73,7 @@ class TestDataProcess(TestCase):
             self.sampler2.sample(len(self.sampler2.data), household_criterion=True, household_threshold=1)
 
     def test_additional_nonresponder(self):
-        self.data3 = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
+        self.data3 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0', '0.1.0.0',
                                           '0.2.0.0', '1.0.0.0'],
                                    'cell': [0, 0, 0, 0, 0, 1],
                                    'microcell': [0, 0, 0, 1, 2, 0],

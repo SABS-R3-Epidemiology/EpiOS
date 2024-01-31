@@ -67,7 +67,7 @@ class Sampler(DataProcess):
             raise ValueError('Sample size should <= population size')
         choice = np.random.choice(np.arange(population_size), size=sample_size, replace=False)
         res = []
-        sample = list(self.data['ID'])
+        sample = list(self.data['id'])
         for i in choice:
             res.append(sample[i])
         return res
