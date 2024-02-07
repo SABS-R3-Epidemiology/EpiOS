@@ -18,9 +18,9 @@ def run_unit_tests():
 if __name__ == '__main__':
     # Set up argument parsing
     parser = argparse.ArgumentParser(
-        description='Run unit tests for abm_model.',
+        description='Run unit tests for EpiOS.',
         epilog='To run individual unit tests, use e.g.'
-               ' $ abm_model/tests/dummy_test.py',
+               ' $ sampling/tests/dummy_test.py',
     )
     # Unit tests
     parser.add_argument(

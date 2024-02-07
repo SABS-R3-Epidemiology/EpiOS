@@ -1,14 +1,14 @@
 #
-# abm_model setuptools script
+# epios setuptools script
 #
 from setuptools import setup, find_packages
 
 
 def get_version():
     """
-    Get version number from the abm_model module.
+    Get version number from the epios module.
 
-    The easiest way would be to just ``import abm_model``, but note that this may
+    The easiest way would be to just ``import epios``, but note that this may
     fail if the dependencies have not been installed yet. Instead, we've put
     the version number in a simple version_info module, that we'll import here
     by temporarily adding the oxrse directory to the pythonpath using sys.path.
@@ -16,7 +16,7 @@ def get_version():
     import os
     import sys
 
-    sys.path.append(os.path.abspath('sampling'))
+    sys.path.append(os.path.abspath('epios'))
     from version_info import VERSION as version
     sys.path.pop()
 
@@ -34,7 +34,7 @@ def get_readme():
 # Go!
 setup(
     # Module name (lowercase)
-    name='EpiOS',
+    name='epios',
 
     # Version
     version=get_version(),
@@ -57,7 +57,7 @@ setup(
     url='https://github.com/SABS-R3-Epidemiology/EpiOS',
 
     # Packages to include
-    packages=find_packages(include=('sampling', 'sampling.*')),
+    packages=find_packages(include=('epios', 'epios.*')),
 
     # List of dependencies
     install_requires=[

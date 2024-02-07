@@ -1,5 +1,5 @@
 #
-# Version information for abm_model.
+# Version information for EpiOS.
 #
 # See: https://packaging.python.org/guides/single-sourcing-package-version/
 #
