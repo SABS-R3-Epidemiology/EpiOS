@@ -34,6 +34,7 @@ pip install -e path/to/pyEpiabm
 ## Configuration
 
  The `params.py` file include all parameters required in this model.
+ In addition, the files in the `input` folder is exmaples of temporary files generated during the data pre-processing. It will be used by the sampler classes. The `data_store_path` parameter in each sampler class is the path to store these files.
 
 ## Use `PostProcess` to generate plots
 

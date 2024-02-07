@@ -6,11 +6,7 @@ from itertools import product
 import multiprocessing
 import sys
 import os
-from epios import Sampler
-from epios import SamplerAgeRegion
-from epios import SamplerAge
-from epios import SamplerRegion
-from epios import SamplingMaker
+from epios import Sampler, SamplerAge, SamplerAgeRegion, SamplerRegion, SamplingMaker
 
 
 class PostProcess():
