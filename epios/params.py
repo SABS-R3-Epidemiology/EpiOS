@@ -8,13 +8,14 @@ household_threshold = 3
 data = None
 data_path = None
 # The number of age groups
-# Each age group have width 5 years old
+# Each age group have width 5 years old by default
 num_age_group = 17
+age_group_width = 5
 # Whether to turn on the non-responder function
 # If non-responder function is turned on, need to specify non-responder ID
 # for each sampling
 nonResp = False
-nonRespID = []
+non_resp_id = []
 # The proportion of additional samples
 # taken from a specific age-regional group caused by non-responders
 sampling_percentage = 0.1
