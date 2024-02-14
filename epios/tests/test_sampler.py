@@ -23,44 +23,28 @@ class TestDataProcess(TestCase):
             os.mkdir(self.path[2:-1])
         except FileExistsError:
             raise KeyError('Directory already exists, terminated not to overwrite anything!')
-        self.data = pd.DataFrame({'ID': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
+        self.data = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.1.0',
                                          '0.1.0.0', '0.2.0.0', '1.0.0.0'],
                                   'age': [1, 81, 45, 33, 20, 60]})
         self.sampler = Sampler(data=self.data, data_store_path=self.path)
 
     def test_error(self):
         with self.assertRaises(ValueError):
-            Sampler(data=1, data_path=1)
-        with self.assertRaises(ValueError):
             Sampler()
         with self.assertRaises(ValueError):
             self.sampler.sample(len(self.sampler.data) + 1)
-
-    def test__init__(self):
-        try:
-            self.init = Sampler(data_path=self.path + 'data.csv')
-            assert_frame_equal(self.init.data, pd.read_csv(self.path + 'data.csv'))
-        except AssertionError:
-            self.fail('not load data as expected')
 
     def test_sample(self):
         np.random.seed(1)
         self.assertEqual(self.sampler.sample(len(self.sampler.data)), ['0.0.1.0', '0.0.0.1', '0.2.0.0',
                                                                        '0.0.0.0', '0.1.0.0', '1.0.0.0'])
 
-    def tearDown(self) -> None:
-        '''
-        Clean up everything created
-
-        '''
-        if os.path.exists(self.path):
-            if os.path.exists(self.path + 'pop_dist.json'):
-                os.remove(self.path + 'pop_dist.json')
-            if os.path.exists(self.path + 'microcells.csv'):
-                os.remove(self.path + 'microcells.csv')
-            if os.path.exists(self.path + 'data.csv'):
-                os.remove(self.path + 'data.csv')
-            os.rmdir(self.path)
+    def test__init__(self):
+        self.sampler1 = Sampler(data_store_path=self.path, pre_process=False)
+        try:
+            assert_frame_equal(self.sampler1.data, self.data)
+        except AssertionError:
+            self.fail('Initiation in the Base mode is unexpected')
 
     def test_person_allowed(self):
         sample = ["0.0.0.0", "0.0.0.1"]
@@ -74,6 +58,17 @@ class TestDataProcess(TestCase):
         new_threshold = 2
         result = self.sampler.person_allowed(sample, choice, new_threshold)
         self.assertFalse(result)
+
+    def tearDown(self) -> None:
+        '''
+        Clean up everything created
+
+        '''
+        if os.path.exists(self.path):
+            for file in ['pop_dist.json', 'microcells.csv', 'data.csv']:
+                if os.path.exists(self.path + file):
+                    os.remove(self.path + file)
+            os.rmdir(self.path)
 
 
 if __name__ == '__main__':
