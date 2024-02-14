@@ -498,7 +498,7 @@ class PostProcess():
                         people = sampler_class.sample(sample_size=sample_size)
 
                     # Get the results of people sampled
-                    X = SamplingMaker(non_resp_rate=non_resp_rate, keeptrack=True, TheData=self.time_data,
+                    X = SamplingMaker(non_resp_rate=non_resp_rate, keep_track=True, data=self.time_data,
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
 
@@ -621,7 +621,7 @@ class PostProcess():
                     people = sampler_class.sample(sample_size=sample_size)
 
                     # Get results of each people sampled
-                    X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
+                    X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X(time_sample, people)
 
@@ -649,7 +649,7 @@ class PostProcess():
                         people = sampler_class.sample(sample_size=sample_size)
 
                         # Get the results of each people sampled
-                        X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
+                        X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
                                           false_positive=0, false_negative=0, threshold=None)
                         ite = X([time_sample[i]], people)
 
@@ -707,7 +707,7 @@ class PostProcess():
                 people = sampler_class.sample(sample_size=sample_size)
 
                 # Get results of each people sampled
-                X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
+                X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X(time_sample, people)
 
@@ -732,7 +732,7 @@ class PostProcess():
                     people = sampler_class.sample(sample_size=sample_size)
 
                     # Get the results of each people sampled
-                    X = SamplingMaker(non_resp_rate=0, keeptrack=True, TheData=self.time_data,
+                    X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
 

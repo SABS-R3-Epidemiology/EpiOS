@@ -16,17 +16,17 @@ class SamplingMaker():
             If the viral load is higher then the threshold,
             then the result of the test will be positive,
             otherwise it will be negative.
-            
+
             Default is None (see recognised below)
         false_positive : float, between 0 and 1
             If the result is supposed to be negative,
             then it will be positive with probability false_positive.
-            
+
             Default is zero.
         false_negative : float, between 0 and 1
             If the result is supposed to be positive,
             then it will be positive with probability false_negative.
-            
+
             Default is zero.
         keep_track : bool
             If this is True, the same group of people is tested at each timestep.
@@ -52,16 +52,16 @@ class SamplingMaker():
 
         '''
         Method to return the results for all the planned tests
-        
+
         Inputs:
         -------
-            sampling_times : list 
+            sampling_times : list
                 List of the planned times for tests in the same format as data.index.
             people : list
                 If keep_track is True this is a list of IDs in the same format as data.columns.
                 Otherwise it is a list of the same length as sampling_times.
                 In this case each element is a list of IDs in the same format as data.columns.
-                
+
         Output:
         -------
             A pandas.DataFrame if keep_track is True
@@ -83,7 +83,7 @@ class SamplingMaker():
     def _testresult(self, load):
         '''
         Method to return the result for one test
-        
+
         If threshold is None, then load is the infectiousness status of the testes person
         Otherwise, it is the viral load of the tested person.
         Possible outputs are 'NonResponder', 'Positive', 'Negative'.
