@@ -659,7 +659,8 @@ class PostProcess():
 
             # Plot the figure
             if gen_plot:
-                plt.plot(time_sample, infected_rate)
+                infected_population = np.array(infected_rate) * len(self.demo_data)
+                plt.plot(time_sample, infected_population)
                 plt.xlabel('Time')
                 plt.ylabel('Population')
                 plt.xlim(0, max(time_sample))
@@ -744,7 +745,8 @@ class PostProcess():
 
             # Plot the figure
             if gen_plot:
-                plt.plot(time_sample, infected_rate)
+                infected_population = np.array(infected_rate) * len(self.demo_data)
+                plt.plot(time_sample, infected_population)
                 plt.xlabel('Time')
                 plt.ylabel('Population')
                 plt.xlim(0, max(time_sample))
