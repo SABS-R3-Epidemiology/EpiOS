@@ -53,7 +53,7 @@ class SamplingMaker():
         self.keep_track = keep_track
         self.data = data
 
-    def __call__(self, sampling_times, people):
+    def __call__(self, sampling_times, people, post_proc = False):
 
         '''
         Method to return the results for all the planned tests
@@ -65,9 +65,9 @@ class SamplingMaker():
                 Otherwise it is a list of the same length as sampling_times.
                 In this case each element is a list of IDs in the same format as data.columns.
         Output:
-            A pandas.DataFrame if keep_track is True
-            A list of pandas.DataFrame objects otherwise.
-
+            A pandas.DataFrame if keep_track is True.
+            Otherwise a list of pandas.DataFrame objects if smoothing is None.
+            Otherwise a list of lists of pandas.DataFrame objects and a list of lists of their sizes.
         '''
 
         if self.keep_track:
@@ -78,8 +78,20 @@ class SamplingMaker():
             # SINGLETEST is a function that maps testresult on the loads of a group of people
             times_people = zip(sampling_times, people)
             STATUSES = map(lambda t: self.data.loc[[t[0]], t[1]], times_people)
-            SINGLETEST = lambda x: x.apply(lambda x: list(map(self.testresult, x)))
-            return list(map(SINGLETEST, STATUSES))
+            res = list(map(lambda x: x.apply(lambda x: list(map(self.testresult, x))), STATUSES))
+            if post_proc:
+                result = []
+                number = []
+                temp = []
+                for x in res:
+                    for y in temp:
+                        y = y.drop(columns = x.columns, errors = 'ignore')
+                    temp.append(x)
+                    result.append(temp.copy())
+                    number.append(list(map(lambda x: len(x.columns),temp)))
+                return result, number
+            else:
+                return res
 
     def testresult(self, load):
 
