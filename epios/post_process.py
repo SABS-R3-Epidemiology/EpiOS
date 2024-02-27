@@ -440,7 +440,7 @@ class PostProcess():
                 num += self.time_data.iloc[t, 1:].value_counts().get(7, 0)
                 num += self.time_data.iloc[t, 1:].value_counts().get(8, 0)
                 true_result_plot.append(num)
-            
+
             true_result = []
             for t in time_sample:
                 true_result.append(true_result_plot[t])
