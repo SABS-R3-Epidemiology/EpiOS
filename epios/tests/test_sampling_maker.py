@@ -50,4 +50,3 @@ class TestSM(TestCase):
         self.assertEqual(number[0][0], 2)
         self.assertEqual(number[1][0], 1)
         self.assertEqual(number[1][1], 1)
-        
