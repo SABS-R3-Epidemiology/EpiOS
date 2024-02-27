@@ -88,12 +88,12 @@ class SamplingMaker():
                         temp[n] = y.drop(columns = x.columns, errors = 'ignore')
                     temp.append(x)
                     result.append(temp.copy())
-                    observ.append(list(map(lambda x: x.mean().mean(), temp)))
+                    observ.append(list(map(lambda x: (x == 'Positive').mean().mean(), temp)))
                     number.append(list(map(lambda x: len(x.columns), temp)))
             else:
-                observ = list(map(lambda x: x.mean().mean(), res))
+                observ = list(map(lambda x: (x == 'Positive').mean().mean(), res))
                 number = list(map(lambda x: len(x.columns), res))
-            return result, (observ, number)
+            return res, (observ, number)
 
     def _testresult(self, load):
         '''

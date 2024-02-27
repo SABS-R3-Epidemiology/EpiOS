@@ -38,11 +38,15 @@ class TestSM(TestCase):
         X = SamplingMaker(data=pd.DataFrame({0: [1, 1, 3],
                                              1: [3, 3, 1],
                                              2: [2, 2, 2]}))
-        self.assertTrue((X(t, [[0, 1], [0, 1]])[0] == pd.DataFrame({0: ['Negative'],
-                                                                    1: ['Positive']}, index=[0])).all(axis=None))
-        self.assertTrue((X(t, [[0, 1], [0, 1]])[1] == pd.DataFrame({0: ['Positive'],
-                                                                    1: ['Negative']}, index=[2])).all(axis=None))
-        result, number = X(t, [[0, 1], [1]], post_proc=True)
+        result, (observ, number) = X(t, [[0, 1], [0, 1]])
+        self.assertTrue((result[0] == pd.DataFrame({0: ['Negative'],
+                                                    1: ['Positive']}, index=[0])).all(axis=None))
+        self.assertTrue((result[1] == pd.DataFrame({0: ['Positive'],
+                                                    1: ['Negative']}, index=[2])).all(axis=None))
+        result, (observ, number) = X(t, [[0, 1], [1]], post_proc=True)
+        self.assertEqual(observ[0][0], 0.5)
+        self.assertEqual(observ[1][0], 0.0)
+        self.assertEqual(observ[1][1], 0.0)
         self.assertEqual(number[0][0], 2)
         self.assertEqual(number[1][0], 1)
         self.assertEqual(number[1][1], 1)
