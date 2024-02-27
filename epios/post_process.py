@@ -444,6 +444,7 @@ class PostProcess():
             # Find the difference between estimated infection level and the real one
             diff = np.array(true_result) - result_scaled
             if gen_plot:
+                plt.figure()
                 plt.plot(time_sample, result_scaled, label='Predicted result', linestyle='--')
                 plt.plot(time_sample, true_result, label='True result')
                 plt.plot(time_sample, np.abs(diff), label='Absolute difference')
@@ -659,6 +660,7 @@ class PostProcess():
 
             # Plot the figure
             if gen_plot:
+                plt.figure()
                 infected_population = np.array(infected_rate) * len(self.demo_data)
                 plt.plot(time_sample, infected_population)
                 plt.xlabel('Time')
@@ -745,6 +747,7 @@ class PostProcess():
 
             # Plot the figure
             if gen_plot:
+                plt.figure()
                 infected_population = np.array(infected_rate) * len(self.demo_data)
                 plt.plot(time_sample, infected_population)
                 plt.xlabel('Time')
