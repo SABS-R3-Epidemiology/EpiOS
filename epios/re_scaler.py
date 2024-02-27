@@ -1,3 +1,4 @@
+import numpy
 from numpy import array
 
 
@@ -53,17 +54,18 @@ class ReScaler():
         elif times is None:
             raise Exception('please insert times of sampling')
         elif tested is None:
-            raise Exception('please insert number of sampled people')
+            raise Exception('please insert number of sampled')
         else:
             smooth_estimate = []
             for n, (obs, num) in enumerate(zip(observation, tested)):
                 estimates = (array(obs) - self.false_positive) / (1 - self.false_negative - self.false_positive)
+                temp = array([self.smoothing(times[n] - times[k]) for k in range(n + 1)], dtype=numpy.double)
+                temp *= array(obs) * (1 - array(obs)) * array(num)
                 try:
-                    temp = array([self.smoothing(times[n] - times[k]) for k in range(n + 1)])
-                    temp *= array(obs) * (1 - array(obs)) * array(num)
                     a = temp.sum()
                     b = (temp * times[0: n + 1]).sum()
                     c = (temp * (times[0: n + 1]**2)).sum()
+                    assert a * c != b**2
                     A = (temp * estimates[0: n + 1]).sum()
                     B = (temp * times[0: n + 1] * estimates[0: n + 1]).sum()
                     m0 = (A * c - B * b) / (a * c - b**2)

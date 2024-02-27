@@ -64,7 +64,7 @@ class SamplingMaker():
 
         Output:
             A pandas.DataFrame if keep_track is True.
-            Otherwise a list of pandas.DataFrame objects if smoothing is None.
+            Otherwise a list of pandas.DataFrame objects if post_proc is False.
             Otherwise a list of lists of pandas.DataFrame objects and a list of lists of their sizes.
         '''
 
@@ -72,18 +72,16 @@ class SamplingMaker():
             STATUSES = self.data.loc[sampling_times, people]
             return STATUSES.apply(lambda x: list(map(self._testresult, x)))
         else:
-            # STATUSES is an iterator that returns the loads of the next group of people selected for testing
-            # SINGLETEST is a function that maps testresult on the loads of a group of people
             times_people = zip(sampling_times, people)
             STATUSES = map(lambda t: self.data.loc[[t[0]], t[1]], times_people)
-            res = list(map(lambda x: x.apply(lambda x: list(map(self.testresult, x))), STATUSES))
+            res = list(map(lambda x: x.apply(lambda x: list(map(self._testresult, x))), STATUSES))
             if post_proc:
                 result = []
                 number = []
                 temp = []
                 for x in res:
-                    for y in temp:
-                        y = y.drop(columns = x.columns, errors = 'ignore')
+                    for n, y in enumerate(temp):
+                        temp[n] = y.drop(columns = x.columns, errors = 'ignore')
                     temp.append(x)
                     result.append(temp.copy())
                     number.append(list(map(lambda x: len(x.columns),temp)))

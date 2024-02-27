@@ -1,7 +1,7 @@
 import pandas as pd
 from unittest import TestCase
 from sampling_maker import SamplingMaker
-
+from numpy import array
 
 class TestSM(TestCase):
 
@@ -33,11 +33,16 @@ class TestSM(TestCase):
         X = SamplingMaker(keep_track=True, threshold=0.5, data=pd.DataFrame({0: [0, 0, 1],
                                                                              1: [1, 1, 0],
                                                                              2: [2, 2, 2]}))
-        self.assertFalse((X(t, [0, 1]) != pd.DataFrame({0: ['Negative', 'Positive'],
-                                                        1: ['Positive', 'Negative']}, index=[0, 2])).any(axis=None))
+        self.assertTrue((X(t, [0, 1]) == pd.DataFrame({0: ['Negative', 'Positive'],
+                                                       1: ['Positive', 'Negative']}, index=[0, 2])).all(axis=None))
         X = SamplingMaker(data=pd.DataFrame({0: [1, 1, 3],
-                                             1: [3, 3, 1], 2: [2, 2, 2]}))
-        self.assertFalse((X(t, [[0, 1], [0, 1]])[0] != pd.DataFrame({0: 'Negative',
-                                                                     1: 'Positive'}, index=[0])).any(axis=None))
-        self.assertFalse((X(t, [[0, 1], [0, 1]])[1] != pd.DataFrame({0: 'Positive',
-                                                                     1: 'Negative'}, index=[2])).any(axis=None))
+                                             1: [3, 3, 1],
+                                             2: [2, 2, 2]}))
+        self.assertTrue((X(t, [[0, 1], [0, 1]])[0] == pd.DataFrame({0: ['Negative'],
+                                                                    1: ['Positive']}, index=[0])).all(axis=None))
+        self.assertTrue((X(t, [[0, 1], [0, 1]])[1] == pd.DataFrame({0: ['Positive'],
+                                                                    1: ['Negative']}, index=[2])).all(axis=None))
+        result, number = X(t, [[0, 1], [1]], post_proc=True)
+        self.assertEqual(number[0][0], 2)
+        self.assertEqual(number[1][0], 1)
+        self.assertEqual(number[1][1], 1)
