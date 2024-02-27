@@ -5,15 +5,18 @@ from numpy import array
 class ReScaler():
 
     '''
-    Class to de-bias the observed prevalence by affine transformation.
-    The day when the nonresprate will depend on the status this class will take this into account.
-    Observation is meant to be a list, each entry being the rate of positive tests at a certain time.
-    If smoothin is set, then obsetvation is a list of lists.
+    Class to de-bias the observed prevalence by affine transformation. The day
+    when the nonresprate will depend on the status this class will take this
+    into account. Observation is meant to be a list, each entry being the rate of
+    positive tests. If smoothin has been set, then obsetvation is a list of lists.
 
-    If smoothing is set, then the estimates are further manipulated
+    If smoothing has been set, then the estimates are further manipulated
     the problem is, given arrays T[k],Y[k] for k in range(n),
     and given a function w then one wants to minimize the cost
-    m0[n], m1[n] = argmin(sum(w(T[n] - T[k]) * (Y[k] - m0 - m1 * T[k])**2 for k in range(n + 1))).
+
+    m0[n], m1[n] = argmin(sum(w[n,k] * (Y[k] - m0 - m1 * T[k])**2 for k in range(n + 1)))
+    w[n,k] = obs[n,k] * (1 - obs[n,k]) * num[n,k] * smoothing(T[n] - T[k]).
+
     This corresponds to solve
         m0 * a + m1 * b = A
         m1 * b + m2 * c = B
@@ -26,16 +29,12 @@ class ReScaler():
     that is
         m0 = (A * c - B * b) / (a * c - b**2)
         m1 = (B * a - A * b) / (a * c - b**2).
-    This is a weighted least square difference probrem where,
-    the solution is a line approximating the prevalence of the infection,
-    focusing on the more recent estimates, that are more reliable.
-    However it is not clear which w could be better for this purpose.
+
+    This is a weighted least square difference probrem where the solution
+    is a line approximating the prevalence of the infection focusing
+    on the more recent estimates, that are more reliable. However it
+    is not clear which smoothing could be better for this purpose.
     As well the resulting estimate can be negative, which might be undesirable.
-    It is also not clear whether the weights shall be multiplied by some factor:
-    for example the factor Z[k] * (1 - Z[k]) * samples with Z the observation
-    and samples the number of tests available for a given time,
-    would stress that the debiased estimates,
-    are more reliable when the tests are less variating.
 
     '''
 

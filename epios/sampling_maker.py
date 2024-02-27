@@ -58,14 +58,16 @@ class SamplingMaker():
             sampling_times : list
                 List of the planned times for tests in the same format as data.index.
             people : list
-                If keep_track is True this is a list of IDs in the same format as data.columns.
-                Otherwise it is a list of the same length as sampling_times.
-                In this case each element is a list of IDs in the same format as data.columns.
+                If keep_track is True this is a list of IDs in the same
+                format as columns. Otherwise this is a list of the same
+                length as sampling_times. In this case all elements are
+                lists of IDs in the same format as columns.
 
         Output:
-            A pandas.DataFrame if keep_track is True.
-            Otherwise a list of pandas.DataFrame objects if post_proc is False.
-            Otherwise a list of lists of pandas.DataFrame objects and a list of lists of their sizes.
+            A pandas.DataFrame if keep_track is True. Otherwise a list
+            of pandas.DataFrame objects and their averages and size if
+            not post_proc. Otherwise a list of lists of DataFrames and
+            their average and size. These are no strictly needed here.
         '''
 
         if self.keep_track:
@@ -75,8 +77,10 @@ class SamplingMaker():
             times_people = zip(sampling_times, people)
             STATUSES = map(lambda t: self.data.loc[[t[0]], t[1]], times_people)
             res = list(map(lambda x: x.apply(lambda x: list(map(self._testresult, x))), STATUSES))
+            # computing of the lists observ and number can be non-necessary in this place
             if post_proc:
                 result = []
+                observ = []
                 number = []
                 temp = []
                 for x in res:
@@ -84,10 +88,12 @@ class SamplingMaker():
                         temp[n] = y.drop(columns = x.columns, errors = 'ignore')
                     temp.append(x)
                     result.append(temp.copy())
-                    number.append(list(map(lambda x: len(x.columns),temp)))
-                return result, number
+                    observ.append(list(map(lambda x: x.mean().mean(), temp)))
+                    number.append(list(map(lambda x: len(x.columns), temp)))
             else:
-                return res
+                observ = list(map(lambda x: x.mean().mean(), res))
+                number = list(map(lambda x: len(x.columns), res))
+            return result, (observ, number)
 
     def _testresult(self, load):
         '''
