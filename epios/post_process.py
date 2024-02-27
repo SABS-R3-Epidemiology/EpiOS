@@ -352,7 +352,7 @@ class PostProcess():
                  gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                  age_group_width=5, data_store_path='./input/',
                  seed=None, saving_path_compare=None,
-                 scale_method='proportional'):
+                 scale_method='proportional', get_true_result=False):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -401,7 +401,7 @@ class PostProcess():
                 Default = None
 
             '''
-            res, diff = self._wrapper_Age_Base(
+            res, diff, true_result = self._wrapper_Age_Base(
                 sampling_method='Base',
                 sample_size=sample_size,
                 time_sample=time_sample,
@@ -415,11 +415,12 @@ class PostProcess():
                 data_store_path=data_store_path,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                get_true_result=get_true_result
             )
-            return res, diff
+            return res, diff, true_result
 
-        def _compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path_compare=None):
+        def _compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path_compare=None, get_true_result=False):
             '''
             Generate a graph comparing the difference between predicted and real infection level
             This method should not be used directly, it is integrated within methods AgeRegion, Age,
@@ -453,7 +454,14 @@ class PostProcess():
                 plt.title('Number of infection in the population')
                 if saving_path_compare:
                     plt.savefig(saving_path_compare)
-            return diff
+            
+            if get_true_result:
+
+                return diff, true_result
+            
+            else:
+
+                return diff
 
         def _wrapper_Region_AgeRegion(self, sampling_method, sample_size, time_sample, non_responder=False,
                                       comparison=True, non_resp_rate=None, sample_strategy='Random',
@@ -686,7 +694,7 @@ class PostProcess():
                               gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                               age_group_width=5, data_store_path='./input/',
                               seed=None, saving_path_compare=None,
-                              scale_method='proportional'):
+                              scale_method='proportional', get_true_result=False):
             '''
             This is the function really doing work.
 
@@ -761,11 +769,21 @@ class PostProcess():
             self.result = infected_rate
 
             if comparison:
-                diff = self._compare(time_sample=time_sample, gen_plot=gen_plot, scale_method=scale_method,
-                                     saving_path_compare=saving_path_compare)
-                return res, diff
+
+                if get_true_result:
+
+                    diff, true_result = self._compare(time_sample=time_sample, gen_plot=gen_plot, scale_method=scale_method,
+                                        saving_path_compare=saving_path_compare, get_true_result=get_true_result)
+                    
+                    return res, diff, true_result
+                
+                else:
+
+                    diff = self._compare(time_sample=time_sample, gen_plot=gen_plot, scale_method=scale_method,
+                                        saving_path_compare=saving_path_compare)
+                    return res, diff, None
             else:
-                return res, None
+                return res, None, None
 
     def __call__(self, sampling_method, sample_size, time_sample, non_responder=False, comparison=True,
                  non_resp_rate=None, data_store_path='./input/', **kwargs):
