@@ -451,6 +451,8 @@ class PostProcess():
                 plt.legend()
                 plt.xlabel('Time')
                 plt.ylabel('Population')
+                plt.xlim(0, max(time_sample))
+                plt.ylim(0, len(self.demo_data))
                 plt.title('Number of infection in the population')
                 if saving_path_compare:
                     plt.savefig(saving_path_compare)
