@@ -48,7 +48,7 @@ class SamplingMaker():
         self.keep_track = keep_track
         self.data = data
 
-    def __call__(self, sampling_times, people, post_proc = False):
+    def __call__(self, sampling_times, people, post_proc=False):
 
         '''
         Method to return the results for all the planned tests
@@ -85,7 +85,7 @@ class SamplingMaker():
                 temp = []
                 for x in res:
                     for n, y in enumerate(temp):
-                        temp[n] = y.drop(columns = x.columns, errors = 'ignore')
+                        temp[n] = y.drop(columns=x.columns, errors='ignore')
                     temp.append(x)
                     result.append(temp.copy())
                     observ.append(list(map(lambda x: (x == 'Positive').mean().mean(), temp)))

@@ -1,9 +1,9 @@
 import pandas as pd
 from unittest import TestCase
 from sampling_maker import SamplingMaker
-from numpy import array
 
 class TestSM(TestCase):
+
 
     def test_positive(self):
         self.assertEqual(SamplingMaker(threshold=1)._testresult(1.1), 'Positive')
