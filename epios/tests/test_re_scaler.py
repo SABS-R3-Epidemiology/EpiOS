@@ -21,7 +21,7 @@ class TestRS(TestCase):
             ReScaler(smoothing=lambda x: 1)(x, tested=[[1], [1, 1], [1, 1, 1]])
         with self.assertRaises(Exception):
             ReScaler(smoothing=lambda x: 1)(x, times=array([0.0, 1.0, 2.0]))
-        result = ReScaler(smoothing=lambda x: 1)(x, times=array([0.0, 1.0, 2.0]), tested=[[1], [1, 1],[1, 1, 1]])
+        result = ReScaler(smoothing=lambda x: 1)(x, times=array([0.0, 1.0, 2.0]), tested=[[1], [1, 1], [1, 1, 1]])
         self.assertEqual(result[0], 1.0)
         self.assertEqual(result[1], 2.0)
         self.assertEqual(result[2], 3.0)

@@ -2,8 +2,8 @@ import pandas as pd
 from unittest import TestCase
 from sampling_maker import SamplingMaker
 
-class TestSM(TestCase):
 
+class TestSM(TestCase):
 
     def test_positive(self):
         self.assertEqual(SamplingMaker(threshold=1)._testresult(1.1), 'Positive')
@@ -50,3 +50,4 @@ class TestSM(TestCase):
         self.assertEqual(number[0][0], 2)
         self.assertEqual(number[1][0], 1)
         self.assertEqual(number[1][1], 1)
+        
