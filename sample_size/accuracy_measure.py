@@ -3,6 +3,45 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+def get_incidence_rates(infections, population_size):
+    """Function to get the incidence rates of an infected population
+
+    Args:
+        infections (list): list of the number of infected people at each time-step
+        population_size (int): size of the population
+
+    Returns:
+        list: list of the incidence rates at each time-step
+    """
+
+    new_cases = [infections[i+1] - infections[i] for i in range(0, len(infections) - 1)]
+    new_cases.insert(0, true_result[0])
+    new_cases = [n if n >= 0 else 0 for n in new_cases]
+
+    population_at_risk = [population_size - infections[i] for i in range(0, len(infections))]
+
+    incidence_rates = [new_cases[i] / population_at_risk[i] for i in range(0, len(new_cases))]
+
+    return incidence_rates
+
+
+def get_incidence_errors(diff, true_result, population_size):
+
+    actual_incidence_rates = get_incidence_rates(true_result, population_size)
+
+    result_scaled = true_result - diff
+
+    predicted_incidence_rates = get_incidence_rates(result_scaled, population_size)
+
+    difference_incidence_rates = [predicted_incidence_rates[i] - actual_incidence_rates[i] for i in range(0, len(predicted_incidence_rates))]
+
+    return difference_incidence_rates
+
+
+
+
+
 # This assumes the python venv is installed under epios folder
 demo_data = pd.read_csv('./example/demographics.csv')
 time_data = pd.read_csv('./example/inf_status_history.csv')
@@ -35,45 +74,14 @@ for sample_size in sample_sizes:
                                                 './output/compare_plot',
                                             get_true_result=True)
 
-    #print(true_result)
 
-    actual_new_cases = [true_result[i+1] - true_result[i] for i in range(0, len(true_result) - 1)]
-    actual_new_cases.insert(0, true_result[0])
-    actual_new_cases = [n if n >= 0 else 0 for n in actual_new_cases]
 
-    #print(new_cases)
 
-    population_at_risk = [population_size - true_result[i] for i in range(0, len(true_result))]
 
-    #print(population_at_risk)
+    # percentage_errors = [100 * difference_incidence_rate[i] / (actual_incidence_rates[i]) 
+    #                      for i in range(0, len(difference_incidence_rate))]
 
-    #print(true_result[0])
-
-    actual_incidence_rates = [actual_new_cases[i] / population_at_risk[i] for i in range(0, len(actual_new_cases))]
-
-    #print(actual_incidence_rates)
-
-    
-
-    result_scaled = true_result - diff
-
-    predicted_new_cases = [result_scaled[i+1] - result_scaled[i] for i in range(0, len(result_scaled) - 1)]
-    predicted_new_cases.insert(0, result_scaled[0])
-    predicted_new_cases = [n if n >= 0 else 0 for n in predicted_new_cases]
-
-    population_at_risk = [population_size - result_scaled[i] for i in range(0, len(result_scaled))]
-
-    predicted_incidence_rates = [predicted_new_cases[i] / population_at_risk[i] for i in range(0, len(predicted_new_cases))]
-
-    #print(predicted_incidence_rates)
-
-    difference_incidence_rate = [predicted_incidence_rates[i] - actual_incidence_rates[i] for i in range(0, len(predicted_incidence_rates))]
-
-    percentage_errors = [0 if actual_incidence_rates == 0 or difference_incidence_rate == 0
-                         else 100 * difference_incidence_rate[i] / actual_incidence_rates[i] 
-                         for i in range(0, len(difference_incidence_rate))]
-
-    print(percentage_errors)
+    errors = get_incidence_errors(diff, true_result, population_size)
 
     # Calculate the incidence rate where it is new cases divided by the
     # population at risk - minimum is 0
@@ -86,6 +94,8 @@ for sample_size in sample_sizes:
     # Save the percentage error
     #percentage_errors.append(percentage_error)
 
+    plt.plot(sample_times, [abs(e) for e in errors])
+
 # Create a plot of how the error changes as the sample size changes
 # Usually would plot the incidence rate against time, but we want to show
 # percentage error of the incidence rate between predicted and actual
@@ -94,8 +104,8 @@ for sample_size in sample_sizes:
 
 
 plt.xlabel('Time')
-plt.ylabel('Percentage Error')
+plt.ylabel('Error')
 plt.title('Error vs Sample Size')
 plt.legend()
-#plt.show()
+plt.show()
 
