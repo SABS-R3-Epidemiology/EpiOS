@@ -428,25 +428,29 @@ class PostProcess():
             '''
             # Based on the input, use different scale method to estimate the true infection number
             if scale_method == 'proportional':
-                result_scaled = np.array(self.result) * len(self.demo_data)
+                result_scaled = np.round(np.array(self.result) * len(self.demo_data))
 
             # Get the true result from self.time_data
-            true_result = []
-            for t in time_sample:
+            true_result_plot = []
+            for t in range(max(time_sample) + 1):
                 num = self.time_data.iloc[t, 1:].value_counts().get(3, 0)
                 num += self.time_data.iloc[t, 1:].value_counts().get(4, 0)
                 num += self.time_data.iloc[t, 1:].value_counts().get(5, 0)
                 num += self.time_data.iloc[t, 1:].value_counts().get(6, 0)
                 num += self.time_data.iloc[t, 1:].value_counts().get(7, 0)
                 num += self.time_data.iloc[t, 1:].value_counts().get(8, 0)
-                true_result.append(num)
+                true_result_plot.append(num)
+            
+            true_result = []
+            for t in time_sample:
+                true_result.append(true_result_plot[t])
 
             # Find the difference between estimated infection level and the real one
             diff = np.array(true_result) - result_scaled
             if gen_plot:
                 plt.figure()
                 plt.plot(time_sample, result_scaled, label='Predicted result', linestyle='--')
-                plt.plot(time_sample, true_result, label='True result')
+                plt.plot(range(max(time_sample) + 1), true_result_plot, label='True result')
                 plt.plot(time_sample, np.abs(diff), label='Absolute difference')
                 plt.legend()
                 plt.xlabel('Time')
@@ -663,7 +667,7 @@ class PostProcess():
             # Plot the figure
             if gen_plot:
                 plt.figure()
-                infected_population = np.array(infected_rate) * len(self.demo_data)
+                infected_population = np.round(np.array(infected_rate) * len(self.demo_data))
                 plt.plot(time_sample, infected_population)
                 plt.xlabel('Time')
                 plt.ylabel('Population')
@@ -750,7 +754,7 @@ class PostProcess():
             # Plot the figure
             if gen_plot:
                 plt.figure()
-                infected_population = np.array(infected_rate) * len(self.demo_data)
+                infected_population = np.round(np.array(infected_rate) * len(self.demo_data))
                 plt.plot(time_sample, infected_population)
                 plt.xlabel('Time')
                 plt.ylabel('Population')
