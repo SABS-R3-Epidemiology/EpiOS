@@ -39,9 +39,6 @@ def get_incidence_errors(diff, true_result, population_size):
     return difference_incidence_rates
 
 
-
-
-
 # This assumes the python venv is installed under epios folder
 demo_data = pd.read_csv('./example/demographics.csv')
 time_data = pd.read_csv('./example/inf_status_history.csv')
@@ -58,12 +55,14 @@ sample_times = [t for t in range(0, 30)]
 # number)
 
 sample_sizes = [10, 20, 30, 40, 50]
-percentage_errors = [] # Maybe a matrix for time and sample size?
+num_iterations = 5
 
 #  Iterate over the sample sizes
 for sample_size in sample_sizes:
-    # Do prediction and comparison
-    result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
+    average = np.zeros(len(sample_times))
+    # Run multiple iterations
+    for _ in range(num_iterations):  # Change the number of iterations as needed
+        result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
                                             time_sample=sample_times,
                                             comparison=True,
                                             gen_plot=False,
@@ -74,34 +73,11 @@ for sample_size in sample_sizes:
                                                 './output/compare_plot',
                                             get_true_result=True)
 
-
-
-
-
-    # percentage_errors = [100 * difference_incidence_rate[i] / (actual_incidence_rates[i]) 
-    #                      for i in range(0, len(difference_incidence_rate))]
-
-    errors = get_incidence_errors(diff, true_result, population_size)
-
-    # Calculate the incidence rate where it is new cases divided by the
-    # population at risk - minimum is 0
-    # Require new cases for each time interval for both predicted and actual
-    # Denominator must be population at risk - maybe Susceptible and Recovered?
-    # For person-time, we must record how long they have been at risk during
-    # that time-period. If only pointwise then this will not matter as time-
-    # period is only 1 day
-
-    # Save the percentage error
-    #percentage_errors.append(percentage_error)
-
-    plt.plot(sample_times, [abs(e) for e in errors])
-
-# Create a plot of how the error changes as the sample size changes
-# Usually would plot the incidence rate against time, but we want to show
-# percentage error of the incidence rate between predicted and actual
-
-# Plot a line for each sample size
-
+        iteration_errors = get_incidence_errors(diff, true_result, population_size)
+        average = [average[i] + iteration_errors[i] for i in range(0, len(iteration_errors))]
+        
+    average = [average[i]/num_iterations for i in range(0, len(average))]
+    plt.plot(sample_times, [abs(e) for e in average], label=f'Sample Size: {sample_size}')
 
 plt.xlabel('Time')
 plt.ylabel('Error')
