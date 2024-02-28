@@ -32,14 +32,14 @@ def get_incidence_errors(diff, true_result, population_size):
 
 def filter_ppes(ppes):
     """Function to remove outliers from each column of the ppes array and
-    return the total errors from each column
+    return the average percentage errors for each column
 
     Args:
         ppes (array): the prevalence percentage error arrays for each
         iteration
 
     Returns:
-        array: the total errors at each time point without outliers
+        array: the average errors at each time point without outliers
     """
 
     # Convert to NumPy array
@@ -47,6 +47,7 @@ def filter_ppes(ppes):
     outlier_factor = 1.5
 
     total_error = []
+    average_error = []
     for col_index in range(ppes.shape[1]):
 
         column = ppes[:, col_index]  # Get the column
@@ -66,8 +67,9 @@ def filter_ppes(ppes):
 
         column_total = np.sum(column)
         total_error.append(column_total)
+        average_error.append(total_error[col_index]/len(column))
 
-    return total_error
+    return average_error
 
 
 def get_prevalence_percentage_error(sample_times, 
@@ -137,13 +139,12 @@ def get_prevalence_percentage_error(sample_times,
 
         #average = [average[i]/num_iterations for i in range(0, len(average))]
         if filter_outliers:
+            average_error = filter_ppes(ppes)
 
-            total_error = filter_ppes(ppes)
-
-        average_error = [total_error[i] / num_iterations for i in range(0, len(total_error))]
+        else:
+            average_error = [total_error[i] / num_iterations for i in range(0, len(total_error))]
 
         if plot_prevalence:
-
             plt.plot(sample_times, [e for e in average_error], label=f'Sample Size: {sample_size}')
 
     if plot_prevalence:
@@ -168,12 +169,11 @@ postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
 
 sample_times = [t for t in range(0, 91)]
 
-filter_outliers = False
+filter_outliers = True
 
 sample_range = [100, 1000]
 num_samples = 3
-
-num_iterations = 2
+num_iterations = 5
 
 prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
                                                    sample_range=sample_range, 
