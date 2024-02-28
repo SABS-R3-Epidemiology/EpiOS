@@ -3,8 +3,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+# This assumes the python venv is installed under epios folder
+path = './gibraltar_sample_size_example'
+demo_data = pd.read_csv(f'{path}/simulation_outputs/demographics.csv')
+time_data = pd.read_csv(f'{path}/simulation_outputs/inf_status_history.csv')
 
-def get_incidence_rates(infections, population_size):
+def get_incidence_rates(infections, true_result, population_size):
     """Function to get the incidence rates of an infected population
 
     Args:
@@ -106,6 +110,7 @@ def get_rmse(sample_range, num_samples, num_iterations):
                                                 comparison=True,
                                                 gen_plot=False,
                                                 sample_strategy='Random',
+                                                #data_store_path=f'{path}/input/',
                                                 saving_path_sampling=
                                                     './output/sample_plot',
                                                 saving_path_compare=
@@ -229,11 +234,6 @@ def get_prevalence_percentage_error(sample_times,
 
     return average_error
 
-
-# This assumes the python venv is installed under epios folder
-demo_data = pd.read_csv('./example/demographics.csv')
-time_data = pd.read_csv('./example/inf_status_history.csv')
-
 # Define the class instance
 postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
 
@@ -248,11 +248,11 @@ num_samples = 3
 num_iterations = 5
 
 
-get_rmse(sample_range, num_samples)
+#get_rmse(sample_range, num_samples, num_iterations)
 
-# prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
-#                                                    sample_range=sample_range, 
-#                                                    num_samples=num_samples, 
-#                                                    num_iterations=num_iterations, 
-#                                                    filter_outliers=filter_outliers, 
-#                                                    plot_prevalence=True)
+prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
+                                                   sample_range=sample_range, 
+                                                   num_samples=num_samples, 
+                                                   num_iterations=num_iterations, 
+                                                   filter_outliers=filter_outliers, 
+                                                   plot_prevalence=True)
