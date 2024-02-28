@@ -14,28 +14,19 @@ def get_incidence_rates(infections, population_size):
     Returns:
         list: list of the incidence rates at each time-step
     """
-
     new_cases = [infections[i+1] - infections[i] for i in range(0, len(infections) - 1)]
     new_cases.insert(0, true_result[0])
     new_cases = [n if n >= 0 else 0 for n in new_cases]
-
     population_at_risk = [population_size - infections[i] for i in range(0, len(infections))]
-
     incidence_rates = [new_cases[i] / population_at_risk[i] for i in range(0, len(new_cases))]
-
     return incidence_rates
 
 
 def get_incidence_errors(diff, true_result, population_size):
-
     actual_incidence_rates = get_incidence_rates(true_result, population_size)
-
     result_scaled = true_result - diff
-
     predicted_incidence_rates = get_incidence_rates(result_scaled, population_size)
-
     difference_incidence_rates = [predicted_incidence_rates[i] - actual_incidence_rates[i] for i in range(0, len(predicted_incidence_rates))]
-
     return difference_incidence_rates
 
 
@@ -48,18 +39,23 @@ postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
 
 population_size = len(demo_data) - 1
 
-sample_times = [t for t in range(0, 30)]
+sample_times = [t for t in range(0, 91)]
 
 # How does the number of people sampled affect the accuracy of the sample
 # (measured at the percentage error on the incidence rate/total infection
 # number)
 
-sample_sizes = [10, 20, 30, 40, 50]
-num_iterations = 5
+start_sample_size = 10  # Starting sample size
+end_sample_size = 500  # Ending sample size
+num_samples = 5  # Number of samples
+
+# Generate logarithmically spaced sample sizes using natural logarithm
+log_sample_sizes = np.logspace(np.log(start_sample_size), np.log(end_sample_size), num=num_samples, endpoint=True, base=np.e, dtype=int)
+num_iterations = 50
 
 #  Iterate over the sample sizes
-for sample_size in sample_sizes:
-    average = np.zeros(len(sample_times))
+for sample_size in log_sample_sizes:
+    total_error = np.zeros(len(sample_times))
     # Run multiple iterations
     for _ in range(num_iterations):  # Change the number of iterations as needed
         result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
@@ -73,15 +69,18 @@ for sample_size in sample_sizes:
                                                 './output/compare_plot',
                                             get_true_result=True)
 
-        iteration_errors = get_incidence_errors(diff, true_result, population_size)
-        average = [average[i] + iteration_errors[i] for i in range(0, len(iteration_errors))]
+        #iteration_errors = get_incidence_errors(diff, true_result, population_size)
+        prevalence_percentage_error = [100 * abs(diff[i])/true_result[i] for i in range(0, len(diff))]
+        #average = [average[i] + iteration_errors[i] for i in range(0, len(iteration_errors))]
+        total_error = [total_error[i] + prevalence_percentage_error[i] for i in range(0, len(prevalence_percentage_error))]
         
-    average = [average[i]/num_iterations for i in range(0, len(average))]
-    plt.plot(sample_times, [abs(e) for e in average], label=f'Sample Size: {sample_size}')
+    #average = [average[i]/num_iterations for i in range(0, len(average))]
+    average_error = [total_error[i]/num_iterations for i in range(0, len(total_error))]
+    plt.plot(sample_times, [e for e in average_error], label=f'Sample Size: {sample_size}')
 
 plt.xlabel('Time')
-plt.ylabel('Error')
-plt.title('Error vs Sample Size')
+plt.ylabel('Percentage Error')
+plt.title('Error vs sample size for total number of infections')
 plt.legend()
 plt.show()
 
