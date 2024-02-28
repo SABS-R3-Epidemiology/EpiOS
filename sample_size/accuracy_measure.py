@@ -31,6 +31,16 @@ def get_incidence_errors(diff, true_result, population_size):
 
 
 def filter_ppes(ppes):
+    """Function to remove outliers from each column of the ppes array and
+    return the total errors from each column
+
+    Args:
+        ppes (array): the prevalence percentage error arrays for each
+        iteration
+
+    Returns:
+        array: the total errors at each time point without outliers
+    """
 
     # Convert to NumPy array
     ppes = np.array(ppes)
@@ -60,6 +70,93 @@ def filter_ppes(ppes):
     return total_error
 
 
+def get_prevalence_percentage_error(sample_times, 
+                                    sample_range, 
+                                    num_samples, 
+                                    num_iterations, 
+                                    filter_outliers=True, 
+                                    plot_prevalence=True):
+    """Function to return the average prevalence percentage errors, averaged
+    over a number of iterations and ran for a range of sample sizes. The
+    function has an option to plot this against time
+
+    Args:
+        sample_times (array): the time points at which the function will
+        sample at (days)
+        sample_range (array): array containing the minimum and maximum
+        sample sizes to choose from
+        num_samples (int): the number of samples chosen from a log-scale
+        within the sample_range
+        num_iterations (int): the number of iterations ran and averaged over
+        for each sample size
+        filter_outliers (bool, optional): option to filter outliers out of the
+        prevalence percentage error. Defaults to True.
+        plot_prevalence (bool, optional): option to plot the prevalence
+        percentage error against time for each sample size. Defaults to True.
+
+    Returns:
+        array: the average prevalence percdntage errors at each time point
+    """
+
+    start_sample_size = sample_range[0]  # Starting sample size
+    end_sample_size = sample_range[1]  # Ending sample size
+
+    # Generate logarithmically spaced sample sizes using natural logarithm
+    log_sample_sizes = np.logspace(np.log(start_sample_size), np.log(end_sample_size), num=num_samples, endpoint=True, base=np.e, dtype=int)
+
+    #  Iterate over the sample sizes
+    for sample_size in log_sample_sizes:
+
+        ppes = []
+        total_error = np.zeros(len(sample_times))
+
+        # Run multiple iterations
+        for _ in range(num_iterations):  # Change the number of iterations as needed
+
+            print(f"Performing Iteration Sample Size {sample_size}")
+            result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
+                                                time_sample=sample_times,
+                                                comparison=True,
+                                                gen_plot=False,
+                                                sample_strategy='Random',
+                                                saving_path_sampling=
+                                                    './output/sample_plot',
+                                                saving_path_compare=
+                                                    './output/compare_plot',
+                                                get_true_result=True)
+
+            #iteration_errors = get_incidence_errors(diff, true_result, population_size)
+            prevalence_percentage_error = [100 * abs(diff[i]) / true_result[i] for i in range(0, len(diff))]
+
+            if filter_outliers:
+                ppes.append(prevalence_percentage_error)
+
+            #average = [average[i] + iteration_errors[i] for i in range(0, len(iteration_errors))]
+            else:
+                total_error = [total_error[i] + prevalence_percentage_error[i] for i in range(0, len(prevalence_percentage_error))]
+
+        #average = [average[i]/num_iterations for i in range(0, len(average))]
+        if filter_outliers:
+
+            total_error = filter_ppes(ppes)
+
+        average_error = [total_error[i] / num_iterations for i in range(0, len(total_error))]
+
+        if plot_prevalence:
+
+            plt.plot(sample_times, [e for e in average_error], label=f'Sample Size: {sample_size}')
+
+    if plot_prevalence:
+
+        plt.xlabel('Time')
+        plt.ylabel('Percentage Error')
+        plt.title('Percentage Error vs Sample Size for the Prevalence')
+        plt.legend()
+        plt.show()
+
+    return average_error
+
+
 # This assumes the python venv is installed under epios folder
 demo_data = pd.read_csv('./example/demographics.csv')
 time_data = pd.read_csv('./example/inf_status_history.csv')
@@ -73,56 +170,14 @@ sample_times = [t for t in range(0, 91)]
 
 filter_outliers = False
 
-start_sample_size = 10  # Starting sample size
-end_sample_size = 500  # Ending sample size
-num_samples = 5  # Number of samples
+sample_range = [100, 1000]
+num_samples = 10
 
-# Generate logarithmically spaced sample sizes using natural logarithm
-log_sample_sizes = np.logspace(np.log(start_sample_size), np.log(end_sample_size), num=num_samples, endpoint=True, base=np.e, dtype=int)
 num_iterations = 5
 
-#  Iterate over the sample sizes
-for sample_size in log_sample_sizes:
-
-    ppes = []
-    total_error = np.zeros(len(sample_times))
-
-    # Run multiple iterations
-    for _ in range(num_iterations):  # Change the number of iterations as needed
-
-        print(f"Performing Iteration Sample Size {sample_size}")
-        result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
-                                            time_sample=sample_times,
-                                            comparison=True,
-                                            gen_plot=False,
-                                            sample_strategy='Random',
-                                            saving_path_sampling=
-                                                './output/sample_plot',
-                                            saving_path_compare=
-                                                './output/compare_plot',
-                                            get_true_result=True)
-
-        #iteration_errors = get_incidence_errors(diff, true_result, population_size)
-        prevalence_percentage_error = [100 * abs(diff[i]) / true_result[i] for i in range(0, len(diff))]
-
-        if filter_outliers:
-            ppes.append(prevalence_percentage_error)
-
-        #average = [average[i] + iteration_errors[i] for i in range(0, len(iteration_errors))]
-        else:
-            total_error = [total_error[i] + prevalence_percentage_error[i] for i in range(0, len(prevalence_percentage_error))]
-
-    #average = [average[i]/num_iterations for i in range(0, len(average))]
-    if filter_outliers:
-        total_error = filter_ppes(ppes)
-
-    average_error = [total_error[i] / num_iterations for i in range(0, len(total_error))]
-
-    plt.plot(sample_times, [e for e in average_error], label=f'Sample Size: {sample_size}')
-
-plt.xlabel('Time')
-plt.ylabel('Percentage Error')
-plt.title('Percentage Error vs Sample Size for the Prevalence')
-plt.legend()
-plt.show()
-
+prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
+                                                   sample_range=sample_range, 
+                                                   num_samples=num_samples, 
+                                                   num_iterations=num_iterations, 
+                                                   filter_outliers=filter_outliers, 
+                                                   plot_prevalence=True)
