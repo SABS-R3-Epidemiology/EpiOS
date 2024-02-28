@@ -149,6 +149,80 @@ def get_rmse(sample_range, num_samples, num_iterations):
     return rmse
 
 
+def plot_mean_variance(sample_range, num_samples, num_iterations):
+    """Function to calculate the rmse errors between the sampled and actual
+    infected number
+
+    Args:
+        sample_range (array): the start and beginning of the sample range
+        num_samples (int): number of samples
+        num_iterations (int): number of iterations each sample is averaged over
+
+    Returns:
+        array: rmse values
+    """
+
+    start_sample_size = sample_range[0]  # Starting sample size
+    end_sample_size = sample_range[1]  # Ending sample size
+
+    # Generate logarithmically spaced sample sizes using natural logarithm
+    log_sample_sizes = np.logspace(np.log(start_sample_size), np.log(end_sample_size), num=num_samples, endpoint=True, base=np.e, dtype=int)
+
+    #  Iterate over the sample sizes
+    for sample_size in log_sample_sizes:
+
+        diff_values = []
+
+        # Run multiple iterations
+        for _ in range(num_iterations):  # Change the number of iterations as needed
+
+            print(f"Performing Iteration Sample Size {sample_size}")
+            result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
+                                                time_sample=sample_times,
+                                                comparison=True,
+                                                gen_plot=False,
+                                                sample_strategy='Random',
+                                                saving_path_sampling=
+                                                    './output/sample_plot',
+                                                saving_path_compare=
+                                                    './output/compare_plot',
+                                                get_true_result=True)
+
+
+            diff_values.append(diff)
+
+            
+        diff_values= np.array(diff_values)
+
+        means = []
+        variances = []
+
+        for col_index in range(diff_values.shape[1]):
+
+            column = diff_values[:, col_index]  # Get the column
+
+            means.append(np.mean(column))
+
+            variances.append(np.var(column))
+            
+
+
+        #diff_avg = [diff_total[i] / num_iterations for i in range(len(diff_total))]
+
+
+    
+        #plt.plot(sample_times, diff_avg, label=f"Sample Size: {sample_size}")
+
+        plt.scatter(means, variances, label=f'Sample Size: {sample_size}')
+
+    plt.xlabel('Mean')
+    plt.ylabel('Variances')
+    plt.title('Plot')
+    plt.legend()
+    plt.show()
+
+
+
 def get_prevalence_percentage_error(sample_times, 
                                     sample_range, 
                                     num_samples, 
@@ -244,15 +318,18 @@ sample_times = [t for t in range(0, 91)]
 filter_outliers = True
 
 sample_range = [10, 100]
-num_samples = 3
+num_samples = 2
 num_iterations = 5
 
 
 #get_rmse(sample_range, num_samples, num_iterations)
 
-prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
-                                                   sample_range=sample_range, 
-                                                   num_samples=num_samples, 
-                                                   num_iterations=num_iterations, 
-                                                   filter_outliers=filter_outliers, 
-                                                   plot_prevalence=True)
+# prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
+#                                                    sample_range=sample_range, 
+#                                                    num_samples=num_samples, 
+#                                                    num_iterations=num_iterations, 
+#                                                    filter_outliers=filter_outliers, 
+#                                                    plot_prevalence=True)
+
+
+plot_mean_variance(sample_range, num_samples, num_iterations)
