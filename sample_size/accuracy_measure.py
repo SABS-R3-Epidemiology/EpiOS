@@ -40,16 +40,16 @@ def filter_ppes(ppes):
     for col_index in range(ppes.shape[1]):
 
         column = ppes[:, col_index]  # Get the column
-        
+
         # Calculate quartiles and IQR
         q1 = np.percentile(column, 25)
         q3 = np.percentile(column, 75)
         iqr = q3 - q1
-        
+
         # Define outlier bounds
         lower_bound = q1 - outlier_factor * iqr
         upper_bound = q3 + outlier_factor * iqr
-        
+
         # Filter out outliers
         column_mask = (column >= lower_bound) & (column <= upper_bound)
         ppes = ppes[column_mask]
@@ -67,15 +67,11 @@ time_data = pd.read_csv('./example/inf_status_history.csv')
 # Define the class instance
 postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
 
-population_size = len(demo_data) - 1
+#population_size = len(demo_data) - 1
 
 sample_times = [t for t in range(0, 91)]
 
 filter_outliers = False
-
-# How does the number of people sampled affect the accuracy of the sample
-# (measured at the percentage error on the incidence rate/total infection
-# number)
 
 start_sample_size = 10  # Starting sample size
 end_sample_size = 500  # Ending sample size
@@ -87,8 +83,6 @@ num_iterations = 5
 
 #  Iterate over the sample sizes
 for sample_size in log_sample_sizes:
-
-    #total_error = np.zeros(len(sample_times))
 
     ppes = []
     total_error = np.zeros(len(sample_times))
@@ -112,22 +106,17 @@ for sample_size in log_sample_sizes:
         prevalence_percentage_error = [100 * abs(diff[i]) / true_result[i] for i in range(0, len(diff))]
 
         if filter_outliers:
-
             ppes.append(prevalence_percentage_error)
 
         #average = [average[i] + iteration_errors[i] for i in range(0, len(iteration_errors))]
         else:
-
             total_error = [total_error[i] + prevalence_percentage_error[i] for i in range(0, len(prevalence_percentage_error))]
-        
+
     #average = [average[i]/num_iterations for i in range(0, len(average))]
     if filter_outliers:
-
         total_error = filter_ppes(ppes)
 
     average_error = [total_error[i] / num_iterations for i in range(0, len(total_error))]
-
-
 
     plt.plot(sample_times, [e for e in average_error], label=f'Sample Size: {sample_size}')
 
