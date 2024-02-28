@@ -72,6 +72,78 @@ def filter_ppes(ppes):
     return average_error
 
 
+def get_rmse(sample_range, num_samples, num_iterations):
+    """Function to calculate the rmse errors between the sampled and actual
+    infected number
+
+    Args:
+        sample_range (array): the start and beginning of the sample range
+        num_samples (int): number of samples
+        num_iterations (int): number of iterations each sample is averaged over
+
+    Returns:
+        array: rmse values
+    """
+
+    start_sample_size = sample_range[0]  # Starting sample size
+    end_sample_size = sample_range[1]  # Ending sample size
+
+    # Generate logarithmically spaced sample sizes using natural logarithm
+    log_sample_sizes = np.logspace(np.log(start_sample_size), np.log(end_sample_size), num=num_samples, endpoint=True, base=np.e, dtype=int)
+
+    #  Iterate over the sample sizes
+    for sample_size in log_sample_sizes:
+
+        #rmse_errors = np.zeros(len(sample_times))
+        square_diff_total = np.zeros(len(sample_times))
+
+        # Run multiple iterations
+        for _ in range(num_iterations):  # Change the number of iterations as needed
+
+            print(f"Performing Iteration Sample Size {sample_size}")
+            result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
+                                                time_sample=sample_times,
+                                                comparison=True,
+                                                gen_plot=False,
+                                                sample_strategy='Random',
+                                                saving_path_sampling=
+                                                    './output/sample_plot',
+                                                saving_path_compare=
+                                                    './output/compare_plot',
+                                                get_true_result=True)
+
+
+            square_diff = [diff[i]**2 for i in range(len(diff))]
+
+            square_diff_total = [square_diff_total[i] + square_diff[i] for i in range(len(square_diff))]
+
+            #mean_square_diff = square_diff.mean()
+            #rmse = np.sqrt(mean_square_diff)
+            
+            #rmse = [np.sqrt(((predict[i] - actual[i]) ** 2).mean()) for i in range(len(actual))]
+
+            #rmse_errors = [rmse_errors[i] + rmse[i] for i in range(len(rmse_errors))]
+
+        #average = [average[i]/num_iterations for i in range(0, len(average))]
+            
+        #av_rmse_errors = [rmse_errors[i] / num_iterations for i in range(len(rmse_errors))]
+            
+        mean_square_diff = [square_diff_total[i] / num_iterations for i in range(len(square_diff_total))]
+
+        rmse = [np.sqrt(mean_square_diff[i]) for i in range(len(mean_square_diff))]
+
+
+        plt.plot(sample_times, [e for e in rmse], label=f'Sample Size: {sample_size}')
+
+    plt.xlabel('Time')
+    plt.ylabel('RMSE')
+    plt.title('RMSE vs Sample Size for the Prevalence')
+    plt.legend()
+    plt.show()
+
+    return rmse
+
+
 def get_prevalence_percentage_error(sample_times, 
                                     sample_range, 
                                     num_samples, 
@@ -151,7 +223,7 @@ def get_prevalence_percentage_error(sample_times,
 
         plt.xlabel('Time')
         plt.ylabel('Percentage Error')
-        plt.title('Percentage Error vs Sample Size for the Prevalence')
+        plt.title('Percentage Error in Prevalence against Time for different Sample Size')
         plt.legend()
         plt.show()
 
@@ -171,13 +243,16 @@ sample_times = [t for t in range(0, 91)]
 
 filter_outliers = True
 
-sample_range = [100, 1000]
+sample_range = [10, 100]
 num_samples = 3
 num_iterations = 5
 
-prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
-                                                   sample_range=sample_range, 
-                                                   num_samples=num_samples, 
-                                                   num_iterations=num_iterations, 
-                                                   filter_outliers=filter_outliers, 
-                                                   plot_prevalence=True)
+
+get_rmse(sample_range, num_samples)
+
+# prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
+#                                                    sample_range=sample_range, 
+#                                                    num_samples=num_samples, 
+#                                                    num_iterations=num_iterations, 
+#                                                    filter_outliers=filter_outliers, 
+#                                                    plot_prevalence=True)
