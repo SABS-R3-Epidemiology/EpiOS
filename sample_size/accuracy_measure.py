@@ -30,6 +30,36 @@ def get_incidence_errors(diff, true_result, population_size):
     return difference_incidence_rates
 
 
+def filter_ppes(ppes):
+
+    # Convert to NumPy array
+    ppes = np.array(ppes)
+    outlier_factor = 1.5
+
+    total_error = []
+    for col_index in range(ppes.shape[1]):
+
+        column = ppes[:, col_index]  # Get the column
+        
+        # Calculate quartiles and IQR
+        q1 = np.percentile(column, 25)
+        q3 = np.percentile(column, 75)
+        iqr = q3 - q1
+        
+        # Define outlier bounds
+        lower_bound = q1 - outlier_factor * iqr
+        upper_bound = q3 + outlier_factor * iqr
+        
+        # Filter out outliers
+        column_mask = (column >= lower_bound) & (column <= upper_bound)
+        ppes = ppes[column_mask]
+
+        column_total = np.sum(ppes[:, col_index])
+        total_error.append(column_total)
+
+    return total_error
+
+
 # This assumes the python venv is installed under epios folder
 demo_data = pd.read_csv('./example/demographics.csv')
 time_data = pd.read_csv('./example/inf_status_history.csv')
@@ -41,6 +71,8 @@ population_size = len(demo_data) - 1
 
 sample_times = [t for t in range(0, 91)]
 
+filter_outliers = False
+
 # How does the number of people sampled affect the accuracy of the sample
 # (measured at the percentage error on the incidence rate/total infection
 # number)
@@ -51,13 +83,20 @@ num_samples = 5  # Number of samples
 
 # Generate logarithmically spaced sample sizes using natural logarithm
 log_sample_sizes = np.logspace(np.log(start_sample_size), np.log(end_sample_size), num=num_samples, endpoint=True, base=np.e, dtype=int)
-num_iterations = 50
+num_iterations = 5
 
 #  Iterate over the sample sizes
 for sample_size in log_sample_sizes:
+
+    #total_error = np.zeros(len(sample_times))
+
+    ppes = []
     total_error = np.zeros(len(sample_times))
+
     # Run multiple iterations
     for _ in range(num_iterations):  # Change the number of iterations as needed
+
+        print(f"Performing Iteration Sample Size {sample_size}")
         result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
                                             time_sample=sample_times,
                                             comparison=True,
@@ -70,17 +109,31 @@ for sample_size in log_sample_sizes:
                                             get_true_result=True)
 
         #iteration_errors = get_incidence_errors(diff, true_result, population_size)
-        prevalence_percentage_error = [100 * abs(diff[i])/true_result[i] for i in range(0, len(diff))]
+        prevalence_percentage_error = [100 * abs(diff[i]) / true_result[i] for i in range(0, len(diff))]
+
+        if filter_outliers:
+
+            ppes.append(prevalence_percentage_error)
+
         #average = [average[i] + iteration_errors[i] for i in range(0, len(iteration_errors))]
-        total_error = [total_error[i] + prevalence_percentage_error[i] for i in range(0, len(prevalence_percentage_error))]
+        else:
+
+            total_error = [total_error[i] + prevalence_percentage_error[i] for i in range(0, len(prevalence_percentage_error))]
         
     #average = [average[i]/num_iterations for i in range(0, len(average))]
-    average_error = [total_error[i]/num_iterations for i in range(0, len(total_error))]
+    if filter_outliers:
+
+        total_error = filter_ppes(ppes)
+
+    average_error = [total_error[i] / num_iterations for i in range(0, len(total_error))]
+
+
+
     plt.plot(sample_times, [e for e in average_error], label=f'Sample Size: {sample_size}')
 
 plt.xlabel('Time')
 plt.ylabel('Percentage Error')
-plt.title('Error vs sample size for total number of infections')
+plt.title('Percentage Error vs Sample Size for the Prevalence')
 plt.legend()
 plt.show()
 
