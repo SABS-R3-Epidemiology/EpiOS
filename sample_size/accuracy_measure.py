@@ -62,9 +62,9 @@ def filter_ppes(ppes):
 
         # Filter out outliers
         column_mask = (column >= lower_bound) & (column <= upper_bound)
-        ppes = ppes[column_mask]
+        column = column[column_mask]
 
-        column_total = np.sum(ppes[:, col_index])
+        column_total = np.sum(column)
         total_error.append(column_total)
 
     return total_error
@@ -171,9 +171,9 @@ sample_times = [t for t in range(0, 91)]
 filter_outliers = False
 
 sample_range = [100, 1000]
-num_samples = 10
+num_samples = 3
 
-num_iterations = 5
+num_iterations = 2
 
 prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
                                                    sample_range=sample_range, 
