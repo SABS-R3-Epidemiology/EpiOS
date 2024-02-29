@@ -171,7 +171,12 @@ def plot_mean_variance(sample_range, num_samples, num_iterations):
     #  Iterate over the sample sizes
     for sample_size in log_sample_sizes:
 
-        diff_values = []
+        #rmse_errors = np.zeros(len(sample_times))
+        square_diff_total = np.zeros(len(sample_times))
+
+        true_values_total = square_diff_total.copy()
+
+        square_diff_values = []
 
         # Run multiple iterations
         for _ in range(num_iterations):  # Change the number of iterations as needed
@@ -182,6 +187,7 @@ def plot_mean_variance(sample_range, num_samples, num_iterations):
                                                 comparison=True,
                                                 gen_plot=False,
                                                 sample_strategy='Random',
+                                                #data_store_path=f'{path}/input/',
                                                 saving_path_sampling=
                                                     './output/sample_plot',
                                                 saving_path_compare=
@@ -189,37 +195,35 @@ def plot_mean_variance(sample_range, num_samples, num_iterations):
                                                 get_true_result=True)
 
 
-            diff_values.append(diff)
+            square_diff = [diff[i]**2 for i in range(len(diff))]
 
+            square_diff_values.append(square_diff)
+
+            square_diff_total = [square_diff_total[i] + square_diff[i] for i in range(len(square_diff))]
+
+
+
+        square_diff_values = np.array(square_diff_values)
+        y_values = []
+        for col_index in range(square_diff_values.shape[1]):
+
+            column = square_diff_values[:, col_index]
+
+            y_values.append(np.var(column))
             
-        diff_values= np.array(diff_values)
-
-        means = []
-        variances = []
-
-        for col_index in range(diff_values.shape[1]):
-
-            column = diff_values[:, col_index]  # Get the column
-
-            means.append(np.mean(column))
-
-            variances.append(np.var(column))
+        #mean_square_diff = [square_diff_total[i] / num_iterations for i in range(len(square_diff_total))]
             
 
+        mean_true_result = [true_values_total[i] / num_iterations for i in range(len(true_values_total))]
 
-        #diff_avg = [diff_total[i] / num_iterations for i in range(len(diff_total))]
+        plt.scatter(true_result, y_values, label=f'Sample Size: {sample_size}')
 
-
-    
-        #plt.plot(sample_times, diff_avg, label=f"Sample Size: {sample_size}")
-
-        plt.scatter(means, variances, label=f'Sample Size: {sample_size}')
-
-    plt.xlabel('Mean')
-    plt.ylabel('Variances')
-    plt.title('Plot')
+    plt.xlabel('Actual Value')
+    plt.ylabel('Square Diff variances')
+    plt.title('Actual - Variance')
     plt.legend()
     plt.show()
+
 
 
 
@@ -317,12 +321,12 @@ sample_times = [t for t in range(0, 91)]
 
 filter_outliers = True
 
-sample_range = [10, 100]
-num_samples = 2
-num_iterations = 5
+sample_range = [10, 500]
+num_samples = 5
+num_iterations = 20
 
 
-#get_rmse(sample_range, num_samples, num_iterations)
+get_rmse(sample_range, num_samples, num_iterations)
 
 # prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
 #                                                    sample_range=sample_range, 
@@ -332,4 +336,4 @@ num_iterations = 5
 #                                                    plot_prevalence=True)
 
 
-plot_mean_variance(sample_range, num_samples, num_iterations)
+#plot_mean_variance(sample_range, num_samples, num_iterations)
