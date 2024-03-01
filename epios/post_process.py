@@ -70,7 +70,7 @@ class PostProcess():
                       gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                       age_group_width=5, data_store_path='./input/', sampling_percentage=0.1,
                       proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
-                      scale_method='proportional'):
+                      scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -167,7 +167,9 @@ class PostProcess():
                 threshold=threshold,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
             return res, diff
 
@@ -176,7 +178,7 @@ class PostProcess():
                    gen_plot: bool = False, saving_path_sampling=None,
                    data_store_path='./input/', sampling_percentage=0.1,
                    proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
-                   scale_method='proportional'):
+                   scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -261,7 +263,9 @@ class PostProcess():
                 threshold=threshold,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
             return res, diff
 
@@ -270,7 +274,7 @@ class PostProcess():
                 gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                 age_group_width=5, data_store_path='./input/',
                 seed=None, saving_path_compare=None,
-                scale_method='proportional'):
+                scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -343,7 +347,9 @@ class PostProcess():
                 data_store_path=data_store_path,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
             return res, diff
 
@@ -352,7 +358,7 @@ class PostProcess():
                  gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                  age_group_width=5, data_store_path='./input/',
                  seed=None, saving_path_compare=None,
-                 scale_method='proportional'):
+                 scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -415,7 +421,9 @@ class PostProcess():
                 data_store_path=data_store_path,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
             return res, diff
 
@@ -461,7 +469,7 @@ class PostProcess():
                                       gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                                       age_group_width=5, data_store_path='./input/', sampling_percentage=0.1,
                                       proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
-                                      scale_method='proportional'):
+                                      scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This is the function really doing work.
 
@@ -501,7 +509,7 @@ class PostProcess():
 
                     # Get the results of people sampled
                     X = SamplingMaker(non_resp_rate=non_resp_rate, keep_track=True, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
                     ite = X([time_sample[i]], people)
 
                     # After each sample, now deal with the additional samples
@@ -624,7 +632,7 @@ class PostProcess():
 
                     # Get results of each people sampled
                     X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
                     ite = X(time_sample, people)
 
                     # Output the infected rate
@@ -632,6 +640,13 @@ class PostProcess():
                         infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
                 elif sample_strategy == 'Random':  # Change people sampled at each sample time point
                     infected_rate = []
+
+                    true_positive_rate = []
+                    false_positive_rate = []
+                    true_negative_rate = []
+                    false_negative_rate = []
+
+
                     for i in range(len(time_sample)):  # Sample at each sample time points
                         if i == 0:  # First time sampling, need pre_process
                             if sampling_method == 'AgeRegion':
@@ -652,29 +667,49 @@ class PostProcess():
 
                         # Get the results of each people sampled
                         X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                          false_positive=0, false_negative=0, threshold=None)
+                                          false_positive=false_positive, false_negative=false_negative, threshold=None)
                         ite = X([time_sample[i]], people)
+                        #print(ite)
 
                         # Output the infected rate
-                        infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
+                        #infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
+                        true_positive_rate.append(ite.iloc[0].value_counts().get('True Positive', 0) / len(people))
+                        false_positive_rate.append(ite.iloc[0].value_counts().get('False Positive', 0) / len(people))
+                        true_negative_rate.append(ite.iloc[0].value_counts().get('True Negative', 0) / len(people))
+                        false_negative_rate.append(ite.iloc[0].value_counts().get('False Negative', 0) / len(people))
+
+                        print(true_positive_rate)
 
             # Plot the figure
             if gen_plot:
                 plt.figure()
-                infected_population = np.array(infected_rate) * len(self.demo_data)
-                plt.plot(time_sample, infected_population)
+                #infected_population = np.array(infected_rate) * len(self.demo_data)
+                demographic = len(self.demo_data)
+                true_positive_population = np.array(true_positive_rate) * demographic
+                false_positive_population = np.array(false_positive_rate) * demographic
+                true_negative_population = np.array(true_negative_rate) * demographic
+                false_negative_population = np.array(false_negative_rate) * demographic
+
+                #plt.plot(time_sample, infected_population)
+                plt.plot(time_sample, true_positive_population, label="True Positive")
+                plt.plot(time_sample, false_positive_population, label="False Positive")
+                plt.plot(time_sample, true_negative_population, label="True Negative")
+                plt.plot(time_sample, false_negative_population, label="False Negative")
+
                 plt.xlabel('Time')
                 plt.ylabel('Population')
                 plt.xlim(0, max(time_sample))
                 plt.ylim(0, len(self.demo_data))
                 plt.title('Number of infection in the sample')
+                plt.legend()
                 if saving_path_sampling:
                     plt.savefig(saving_path_sampling)
             res = []
             res.append(time_sample)
             res.append(infected_rate)
             # Output the results for comparison use
-            self.result = infected_rate
+            #self.result = infected_rate
+            self.result = [true_positive_rate, false_positive_rate, true_negative_rate, false_negative_rate]
 
             if comparison:
                 diff = self._compare(time_sample=time_sample, gen_plot=gen_plot, scale_method=scale_method,
@@ -688,7 +723,8 @@ class PostProcess():
                               gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                               age_group_width=5, data_store_path='./input/',
                               seed=None, saving_path_compare=None,
-                              scale_method='proportional'):
+                              scale_method='proportional',
+                              false_positive=0, false_negative=0):
             '''
             This is the function really doing work.
 
@@ -712,7 +748,7 @@ class PostProcess():
 
                 # Get results of each people sampled
                 X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                  false_positive=0, false_negative=0, threshold=None)
+                                  false_positive=false_positive, false_negative=false_negative, threshold=None)
                 ite = X(time_sample, people)
 
                 # Output the infected rate
@@ -739,7 +775,7 @@ class PostProcess():
 
                     # Get the results of each people sampled
                     X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
                     ite = X([time_sample[i]], people)
 
                     # Output the infected rate

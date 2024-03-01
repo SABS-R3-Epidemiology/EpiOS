@@ -84,24 +84,72 @@ class SamplingMaker():
         '''
         Method to return the result for one test
 
-        If threshold is None, then load is the infectiousness status of the testes person
+        If threshold is None, then load is the infectiousness status of the tested person
         Otherwise, it is the viral load of the tested person.
         Possible outputs are 'NonResponder', 'Positive', 'Negative'.
         '''
 
         if bool(binomial(1, self.non_resp_rate)):
             return 'NonResponder'
+        
+
         if self.threshold is None:
-            if load in self.recognised:
+
+            if load in self.recognised: # if infected
+                # not a false negative
                 p = 1 - self.false_negative
-            else:
+
+                infected_flag = True
+
+            else: # if not infected
+                # a false positive
                 p = self.false_positive
+
+                infected_flag = False
+
         else:
             if load > self.threshold:
+
                 p = 1 - self.false_negative
+
             else:
                 p = self.false_positive
-        if bool(binomial(1, p)):
-            return 'Positive'
+
+        if bool(binomial(1, p)): # a number either 0 or 1
+            # Positive
+
+            if infected_flag is True:
+
+                return 'True Positive'
+
+            else:
+
+                return 'False Positive'
+        
         else:
-            return 'Negative'
+            # Negative
+
+            if infected_flag is False:
+
+                return 'True Negative'
+            
+            else:
+
+                return 'False Negative'
+
+    # self.recognised = [3, 4, 5, 6, 7, 8] = Infected
+
+    # Infection Satuses:
+
+    # Susceptible = 1
+    # Exposed = 2
+    # InfectASympt = 3
+    # InfectMild = 4
+    # InfectGP = 5
+    # InfectHosp = 6
+    # InfectICU = 7
+    # InfectICURecov = 8
+    # Recovered = 9
+    # Dead = 10
+    # Vaccinated = 11
+
