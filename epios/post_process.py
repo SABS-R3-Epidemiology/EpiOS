@@ -70,7 +70,7 @@ class PostProcess():
                       gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                       age_group_width=5, data_store_path='./input/', sampling_percentage=0.1,
                       proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
-                      scale_method='proportional'):
+                      scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -167,7 +167,9 @@ class PostProcess():
                 threshold=threshold,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
             return res, diff
 
@@ -176,7 +178,7 @@ class PostProcess():
                    gen_plot: bool = False, saving_path_sampling=None,
                    data_store_path='./input/', sampling_percentage=0.1,
                    proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
-                   scale_method='proportional'):
+                   scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -261,7 +263,9 @@ class PostProcess():
                 threshold=threshold,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
             return res, diff
 
@@ -270,7 +274,7 @@ class PostProcess():
                 gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                 age_group_width=5, data_store_path='./input/',
                 seed=None, saving_path_compare=None,
-                scale_method='proportional'):
+                scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -343,7 +347,9 @@ class PostProcess():
                 data_store_path=data_store_path,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
             return res, diff
 
@@ -352,7 +358,7 @@ class PostProcess():
                  gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                  age_group_width=5, data_store_path='./input/',
                  seed=None, saving_path_compare=None,
-                 scale_method='proportional'):
+                 scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This class is to sample and plot figures using both age and region stratification.
 
@@ -415,7 +421,9 @@ class PostProcess():
                 data_store_path=data_store_path,
                 seed=seed,
                 saving_path_compare=saving_path_compare,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
             return res, diff
 
@@ -461,7 +469,7 @@ class PostProcess():
                                       gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                                       age_group_width=5, data_store_path='./input/', sampling_percentage=0.1,
                                       proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
-                                      scale_method='proportional'):
+                                      scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This is the function really doing work.
 
@@ -501,7 +509,7 @@ class PostProcess():
 
                     # Get the results of people sampled
                     X = SamplingMaker(non_resp_rate=non_resp_rate, keep_track=True, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
                     ite = X([time_sample[i]], people)
 
                     # After each sample, now deal with the additional samples
@@ -624,7 +632,7 @@ class PostProcess():
 
                     # Get results of each people sampled
                     X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
                     ite = X(time_sample, people)
 
                     # Output the infected rate
@@ -652,7 +660,7 @@ class PostProcess():
 
                         # Get the results of each people sampled
                         X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                          false_positive=0, false_negative=0, threshold=None)
+                                          false_positive=false_positive, false_negative=false_negative, threshold=None)
                         ite = X([time_sample[i]], people)
 
                         # Output the infected rate
@@ -688,7 +696,7 @@ class PostProcess():
                               gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                               age_group_width=5, data_store_path='./input/',
                               seed=None, saving_path_compare=None,
-                              scale_method='proportional'):
+                              scale_method='proportional', false_positive=0, false_negative=0):
             '''
             This is the function really doing work.
 
@@ -712,7 +720,7 @@ class PostProcess():
 
                 # Get results of each people sampled
                 X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                  false_positive=0, false_negative=0, threshold=None)
+                                  false_positive=false_positive, false_negative=false_negative, threshold=None)
                 ite = X(time_sample, people)
 
                 # Output the infected rate
@@ -739,7 +747,7 @@ class PostProcess():
 
                     # Get the results of each people sampled
                     X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
                     ite = X([time_sample[i]], people)
 
                     # Output the infected rate
@@ -771,7 +779,7 @@ class PostProcess():
                 return res, None
 
     def __call__(self, sampling_method, sample_size, time_sample, non_responder=False, comparison=True,
-                 non_resp_rate=None, data_store_path='./input/', **kwargs):
+                 non_resp_rate=None, data_store_path='./input/', false_positive=0, false_negative=0, **kwargs):
         '''
         This method need not to be called directly.
         This is mainly to be compatible with the following methods _iteration_once and best_method
@@ -841,14 +849,14 @@ class PostProcess():
                                          time_sample=time_sample, non_resp_rate=non_resp_rate,
                                          data_store_path=data_store_path,
                                          comparison=comparison, non_responder=non_responder,
-                                         **sampling_input)
+                                         **sampling_input, false_positive=false_positive, false_negative=false_negative)
         return res, diff
 
     def _sampled_result(self, sampling_method, sample_size, time_sample, sample_strategy='Random',
                         num_age_group=17, age_group_width=5, data_store_path='./input/', seed=None,
                         non_responder=False, comparison=True, non_resp_rate=None,
                         sampling_percentage=0.1, proportion=0.01, threshold=None,
-                        scale_method='proportional'):
+                        scale_method='proportional', false_positive=0, false_negative=0):
         '''
         This is a method to generate the sampled result and plot a figure
         This method should not be used directly, it is integrated within the __callable__ method
@@ -869,7 +877,9 @@ class PostProcess():
                 proportion=proportion,
                 threshold=threshold,
                 seed=seed,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
         elif sampling_method == 'Age':  # For only age stratification
             res, diff = self.predict.Age(
@@ -881,7 +891,9 @@ class PostProcess():
                 age_group_width=age_group_width,
                 data_store_path=data_store_path,
                 seed=seed,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
         elif sampling_method == 'Region':  # Only region stratification
             res, diff = self.predict.Region(
@@ -896,7 +908,9 @@ class PostProcess():
                 proportion=proportion,
                 threshold=threshold,
                 seed=seed,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
         elif sampling_method == 'Base':  # Use the base sampling method, no age/regional stratification
             res, diff = self.predict.AgeRegion(
@@ -906,7 +920,9 @@ class PostProcess():
                 sample_strategy=sample_strategy,
                 data_store_path=data_store_path,
                 seed=seed,
-                scale_method=scale_method
+                scale_method=scale_method,
+                false_positive=false_positive,
+                false_negative=false_negative
             )
 
         return res, diff
