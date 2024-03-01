@@ -440,14 +440,25 @@ class PostProcess():
 
             # Get the true result from self.time_data
             true_result = []
-            for t in time_sample:
-                num = self.time_data.iloc[t, 1:].value_counts().get(3, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(4, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(5, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(6, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(7, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(8, 0)
-                true_result.append(num)
+
+            selected_data = self.time_data.iloc[time_sample]
+
+            true_result = selected_data.apply(lambda row: row.isin(range(3, 9)).sum(), axis=1).tolist()
+
+
+            print("True_result: ", true_result)
+
+            # for t in time_sample:
+
+            #     num = self.time_data
+
+            #     num = self.time_data.iloc[t, 1:].value_counts().get(3, 0)
+            #     num += self.time_data.iloc[t, 1:].value_counts().get(4, 0)
+            #     num += self.time_data.iloc[t, 1:].value_counts().get(5, 0)
+            #     num += self.time_data.iloc[t, 1:].value_counts().get(6, 0)
+            #     num += self.time_data.iloc[t, 1:].value_counts().get(7, 0)
+            #     num += self.time_data.iloc[t, 1:].value_counts().get(8, 0)
+            #     true_result.append(num)
 
             # Find the difference between estimated infection level and the real one
             diff = np.array(true_result) - result_scaled
@@ -755,7 +766,12 @@ class PostProcess():
                 for i in range(len(time_sample)):
                     infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
-                infected_rate = []
+                #infected_rate = []
+                true_positive_rate = []
+                false_positive_rate = []
+                true_negative_rate = []
+                false_negative_rate = []
+
                 for i in range(len(time_sample)):  # Sample at each sample time points
                     if i == 0:  # First time sampling, need pre_process
                         if sampling_method == 'Age':
@@ -779,13 +795,27 @@ class PostProcess():
                     ite = X([time_sample[i]], people)
 
                     # Output the infected rate
-                    infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
+                    true_positive_rate.append(ite.iloc[0].value_counts().get('True Positive', 0) / len(people))
+                    false_positive_rate.append(ite.iloc[0].value_counts().get('False Positive', 0) / len(people))
+                    true_negative_rate.append(ite.iloc[0].value_counts().get('True Negative', 0) / len(people))
+                    false_negative_rate.append(ite.iloc[0].value_counts().get('False Negative', 0) / len(people))
+
+                    print(true_positive_rate)
 
             # Plot the figure
             if gen_plot:
                 plt.figure()
-                infected_population = np.array(infected_rate) * len(self.demo_data)
-                plt.plot(time_sample, infected_population)
+                demographic = len(self.demo_data)
+                true_positive_population = np.array(true_positive_rate) * demographic
+                false_positive_population = np.array(false_positive_rate) * demographic
+                true_negative_population = np.array(true_negative_rate) * demographic
+                false_negative_population = np.array(false_negative_rate) * demographic
+
+                #plt.plot(time_sample, infected_population)
+                plt.plot(time_sample, true_positive_population, label="True Positive")
+                plt.plot(time_sample, false_positive_population, label="False Positive")
+                plt.plot(time_sample, true_negative_population, label="True Negative")
+                plt.plot(time_sample, false_negative_population, label="False Negative")
                 plt.xlabel('Time')
                 plt.ylabel('Population')
                 plt.xlim(0, max(time_sample))
@@ -795,10 +825,10 @@ class PostProcess():
                     plt.savefig(saving_path_sampling)
             res = []
             res.append(time_sample)
-            res.append(infected_rate)
             # Output the results for comparison use
-            self.result = infected_rate
+            self.result = [true_positive_rate, false_positive_rate, true_negative_rate, false_negative_rate]
 
+            res.append(self.result)
             if comparison:
                 diff = self._compare(time_sample=time_sample, gen_plot=gen_plot, scale_method=scale_method,
                                      saving_path_compare=saving_path_compare)
