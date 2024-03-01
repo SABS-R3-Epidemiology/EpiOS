@@ -419,7 +419,7 @@ class PostProcess():
             )
             return res, diff
 
-        def _compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path_compare=None):
+        def _compare(self, time_sample, gen_plot=False, scale_method: str = 'proportional', saving_path_compare=None):         
             '''
             Generate a graph comparing the difference between predicted and real infection level
             This method should not be used directly, it is integrated within methods AgeRegion, Age,
