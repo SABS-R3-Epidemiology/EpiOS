@@ -720,6 +720,8 @@ class PostProcess():
                     infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
                 infected_rate = []
+                predicted_total_age = [[] for _ in range(num_age_group)]
+
                 for i in range(len(time_sample)):  # Sample at each sample time points
                     if i == 0:  # First time sampling, need pre_process
                         if sampling_method == 'Age':
@@ -742,8 +744,33 @@ class PostProcess():
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
 
+                    # For the IDs, locate their age from the data
+                    ite_age = []
+                    for id in people:
+                        age_value = self.demo_data[self.demo_data['id'] == id]['age'].values[0]
+                        age_pos = min(num_age_group - 1, math.floor(age_value / age_group_width))
+                        ite_age.append(age_pos)
+                    ite_age = np.array([[person, age] for person, age in zip(people, ite_age)])
+
+                    # For the age group within age coloumn of ite_age, use value_counts to get the number of people postive in each age group
+                    ite_age = pd.DataFrame(ite_age, columns=['id', 'age'])
+                    #print(ite_age)
+                    for a in range(num_age_group):
+                        ite_age_group = ite_age[ite_age['age'] == f'{a}']['id']
+                        # For this series, use value_counts to get the number of people postive in each age group from ite
+                        ite_age_group_results = ite[ite_age_group]
+
+                        if ite_age_group_results.empty:
+                            predicted_total_age[a].append(0.0)
+                        else:
+                            if len(ite_age_group) != 0:
+                                infected_rate_age_group = ite_age_group_results.iloc[0].value_counts().get('Positive', 0) / len(ite_age_group)
+                                predicted_total_age[a].append(infected_rate_age_group)
+
                     # Output the infected rate
                     infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
+
+                print(predicted_total_age)
 
             # Plot the figure
             if gen_plot:
@@ -762,6 +789,7 @@ class PostProcess():
             res.append(infected_rate)
             # Output the results for comparison use
             self.result = infected_rate
+            self.result_ages = predicted_total_age
 
             if comparison:
                 diff = self._compare(time_sample=time_sample, gen_plot=gen_plot, scale_method=scale_method,
