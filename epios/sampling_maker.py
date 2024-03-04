@@ -1,6 +1,7 @@
 from numpy.random import binomial
 from numpy import array, nan
 
+
 class SamplingMaker():
     '''
     Class to return the results of sampling
@@ -55,7 +56,14 @@ class SamplingMaker():
         self.false_negative = false_negative
         self.data = data
 
-    def __call__(self, sampling_times, people, keep_track=False, post_proc=False, callback=None, output=None, stratify=None):
+    def __call__(self,
+                 sampling_times,
+                 people,
+                 keep_track=False,
+                 post_proc=False,
+                 callback=None,
+                 output=None,
+                 stratify=None):
 
         '''
         Method to return the results for all the planned tests
@@ -81,7 +89,7 @@ class SamplingMaker():
             count_negative = lambda x: x.value_counts().get('Negative', 0)
         else:
             classes = {stratify(id) for id in self.data.columns if id != 'time'}
-            str_map = {strat_class: {id for id in self.data.columns if id != 'time' and stratify(id) == strat_class} for strat_class in classes}
+            str_map = {x: {id for id in self.data.columns if id != 'time' and stratify(id) == x} for x in classes}
 
             def count_positive(x):
                 try:

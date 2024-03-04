@@ -49,7 +49,8 @@ class ReScaler():
     def __call__(self, observation, times=None):
         if self.smoothing is None:
             pos, neg = observation
-            estimates = (array(pos) / (array(pos) + array(neg)) - self.false_positive) / (1 - self.false_negative - self.false_positive)
+            estimates = (array(pos) / (array(pos) + array(neg)) - self.false_positive)
+            estimates /= (1 - self.false_negative - self.false_positive)
             return estimates
         elif times is None:
             raise Exception('please insert times of sampling')

@@ -34,12 +34,14 @@ class TestSM(TestCase):
                                                             1: [1, 1, 0],
                                                             2: [2, 2, 2]}))
         self.assertTrue((X(t, [0, 1], keep_track=True) == pd.DataFrame({0: ['Negative', 'Positive'],
-                                                                        1: ['Positive', 'Negative']}, index=[0, 2])).all(axis=None))
+                                                                        1: ['Positive', 'Negative']},
+                                                                        index=[0, 2])).all(axis=None))
         X = SamplingMaker(data=pd.DataFrame({0: [1, 1, 3],
                                              1: [3, 3, 1],
                                              2: [2, 2, 2]}))
         self.assertTrue((pd.DataFrame(X(t, [[0, 1], [0, 1]])) == pd.DataFrame({0: ['Negative', 'Positive'],
-                                                                               1: ['Positive', 'Negative']}, index=t)).all(axis=None))
+                                                                               1: ['Positive', 'Negative']},
+                                                                               index=t)).all(axis=None))
         res, ((pos0, neg0), (pos1, neg1)) = X(t, [[0, 1], [1]], post_proc=True, output='also_nums')
         self.assertEqual(neg0[0], 1)
         self.assertEqual(neg1[0], 1)
