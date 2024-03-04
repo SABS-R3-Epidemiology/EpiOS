@@ -1,7 +1,7 @@
 from unittest import TestCase
 from numpy.random import rand
 from numpy import array
-from epios.re_scaler import ReScaler
+from re_scaler import ReScaler
 
 
 class TestRS(TestCase):
