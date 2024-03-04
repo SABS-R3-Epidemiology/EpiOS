@@ -459,8 +459,15 @@ class PostProcessUpdate():
                                       comparison=True, non_resp_rate=None, sample_strategy='Random',
                                       gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                                       age_group_width=5, data_store_path='./input/', sampling_percentage=0.1,
-                                      proportion=0.01, threshold=None, seed=None, saving_path_compare=None, scale_method='proportional',
-                                      infect_threshold=None, false_positive=0, false_negative=0, smoothing=None):
+                                      proportion=0.01,
+                                      threshold=None,
+                                      seed=None,
+                                      saving_path_compare=None,
+                                      scale_method='proportional',
+                                      infect_threshold=None,
+                                      false_positive=0,
+                                      false_negative=0,
+                                      smoothing=None):
             '''
             This is the function really doing work.
 
