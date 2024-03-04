@@ -104,7 +104,7 @@ class SamplingMaker():
                     return array(obs).sum() * len(x.index) / len(self.data.columns)
                 except ZeroDivisionError:
                     return nan
-        
+
         if keep_track:
             STATUSES = self.data.loc[sampling_times, people]
             result = STATUSES.apply(lambda x: x.apply(self._testresult))

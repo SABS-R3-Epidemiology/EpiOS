@@ -659,7 +659,7 @@ class PostProcessUpdate():
                 infected_rate = list(ReScaler(false_positive=false_positive,
                                               false_negative=false_negative,
                                               smoothing=smoothing)(observ))
-                
+
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
 
                 people = []

@@ -230,6 +230,7 @@ class TestDataProcessUpdate(TestCase):
             np.testing.assert_equal(res[0], [self.range6, [np.nan, 1.0, 1.0, 1.0, np.nan, 1.0]])
         except AssertionError:
             self.fail(str(res[0]) + ' is not ' + str([self.range6, [np.nan, 1.0, 1.0, 1.0, np.nan, 1.0]]))
+
     def test_compare(self):
         _, diff = self.processor.predict.AgeRegion(6, self.range6, comparison=True,
                                                    data_store_path=self.path, gen_plot=True,
