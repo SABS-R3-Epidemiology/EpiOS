@@ -30,23 +30,25 @@ class TestSM(TestCase):
 
     def test__call__(self):
         t = [0, 2]
-        X = SamplingMaker(keep_track=True, threshold=0.5, data=pd.DataFrame({0: [0, 0, 1],
-                                                                             1: [1, 1, 0],
-                                                                             2: [2, 2, 2]}))
-        self.assertTrue((X(t, [0, 1]) == pd.DataFrame({0: ['Negative', 'Positive'],
-                                                       1: ['Positive', 'Negative']}, index=[0, 2])).all(axis=None))
+        X = SamplingMaker(threshold=0.5, data=pd.DataFrame({0: [0, 0, 1],
+                                                            1: [1, 1, 0],
+                                                            2: [2, 2, 2]}))
+        self.assertTrue((X(t, [0, 1], keep_track=True) == pd.DataFrame({0: ['Negative', 'Positive'],
+                                                                        1: ['Positive', 'Negative']}, index=[0, 2])).all(axis=None))
         X = SamplingMaker(data=pd.DataFrame({0: [1, 1, 3],
                                              1: [3, 3, 1],
                                              2: [2, 2, 2]}))
-        result, (observ, number) = X(t, [[0, 1], [0, 1]])
-        self.assertTrue((result[0] == pd.DataFrame({0: ['Negative'],
-                                                    1: ['Positive']}, index=[0])).all(axis=None))
-        self.assertTrue((result[1] == pd.DataFrame({0: ['Positive'],
-                                                    1: ['Negative']}, index=[2])).all(axis=None))
-        result, (observ, number) = X(t, [[0, 1], [1]], post_proc=True)
-        self.assertEqual(observ[0][0], 0.5)
-        self.assertEqual(observ[1][0], 0.0)
-        self.assertEqual(observ[1][1], 0.0)
-        self.assertEqual(number[0][0], 2)
-        self.assertEqual(number[1][0], 1)
-        self.assertEqual(number[1][1], 1)
+        self.assertTrue((pd.DataFrame(X(t, [[0, 1], [0, 1]])) == pd.DataFrame({0: ['Negative', 'Positive'],
+                                                                               1: ['Positive', 'Negative']}, index=t)).all(axis=None))
+        res, ((pos0, neg0), (pos1, neg1)) = X(t, [[0, 1], [1]], post_proc=True, output='also_nums')
+        self.assertEqual(neg0[0], 1)
+        self.assertEqual(neg1[0], 1)
+        self.assertEqual(neg1[1], 1)
+        self.assertEqual(pos0[0], 1)
+        self.assertEqual(pos1[0], 0)
+        self.assertEqual(pos1[1], 0)
+        self.assertTrue((res[0][0] == pd.Series(['Negative', 'Positive'], index=[0, 1], name=0)).all())
+        self.assertTrue((res[1][0] == pd.Series(['Negative'], index=[0], name=0)).all())
+        self.assertTrue((res[1][1] == pd.Series(['Negative'], index=[1], name=2)).all())
+        with self.assertRaises(Exception):
+            X(t, [[0, 1], [1]], post_proc=True, output='output')

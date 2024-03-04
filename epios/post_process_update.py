@@ -6,10 +6,10 @@ from itertools import product
 import multiprocessing
 import sys
 import os
-from epios import Sampler, SamplerAge, SamplerAgeRegion, SamplerRegion, SamplingMaker
+from epios import Sampler, SamplerAge, SamplerAgeRegion, SamplerRegion, SamplingMaker, ReScaler
 
 
-class PostProcess():
+class PostProcessUpdate():
     '''
     This class is to automatically sample the population at several given time points.
 
@@ -459,8 +459,8 @@ class PostProcess():
                                       comparison=True, non_resp_rate=None, sample_strategy='Random',
                                       gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                                       age_group_width=5, data_store_path='./input/', sampling_percentage=0.1,
-                                      proportion=0.01, threshold=None, seed=None, saving_path_compare=None,
-                                      scale_method='proportional'):
+                                      proportion=0.01, threshold=None, seed=None, saving_path_compare=None, scale_method='proportional',
+                                      infect_threshold=None, false_positive=0, false_negative=0, smoothing=None):
             '''
             This is the function really doing work.
 
@@ -468,149 +468,74 @@ class PostProcess():
 
             The Region and AgeRegion methods share very similar code structures.
             '''
+
             if seed is not None:
                 np.random.seed(seed)
 
+            post_proc = True
+            if smoothing is None:
+                post_proc = False
+
             if non_responder:  # For non-responders enabled
+
+                # Only Random sample strategies
                 if non_resp_rate is None:
                     raise ValueError('You have to input the non-response rate when considering non-responders')
 
-                # Only Random sample strategies
-                infected_rate = []
-                for i in range(len(time_sample)):  # Sample again at each time point
-                    if i == 0:
-                        if sampling_method == 'AgeRegion':
-                            sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
-                                                             num_age_group=num_age_group,
-                                                             age_group_width=age_group_width)
-                        else:
-                            sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
-                    else:
-                        if sampling_method == 'AgeRegion':
-                            sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
-                                                             num_age_group=num_age_group,
-                                                             age_group_width=age_group_width)
-                        else:
-                            sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
-                    try:
-                        people = sampler_class.sample(sample_size=sample_size, additional_sample=additional_sample)
-                    except NameError:
-                        people = sampler_class.sample(sample_size=sample_size)
-
-                    X = SamplingMaker(non_resp_rate=non_resp_rate, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
-                    ite = X([time_sample[i]], people, keep_track=True)
-
-                    # After each sample, now deal with the additional samples
-                    try:
-                        # For the first time sampled, there is no variable additional sample defined,
-                        # therefore, NameError would be raised
-                        # Then it will go to the 'except NameError' line
-                        additional_sample = np.array(additional_sample)
-                        if additional_sample.sum() == 0:
-                            # When there is no additional samples needed after one sample,
-                            # we will also skip the following bit directly output the infection rate
-                            # by raising the NameError
-                            raise NameError
-                        else:
-                            # This means there are additional samples needed
-
-                            # Record the position of groups that need additional samples
-                            if sampling_method == 'AgeRegion':
-                                indices = np.nonzero(additional_sample)
-                                add_pos = []
-                                for k in range(len(indices[0])):
-                                    add_pos.append((indices[0][k], indices[1][k]))
-                            else:
-                                add_pos = np.nonzero(additional_sample)[0]
-
-                            # Now, we want to calculate the true infection rate
-                            # But since we additionally sampled some people in some groups
-                            # This will not be age-region stratification
-                            # So we need to generate a robust infection rate according to
-                            # The age-regional distribution
-                            count_total = 0  # This is the total number of people from groups with addtional samples
-                            count_posi = 0  # total number of positive from groups with additional samples
-                            other_posi = 0  # total number of positive from groups without additional samples
-                            count_nonResp = 0  # total number of non-responders from groups with additional samples
-                            other_nonResp = 0  # total number of non-responders from groups without additional samples
-                            # Now, we want to get the infection rate for each age-region group
-                            # We need to firstly put each people sampled back to their original
-                            # age-region group, and then identify whether they are in the group
-                            # that with additional samples or not
-
-                            for id in people:
-                                if sampling_method == 'AgeRegion':
-                                    region_pos = int(id.split('.')[0])
-                                    age_value = self.demo_data[self.demo_data['id'] == id]['age'].values[0]
-                                    age_pos = min(num_age_group - 1, math.floor(age_value / age_group_width))
-                                    indexer = (region_pos, age_pos)
-                                else:
-                                    indexer = int(id.split('.')[0])
-                                if indexer in add_pos:
-                                    # If this person is from a group with additional samples
-                                    count_total += 1
-                                    col_index = ite.columns.get_loc(id)
-                                    if ite.iloc[0, col_index] == 'Positive':
-                                        count_posi += 1
-                                    if ite.iloc[0, col_index] == 'NonResponder':
-                                        count_nonResp += 1
-                                else:
-                                    # If this person is not from a group with additional samples
-                                    col_index = ite.columns.get_loc(id)
-                                    if ite.iloc[0, col_index] == 'Positive':
-                                        other_posi += 1
-                                    if ite.iloc[0, col_index] == 'NonResponder':
-                                        other_nonResp += 1
-
-                            # The following is total number of people responded from groups with additional samples
-                            effective_total = count_total - count_nonResp
-
-                            if effective_total > 0:  # If there is one person respond
-                                # We can then calculate the infected rate of groups with additional samples
-
-                                # But do not forget that there are additional samples
-                                # To maintain age-region stratification, we need to rescale to
-                                # get age-region rescaled number of positive cases
-                                spaces = sample_size - (len(people) - count_total)
-                                spaces_posi = round(spaces * count_posi / effective_total)
-
-                                # Then add positive cases from other groups(without additional samples)
-                                # Then we can calculate this robust infected rate
-                                infected_rate.append((spaces_posi + other_posi)
-                                                     / (spaces + len(people) - count_total - other_nonResp))
-                            else:  # If there is no one in these groups responded
-                                try:
-                                    # Then try to use other groups' data to be the infected rate
-                                    infected_rate.append(other_posi / (len(people) - count_total - other_nonResp))
-                                except ZeroDivisionError:
-                                    infected_rate.append(np.nan)
-                    except NameError:
-                        # If additional_sample are not defined or sum = 0, i.e. No additional samples needed
-                        # Then directly calculate the infected rate as the output
-                        try:
-                            infected_rate_ite = (ite.iloc[0].value_counts().get('Positive', 0)
-                                                 / (ite.iloc[0].value_counts().get('Positive', 0)
-                                                    + ite.iloc[0].value_counts().get('Negative', 0)))
-                        except ZeroDivisionError:
-                            # There is the possibility that all people do not respond,
-                            # so just output nan
-                            infected_rate_ite = np.nan
-                        infected_rate.append(infected_rate_ite)
-
+                def callback(ite):
                     # After each sample, we need to generate the additional samples for sampling next time
                     # based on the non-responders' IDs of this time's sample
                     non_resp_id = []
-                    for j in range(len(ite.columns)):
-                        if ite.iloc[0, j] == 'NonResponder':
-                            non_resp_id.append(ite.columns[j])
+                    for j in range(len(ite.index)):
+                        if ite.iloc[j] == 'NonResponder':
+                            non_resp_id.append(ite.index[j])
+                    if sampling_method == 'AgeRegion':
+                        sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
+                                                         num_age_group=num_age_group,
+                                                         age_group_width=age_group_width)
+                    else:
+                        sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
                     additional_sample = sampler_class.additional_nonresponder(non_resp_id=non_resp_id,
                                                                               sampling_percentage=sampling_percentage,
                                                                               proportion=proportion,
                                                                               threshold=threshold)
+                    return sampler_class.sample(sample_size=sample_size, additional_sample=additional_sample)
+
+                if sampling_method == 'AgeRegion':
+                    sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
+                                                     num_age_group=num_age_group,
+                                                     age_group_width=age_group_width)
+                else:
+                    sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
+
+                people = sampler_class.sample(sample_size=sample_size)
+                if sampling_method == 'AgeRegion':
+                    def stratify(id):
+                        region_pos = int(id.split('.')[0])
+                        age_value = self.demo_data[self.demo_data['id'] == id]['age'].values[0]
+                        age_pos = min(num_age_group - 1, math.floor(age_value / age_group_width))
+                        return (region_pos, age_pos)
+                else:
+                    def stratify(id):
+                        return int(id.split('.')[0])
+
+                observ = SamplingMaker(non_resp_rate=non_resp_rate,
+                                       data=self.time_data,
+                                       false_positive=0,
+                                       false_negative=0,
+                                       threshold=infect_threshold)(time_sample,
+                                                                   people,
+                                                                   post_proc=post_proc,
+                                                                   callback=callback,
+                                                                   output='nums_only',
+                                                                   stratify=stratify)
+
+                infected_rate = list(ReScaler(false_positive=false_positive,
+                                              false_negative=false_negative,
+                                              smoothing=smoothing)(observ))
+
             else:
                 if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
-                    infected_rate = []
 
                     # Do the sampling
                     if sampling_method == 'AgeRegion':
@@ -621,15 +546,21 @@ class PostProcess():
                     people = sampler_class.sample(sample_size=sample_size)
 
                     # Get results of each people sampled
-                    X = SamplingMaker(non_resp_rate=0, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
-                    ite = X(time_sample, people, keep_track=True)
-
+                    observ = SamplingMaker(non_resp_rate=non_resp_rate,
+                                           data=self.time_data,
+                                           false_positive=false_positive,
+                                           false_negative=false_negative,
+                                           threshold=infect_threshold)(time_sample,
+                                                                       people,
+                                                                       keep_track=True,
+                                                                       output='nums_only')
                     # Output the infected rate
-                    for i in range(len(time_sample)):
-                        infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
+                    infected_rate = list(ReScaler(false_positive=false_positive,
+                                                  false_negative=false_negative)(observ))
+
                 elif sample_strategy == 'Random':  # Change people sampled at each sample time point
-                    infected_rate = []
+
+                    people = []
                     for i in range(len(time_sample)):  # Sample at each sample time points
                         if i == 0:  # First time sampling, need pre_process
                             if sampling_method == 'AgeRegion':
@@ -646,15 +577,21 @@ class PostProcess():
                                                                  age_group_width=age_group_width)
                             else:
                                 sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
-                        people = sampler_class.sample(sample_size=sample_size)
+                        people.append(sampler_class.sample(sample_size=sample_size))
 
-                        # Get the results of each people sampled
-                        X = SamplingMaker(non_resp_rate=0, data=self.time_data,
-                                          false_positive=0, false_negative=0, threshold=None)
-                        ite = X([time_sample[i]], people, keep_track=True)
-
-                        # Output the infected rate
-                        infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
+                    # Get the results of each people sampled
+                    observ = SamplingMaker(non_resp_rate=non_resp_rate,
+                                      data=self.time_data,
+                                      false_positive=false_positive,
+                                      false_negative=false_positive,
+                                      threshold=infect_threshold)(time_sample,
+                                                                  people,
+                                                                  post_proc=post_proc,
+                                                                  output='nums_only')
+                    # Output the infected rate
+                    infected_rate = list(ReScaler(false_positive=false_positive,
+                                                  false_negative=false_negative,
+                                                  smoothing=smoothing)(observ))
 
             # Plot the figure
             if gen_plot:
@@ -683,8 +620,8 @@ class PostProcess():
                               comparison=True, non_resp_rate=None, sample_strategy='Random',
                               gen_plot: bool = False, saving_path_sampling=None, num_age_group=17,
                               age_group_width=5, data_store_path='./input/',
-                              seed=None, saving_path_compare=None,
-                              scale_method='proportional'):
+                              seed=None, saving_path_compare=None, scale_method='proportional',
+                              infect_threshold=None, false_positive=0, false_negative=0, smoothing=None):
             '''
             This is the function really doing work.
 
@@ -695,8 +632,11 @@ class PostProcess():
             if seed is not None:
                 np.random.seed(seed)
 
+            post_proc = True
+            if smoothing is None:
+                post_proc = False
+
             if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
-                infected_rate = []
 
                 # Do the sampling
                 if sampling_method == 'Age':
@@ -707,17 +647,22 @@ class PostProcess():
                 people = sampler_class.sample(sample_size=sample_size)
 
                 # Get results of each people sampled
-                X = SamplingMaker(non_resp_rate=0, data=self.time_data,
-                                  false_positive=0, false_negative=0, threshold=None)
-                ite = X(time_sample, people, keep_track=True)
-
+                observ = SamplingMaker(non_resp_rate=non_resp_rate,
+                                       data=self.time_data,
+                                       false_positive=false_positive,
+                                       false_negative=false_negative,
+                                       threshold=infect_threshold)(time_sample,
+                                                                   people,
+                                                                   keep_track=True,
+                                                                   output='nums_only')
                 # Output the infected rate
-                for i in range(len(time_sample)):
-                    infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
-
+                infected_rate = list(ReScaler(false_positive=false_positive,
+                                              false_negative=false_negative,
+                                              smoothing=smoothing)(observ))
+                
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
 
-                infected_rate = []
+                people = []
                 for i in range(len(time_sample)):  # Sample at each sample time points
                     if i == 0:  # First time sampling, need pre_process
                         if sampling_method == 'Age':
@@ -731,14 +676,21 @@ class PostProcess():
                                                        num_age_group=num_age_group, age_group_width=age_group_width)
                         else:
                             sampler_class = Sampler(data=self.demo_data, data_store_path=data_store_path)
-                    people = sampler_class.sample(sample_size=sample_size)
+                    people.append(sampler_class.sample(sample_size=sample_size))
 
-                    X = SamplingMaker(non_resp_rate=0, data=self.time_data,
-                                      false_positive=0, false_negative=0, threshold=None)
-                    ite = X([time_sample[i]], people, keep_track=True)
-
-                    # Output the infected rate
-                    infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
+                    # Get the results of each people sampled
+                observ = SamplingMaker(non_resp_rate=non_resp_rate,
+                                  data=self.time_data,
+                                  false_positive=false_positive,
+                                  false_negative=false_negative,
+                                  threshold=infect_threshold)(time_sample,
+                                                              people,
+                                                              post_proc=post_proc,
+                                                              output='nums_only')
+                # Output the infected rate
+                infected_rate = list(ReScaler(false_positive=false_positive,
+                                              false_negative=false_negative,
+                                              smoothing=smoothing)(observ))
 
             # Plot the figure
             if gen_plot:

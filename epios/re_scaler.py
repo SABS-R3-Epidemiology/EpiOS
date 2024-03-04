@@ -46,20 +46,20 @@ class ReScaler():
         else:
             raise Exception('useless test')
 
-    def __call__(self, observation, times=None, tested=None):
+    def __call__(self, observation, times=None):
         if self.smoothing is None:
-            estimates = (array(observation) - self.false_positive) / (1 - self.false_negative - self.false_positive)
+            pos, neg = observation
+            estimates = (array(pos) / (array(pos) + array(neg)) - self.false_positive) / (1 - self.false_negative - self.false_positive)
             return estimates
         elif times is None:
             raise Exception('please insert times of sampling')
-        elif tested is None:
-            raise Exception('please insert number of sampled')
         else:
             smooth_estimate = []
-            for n, (obs, num) in enumerate(zip(observation, tested)):
-                estimates = (array(obs) - self.false_positive) / (1 - self.false_negative - self.false_positive)
+            for n, (pos, neg) in enumerate(observation):
+                obs = array(pos) / (array(pos) + array(neg))
+                estimates = (obs - self.false_positive) / (1 - self.false_negative - self.false_positive)
                 temp = array([self.smoothing(times[n] - times[k]) for k in range(n + 1)], dtype=numpy.double)
-                temp *= array(obs) * (1 - array(obs)) * array(num)
+                temp *= obs * (1 - obs) * (array(pos) + array(neg))
                 try:
                     a = temp.sum()
                     b = (temp * times[0: n + 1]).sum()
@@ -70,6 +70,6 @@ class ReScaler():
                     m0 = (A * c - B * b) / (a * c - b**2)
                     m1 = (B * a - A * b) / (a * c - b**2)
                     smooth_estimate.append(m0 + m1 * times[n])
-                except:
+                except AssertionError:
                     smooth_estimate.append(estimates[n])
             return array(smooth_estimate)

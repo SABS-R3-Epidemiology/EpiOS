@@ -1,5 +1,5 @@
 from numpy.random import binomial
-
+from numpy import array, nan
 
 class SamplingMaker():
     '''
@@ -38,17 +38,24 @@ class SamplingMaker():
             Otherwise this contains the viral loads of the entire population.
     '''
 
-    def __init__(self, non_resp_rate=0, keep_track=False, data=None,
-                 false_positive=0, false_negative=0, threshold=None):
-        self.non_resp_rate = non_resp_rate
+    def __init__(self,
+                 non_resp_rate=None,
+                 data=None,
+                 false_positive=0,
+                 false_negative=0,
+                 threshold=None):
+
+        if non_resp_rate is None:
+            self.non_resp_rate = 0
+        else:
+            self.non_resp_rate = non_resp_rate
         self.recognised = [3, 4, 5, 6, 7, 8]
         self.threshold = threshold
         self.false_positive = false_positive
         self.false_negative = false_negative
-        self.keep_track = keep_track
         self.data = data
 
-    def __call__(self, sampling_times, people, post_proc=False):
+    def __call__(self, sampling_times, people, keep_track = False, post_proc=False, callback=None, output=None, stratify=None):
 
         '''
         Method to return the results for all the planned tests
@@ -64,36 +71,82 @@ class SamplingMaker():
                 lists of IDs in the same format as columns.
 
         Output:
-            A pandas.DataFrame if keep_track is True. Otherwise a list
-            of pandas.DataFrame objects and their averages and size if
-            not post_proc. Otherwise a list of lists of DataFrames and
-            their average and size. These are no strictly needed here.
+
         '''
 
-        if self.keep_track:
-            STATUSES = self.data.loc[sampling_times, people]
-            return STATUSES.apply(lambda x: list(map(self._testresult, x)))
+        assert not (keep_track and post_proc)
+
+        if stratify is None:
+            count_positive = lambda x: x.value_counts().get('Positive', 0)
+            count_negative = lambda x: x.value_counts().get('Negative', 0)
         else:
-            times_people = zip(sampling_times, people)
-            STATUSES = map(lambda t: self.data.loc[[t[0]], t[1]], times_people)
-            res = list(map(lambda x: x.apply(lambda x: list(map(self._testresult, x))), STATUSES))
-            # computing of the lists observ and number can be non-necessary in this place
+            classes = {stratify(id) for id in self.data.columns if id != 'time'}
+            str_map = {strat_class: {id for id in self.data.columns if id != 'time' and stratify(id) == strat_class} for strat_class in classes}
+            def count_positive(x):
+                try:
+                    obs = []
+                    for strat_class in classes:
+                        str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
+                        tested = x.loc[str_map_temp].value_counts().get('Positive', 0)
+                        obs.append(tested * len(str_map[strat_class]) / len(str_map_temp))
+                    return array(obs).sum() * len(x.index) / len(self.data.columns)
+                except ZeroDivisionError:
+                    return nan
+            def count_negative(x):
+                try:
+                    obs = []
+                    for strat_class in classes:
+                        str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
+                        tested = x.loc[str_map_temp].value_counts().get('Negative', 0)
+                        obs.append(tested * len(str_map[strat_class]) / len(str_map_temp))
+                    return array(obs).sum() * len(x.index) / len(self.data.columns)
+                except ZeroDivisionError:
+                    return nan
+        
+        if keep_track:
+            STATUSES = self.data.loc[sampling_times, people]
+            result = STATUSES.apply(lambda x: x.apply(self._testresult))
+            pos = result.apply(count_positive, axis=1)
+            neg = result.apply(count_negative, axis=1)
+            observ = (pos.to_list(), neg.to_list()) # result is a DataFrame, pos, neg are lists
+        else:
+            if callback is None:
+                times_people = zip(sampling_times, people)
+                STATUSES = map(lambda t: self.data.loc[t[0], t[1]], times_people) # list of Series
+                res = list(map(lambda x: x.apply(self._testresult), STATUSES)) # list of Series
+            else:
+                next_people = people
+                res = []
+                for sampling_time in sampling_times:
+                    STATUSES = self.data.loc[sampling_time, next_people] # Series
+                    res.append(STATUSES.apply(self._testresult)) # list of Series
+                    next_people = callback(res[-1])
             if post_proc:
                 result = []
                 observ = []
-                number = []
                 temp = []
                 for x in res:
                     for n, y in enumerate(temp):
-                        temp[n] = y.drop(columns=x.columns, errors='ignore')
-                    temp.append(x)
-                    result.append(temp.copy())
-                    observ.append(list(map(lambda x: (x == 'Positive').mean().mean(), temp)))
-                    number.append(list(map(lambda x: len(x.columns), temp)))
+                        temp[n] = y.drop(labels=x.index, errors='ignore')
+                    temp.append(x) # list of Series
+                    result.append(temp.copy()) # list of list of Series
+                    pos = list(map(count_positive, temp))
+                    neg = list(map(count_negative, temp))
+                    observ.append((pos, neg))
             else:
-                observ = list(map(lambda x: (x == 'Positive').mean().mean(), res))
-                number = list(map(lambda x: len(x.columns), res))
-            return res, (observ, number)
+                result = res
+                pos = list(map(count_positive, res))
+                neg = list(map(count_negative, res))
+                observ = (pos, neg)
+
+        if output is None:
+            return result
+        elif output == 'nums_only':
+            return observ
+        elif output == 'also_nums':
+            return result, observ
+        else:
+            raise Exception('no valid output, output can be nums_only or also_nums or None')
 
     def _testresult(self, load):
         '''
