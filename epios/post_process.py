@@ -444,6 +444,7 @@ class PostProcess():
             # Find the difference between estimated infection level and the real one
             diff = np.array(true_result) - result_scaled
             if gen_plot:
+                plt.figure()
                 plt.plot(time_sample, result_scaled, label='Predicted result', linestyle='--')
                 plt.plot(time_sample, true_result, label='True result')
                 plt.plot(time_sample, np.abs(diff), label='Absolute difference')
@@ -488,10 +489,11 @@ class PostProcess():
                     else:
                         if sampling_method == 'AgeRegion':
                             sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
-                                                             num_age_group=num_age_group,
+                                                             num_age_group=num_age_group, pre_process=False,
                                                              age_group_width=age_group_width)
                         else:
-                            sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
+                            sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path,
+                                                          pre_process=False)
                     try:
                         people = sampler_class.sample(sample_size=sample_size, additional_sample=additional_sample)
                     except NameError:
@@ -658,7 +660,9 @@ class PostProcess():
 
             # Plot the figure
             if gen_plot:
-                plt.plot(time_sample, infected_rate)
+                plt.figure()
+                infected_population = np.array(infected_rate) * len(self.demo_data)
+                plt.plot(time_sample, infected_population)
                 plt.xlabel('Time')
                 plt.ylabel('Population')
                 plt.xlim(0, max(time_sample))
@@ -728,9 +732,11 @@ class PostProcess():
                     else:  # After the data process, we can directly read files processed at the first time
                         if sampling_method == 'Age':
                             sampler_class = SamplerAge(data=self.demo_data, data_store_path=data_store_path,
-                                                       num_age_group=num_age_group, age_group_width=age_group_width)
+                                                       num_age_group=num_age_group, age_group_width=age_group_width,
+                                                       pre_process=False)
                         else:
-                            sampler_class = Sampler(data=self.demo_data, data_store_path=data_store_path)
+                            sampler_class = Sampler(data=self.demo_data, data_store_path=data_store_path,
+                                                    pre_process=False)
                     people = sampler_class.sample(sample_size=sample_size)
 
                     X = SamplingMaker(non_resp_rate=0, data=self.time_data,
@@ -742,7 +748,9 @@ class PostProcess():
 
             # Plot the figure
             if gen_plot:
-                plt.plot(time_sample, infected_rate)
+                plt.figure()
+                infected_population = np.array(infected_rate) * len(self.demo_data)
+                plt.plot(time_sample, infected_population)
                 plt.xlabel('Time')
                 plt.ylabel('Population')
                 plt.xlim(0, max(time_sample))

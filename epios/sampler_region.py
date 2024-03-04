@@ -99,7 +99,7 @@ class SamplerRegion(Sampler):
         cap_region = []
         record_cap_region = []
         for i in range(len(prob)):
-            cap_region.append(min(max(n * prob[i] + 0.005 * n, 1),
+            cap_region.append(min(n * prob[i] + 0.005 * n + 1,
                                   self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum()))
             record_cap_region.append(self.geoinfo[self.geoinfo['cell'] == i]['Susceptible'].sum())
         cap_region = [cap_region, list(np.arange(len(cap_region)))]
