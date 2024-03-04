@@ -55,7 +55,7 @@ class SamplingMaker():
         self.false_negative = false_negative
         self.data = data
 
-    def __call__(self, sampling_times, people, keep_track = False, post_proc=False, callback=None, output=None, stratify=None):
+    def __call__(self, sampling_times, people, keep_track=False, post_proc=False, callback=None, output=None, stratify=None):
 
         '''
         Method to return the results for all the planned tests
@@ -82,6 +82,7 @@ class SamplingMaker():
         else:
             classes = {stratify(id) for id in self.data.columns if id != 'time'}
             str_map = {strat_class: {id for id in self.data.columns if id != 'time' and stratify(id) == strat_class} for strat_class in classes}
+
             def count_positive(x):
                 try:
                     obs = []
@@ -92,6 +93,7 @@ class SamplingMaker():
                     return array(obs).sum() * len(x.index) / len(self.data.columns)
                 except ZeroDivisionError:
                     return nan
+
             def count_negative(x):
                 try:
                     obs = []

@@ -581,13 +581,13 @@ class PostProcessUpdate():
 
                     # Get the results of each people sampled
                     observ = SamplingMaker(non_resp_rate=non_resp_rate,
-                                      data=self.time_data,
-                                      false_positive=false_positive,
-                                      false_negative=false_positive,
-                                      threshold=infect_threshold)(time_sample,
-                                                                  people,
-                                                                  post_proc=post_proc,
-                                                                  output='nums_only')
+                                           data=self.time_data,
+                                           false_positive=false_positive,
+                                           false_negative=false_positive,
+                                           threshold=infect_threshold)(time_sample,
+                                                                       people,
+                                                                       post_proc=post_proc,
+                                                                       output='nums_only')
                     # Output the infected rate
                     infected_rate = list(ReScaler(false_positive=false_positive,
                                                   false_negative=false_negative,
@@ -680,13 +680,13 @@ class PostProcessUpdate():
 
                     # Get the results of each people sampled
                 observ = SamplingMaker(non_resp_rate=non_resp_rate,
-                                  data=self.time_data,
-                                  false_positive=false_positive,
-                                  false_negative=false_negative,
-                                  threshold=infect_threshold)(time_sample,
-                                                              people,
-                                                              post_proc=post_proc,
-                                                              output='nums_only')
+                                       data=self.time_data,
+                                       false_positive=false_positive,
+                                       false_negative=false_negative,
+                                       threshold=infect_threshold)(time_sample,
+                                                                   people,
+                                                                   post_proc=post_proc,
+                                                                   output='nums_only')
                 # Output the infected rate
                 infected_rate = list(ReScaler(false_positive=false_positive,
                                               false_negative=false_negative,
