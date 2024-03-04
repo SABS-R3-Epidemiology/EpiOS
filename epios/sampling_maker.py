@@ -110,18 +110,18 @@ class SamplingMaker():
             result = STATUSES.apply(lambda x: x.apply(self._testresult))
             pos = result.apply(count_positive, axis=1)
             neg = result.apply(count_negative, axis=1)
-            observ = (pos.to_list(), neg.to_list()) # result is a DataFrame, pos, neg are lists
+            observ = (pos.to_list(), neg.to_list())  # result is a DataFrame, pos, neg are lists
         else:
             if callback is None:
                 times_people = zip(sampling_times, people)
-                STATUSES = map(lambda t: self.data.loc[t[0], t[1]], times_people) # list of Series
-                res = list(map(lambda x: x.apply(self._testresult), STATUSES)) # list of Series
+                STATUSES = map(lambda t: self.data.loc[t[0], t[1]], times_people)  # list of Series
+                res = list(map(lambda x: x.apply(self._testresult), STATUSES))  # list of Series
             else:
                 next_people = people
                 res = []
                 for sampling_time in sampling_times:
-                    STATUSES = self.data.loc[sampling_time, next_people] # Series
-                    res.append(STATUSES.apply(self._testresult)) # list of Series
+                    STATUSES = self.data.loc[sampling_time, next_people]  # Series
+                    res.append(STATUSES.apply(self._testresult))  # list of Series
                     next_people = callback(res[-1])
             if post_proc:
                 result = []
@@ -130,8 +130,8 @@ class SamplingMaker():
                 for x in res:
                     for n, y in enumerate(temp):
                         temp[n] = y.drop(labels=x.index, errors='ignore')
-                    temp.append(x) # list of Series
-                    result.append(temp.copy()) # list of list of Series
+                    temp.append(x)  # list of Series
+                    result.append(temp.copy())  # list of list of Series
                     pos = list(map(count_positive, temp))
                     neg = list(map(count_negative, temp))
                     observ.append((pos, neg))
