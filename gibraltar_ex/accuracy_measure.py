@@ -244,7 +244,7 @@ def get_prevalence_percentage_error(sample_times,
         for _ in range(num_iterations):  # Change the number of iterations as needed
 
             print(f"Performing Iteration Sample Size {sample_size}")
-            result, diff, true_result = postprocess.predict.Base(sample_size=sample_size,
+            result = postprocess.predict.Base(sample_size=sample_size,
                                                 time_sample=sample_times,
                                                 comparison=False,
                                                 gen_plot=False,
@@ -257,42 +257,25 @@ def get_prevalence_percentage_error(sample_times,
                                                 false_positive=false_positive,
                                                 false_negative=false_negative)
 
-            result_actual = result[1][0]
-            result_sampled = result[1][1]
+            
+            result = result[0]
+            result = result[1:][0]
 
-            print(result_actual, result_sampled)
+            pop_size = len(demo_data)
 
-            diff = [result_actual[i] - result_sampled[i] for i in range(len(result_actual))]
+            est_infected = [r[0] * pop_size for r in result]      
+            act_infected = [r[1] * pop_size for r in result]    
 
-            #iteration_errors = get_incidence_errors(diff, true_result, population_size)
-            prevalence_percentage_error = [100 * abs(diff[i]) / result_actual[i] for i in range(len(diff))]
+            plt.plot(sample_times, est_infected, label=f"Estimated infected, Sample Size: {sample_size}")
+            plt.plot(sample_times, act_infected, label=f"Actual infected, Sample Size: {sample_size}")
 
-            if filter_outliers:
-                ppes.append(prevalence_percentage_error)
+    plt.xlabel('Time')
+    plt.ylabel('# Infected')
+    plt.title('# Infected estimated vs actual')
+    plt.legend()
+    plt.savefig(f'{path}/truefalsepos.png')
 
-            #average = [average[i] + iteration_errors[i] for i in range(0, len(iteration_errors))]
-            else:
-                total_error = [total_error[i] + prevalence_percentage_error[i] for i in range(len(prevalence_percentage_error))]
-
-        #average = [average[i]/num_iterations for i in range(0, len(average))]
-        if filter_outliers:
-            average_error = filter_ppes(ppes)
-
-        else:
-            average_error = [total_error[i] / num_iterations for i in range(len(total_error))]
-
-        if plot_prevalence:
-            plt.plot(sample_times, [e for e in average_error], label=f'Sample Size: {sample_size}')
-
-    if plot_prevalence:
-
-        plt.xlabel('Time')
-        plt.ylabel('Percentage Error')
-        plt.title('Percentage error of prevalence for different sample sizes')
-        plt.legend()
-        plt.savefig(f'{path}/prevalence_percentage_error.png')
-
-    return average_error
+    return None
 
 # Define the class instance
 postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
@@ -301,8 +284,8 @@ sample_times = [t for t in range(0, 91)]
 
 prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
                                                    sample_range=[10, 500], 
-                                                   num_samples=3, 
-                                                   num_iterations=2, 
+                                                   num_samples=2, 
+                                                   num_iterations=1, 
                                                    filter_outliers=False, 
                                                    plot_prevalence=True,
                                                    false_positive=0.1,

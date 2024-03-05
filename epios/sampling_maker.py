@@ -90,18 +90,41 @@ class SamplingMaker():
         '''
 
         if bool(binomial(1, self.non_resp_rate)):
+
             return 'NonResponder'
+        
         if self.threshold is None:
-            if load in self.recognised:
+
+            if load in self.recognised: #infected
+
                 p = 1 - self.false_negative
+
+                infected_flag = True
+
             else:
-                p = self.false_positive
+
+                p = self.false_positive # not infected
+
+                infected_flag = False
+
         else:
+
             if load > self.threshold:
+
                 p = 1 - self.false_negative
+
+                infected_flag = True
+
             else:
+
                 p = self.false_positive
+
+                infected_flag = False
+
         if bool(binomial(1, p)):
-            return 'Positive'
+
+            return f"[Positive, {infected_flag}]"
+        
         else:
-            return 'Negative'
+
+            return f"[Negative, {infected_flag}]"

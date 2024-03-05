@@ -437,6 +437,13 @@ class PostProcess():
 
             '''
             # Based on the input, use different scale method to estimate the true infection number
+
+            est_rate = [self.result[i][0] for i in range(len(self.result))]
+            act_rate = [self.result[i][1] for i in range(len(self.result))]
+
+            print(act_rate)
+
+
             if scale_method == 'proportional':
                 result_scaled = np.array(self.result) * len(self.demo_data)
 
@@ -719,6 +726,8 @@ class PostProcess():
 
             if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
                 infected_rate = []
+                estimated_infected_rate = []
+                actual_infected_rate = []
 
                 # Do the sampling
                 if sampling_method == 'Age':
@@ -738,6 +747,9 @@ class PostProcess():
                     infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
                 infected_rate = []
+                estimated_infected_rate = []
+                actual_infected_rate = []
+
                 for i in range(len(time_sample)):  # Sample at each sample time points
                     if i == 0:  # First time sampling, need pre_process
                         if sampling_method == 'Age':
@@ -761,8 +773,18 @@ class PostProcess():
                     ite = X([time_sample[i]], people)
 
                     # Output the infected rate
-                    infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
+                    #infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
 
+                    est_rate = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
+                    est_rate += ite.iloc[0].value_counts().get('[Positive, False]', 0) / len(people)
+
+                    act_rate = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
+                    act_rate += ite.iloc[0].value_counts().get('[Negative, False]', 0) / len(people)
+
+                    estimated_infected_rate.append(est_rate)
+                    actual_infected_rate.append(act_rate)
+
+                    infected_rate.append([est_rate, act_rate])
             # Plot the figure
             if gen_plot:
                 plt.figure()
