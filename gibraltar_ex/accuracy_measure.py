@@ -253,21 +253,28 @@ def get_prevalence_percentage_error(sample_times,
                                                     './output/sample_plot',
                                                 saving_path_compare=
                                                     './output/compare_plot',
-                                                get_true_result=True,
+                                                get_true_result=False,
                                                 false_positive=false_positive,
                                                 false_negative=false_negative)
 
             
             result = result[0]
-            result = result[1:][0]
+            result = result[1:][0] # remove sample times from list
 
-            pop_size = len(demo_data)
+            pop_size = len(demo_data) # get population size
 
             est_infected = [r[0] * pop_size for r in result]      
             act_infected = [r[1] * pop_size for r in result]    
 
-            plt.plot(sample_times, est_infected, label=f"Estimated infected, Sample Size: {sample_size}")
-            plt.plot(sample_times, act_infected, label=f"Actual infected, Sample Size: {sample_size}")
+            difference = [est_infected[i] - act_infected[i] for i in range(len(est_infected))]
+
+            average_difference = np.ones(len(sample_times)) * (false_positive - false_negative) * pop_size
+
+            plt.plot(sample_times, est_infected, label=f"Estimated, Sample Size: {sample_size}")
+            plt.plot(sample_times, act_infected, label=f"Actual, Sample Size: {sample_size}")
+            plt.plot(sample_times, difference, label="Estimated - Actual")
+            plt.plot(sample_times, average_difference, label="Expected 'Estimated - Actual'")
+
 
     plt.xlabel('Time')
     plt.ylabel('# Infected')
@@ -283,13 +290,13 @@ postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
 sample_times = [t for t in range(0, 91)]
 
 prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
-                                                   sample_range=[10, 500], 
-                                                   num_samples=2, 
+                                                   sample_range=[450, 500], 
+                                                   num_samples=1, 
                                                    num_iterations=1, 
                                                    filter_outliers=False, 
                                                    plot_prevalence=True,
-                                                   false_positive=0,
-                                                   false_negative=0)
+                                                   false_positive=0.89,
+                                                   false_negative=0.5)
 
 # get_rmse(sample_range, num_samples, num_iterations)
 #plot_mean_variance(sample_range, num_samples, num_iterations)
