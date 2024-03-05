@@ -288,8 +288,8 @@ prevalence_error = get_prevalence_percentage_error(sample_times=sample_times,
                                                    num_iterations=1, 
                                                    filter_outliers=False, 
                                                    plot_prevalence=True,
-                                                   false_positive=0.1,
-                                                   false_negative=0.1)
+                                                   false_positive=0,
+                                                   false_negative=0)
 
 # get_rmse(sample_range, num_samples, num_iterations)
 #plot_mean_variance(sample_range, num_samples, num_iterations)
