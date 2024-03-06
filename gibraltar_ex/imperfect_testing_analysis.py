@@ -4,12 +4,47 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def calculate_imperfect_testing_rates(sensitivity=0.7, specificity=0.95, test_accuracy=0.87):
+    """Function to calculate false positive/negative probabilities using known values
+    for sensitivity, specificity and test accuracy
+
+    Args:
+        sensitivity (float, optional): sensitivity of PCR. Defaults to 0.7.
+        specificity (float, optional): specificity of PCR. Defaults to 0.95.
+        accuracy (float, optional): accuracy of PCR. Defaults to 0.87.
+
+    Returns:
+        dict: container for false positive and negative probabilities
+    """
+
+    # matrix equation variables
+    alpha = sensitivity / (1 - sensitivity)
+    beta = specificity / (1 - specificity)
+    gamma = test_accuracy
+
+    # set-up matrices
+    M = np.array([[alpha, beta], [1, 1]])
+    N = np.array([[gamma], [1 - gamma]])
+    M_inverse = np.linalg.inv(M)
+
+    # peform matrix multiplication
+    result = np.matmul(M_inverse, N)
+
+    # return proababilities
+    false_negative = result[0][0]
+    false_positive = result[1][0]
+
+    return {"Probability False Positive": false_positive,
+            "Probability False Negative": false_negative}
+
+
 def analyse_imperfect_testing(sample_times, 
                               sample_range, 
                               num_samples, 
                               num_iterations, 
                               false_positive=0,
-                              false_negative=0):
+                              false_negative=0,
+                              stats_start_time=0):
     """Function to produce graphs analysing the impact of imperfect testing
 
     Args:
@@ -23,11 +58,25 @@ def analyse_imperfect_testing(sample_times,
         for each sample size
         false_positive (float): probability of false positives
         false_negative (float): probability of false negatives
+        stats_start_time (int): the time from which the statistics are plotted
 
     Returns:
         None
     """
 
+    try:
+
+        start_index = int(stats_start_time)
+
+    except:
+
+        print("Must use integer start time")
+        return None
+    
+    if start_index >= len(sample_times):
+
+        print("Must be a time within sample time range")
+        return None
 
     start_sample_size = sample_range[0]  # Starting sample size
     end_sample_size = sample_range[1]  # Ending sample size
@@ -123,12 +172,9 @@ def analyse_imperfect_testing(sample_times,
         ax3.plot(sample_times, absolute_difference, label=f"Absolute Difference, Sample Size: {sample_size}", color='blue')
         ax3.plot(sample_times, rmse, label=f"RMSE, Sample Size: {sample_size}", color='red')
         #plt.plot(sample_times, average_difference, label="Expected Absolute Difference")
-
-
-
-        ax2.plot(sample_times, av_sensitivity, label=f"Sensitivity, Sample Size: {sample_size}")
-        ax2.plot(sample_times, av_specificity, label=f"Specificity, Sample Size: {sample_size}")
-        ax2.plot(sample_times, av_test_accuracy, label=f"Accuracy, Sample Size: {sample_size}")
+        ax2.plot(sample_times[start_index :], av_sensitivity[start_index :], label=f"Sensitivity, Sample Size: {sample_size}")
+        ax2.plot(sample_times[start_index :], av_specificity[start_index :], label=f"Specificity, Sample Size: {sample_size}")
+        ax2.plot(sample_times[start_index :], av_test_accuracy[start_index :], label=f"Accuracy, Sample Size: {sample_size}")
 
 
         ax1.set_xlabel('Time (days)')
@@ -172,11 +218,20 @@ postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
 
 sample_times = [t for t in range(0, 91)]
 
-test = analyse_imperfect_testing(sample_times=sample_times, 
-                                             sample_range=[100, 500], 
-                                             num_samples=2, 
-                                             num_iterations=4, 
-                                             false_positive=0.034,
-                                             false_negative=0.096)
+r = calculate_imperfect_testing_rates()
+
+print(r)
+
+run_testing = False
+
+if run_testing:
+
+    test = analyse_imperfect_testing(sample_times=sample_times, 
+                                                sample_range=[100, 500], 
+                                                num_samples=2, 
+                                                num_iterations=4, 
+                                                false_positive=0.034,
+                                                false_negative=0.096,
+                                                stats_start_time=20)
 
 
