@@ -6,3 +6,4 @@ from .sampler_region import SamplerRegion # noqa
 from .sampler_age_region import SamplerAgeRegion # noqa
 from .post_process import PostProcess # noqa
 from .re_scaler import ReScaler # noqa
+from .practical_tester import PracticalSampler # noqa
