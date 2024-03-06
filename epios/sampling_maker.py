@@ -127,4 +127,4 @@ class SamplingMaker():
         
         else:
 
-            return f"[Negative, {infected_flag}]"
+            return f"[Negative, {not infected_flag}]"

@@ -820,16 +820,31 @@ class PostProcess():
                     # Output the infected rate
                     #inf_rate = ite.iloc[0].value_counts().get('Positive', 0) / len(people)
 
-                    est_rate = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
-                    est_rate += ite.iloc[0].value_counts().get('[Positive, False]', 0) / len(people)
+                    # Get # true positive, false positive, true negative and false negative
 
-                    act_rate = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
-                    act_rate += ite.iloc[0].value_counts().get('[Negative, False]', 0) / len(people)
+                    TP = ite.iloc[0].value_counts().get('[Positive, True]', 0)
+                    FP = ite.iloc[0].value_counts().get('[Positive, False]', 0)
+                    TN = ite.iloc[0].value_counts().get('[Negative, True]', 0)
+                    FN = ite.iloc[0].value_counts().get('[Negative, False]', 0)
+
+                    #print("TP: ", TP)
+                    #print("FP: ", FP)
+                    #print("TN: ", TN)
+                    #print("FN: ", FN)
+
+
+
+                    est_rate = TP / len(people)
+                    est_rate += FP / len(people)
+
+                    act_rate = TP / len(people)
+                    act_rate += FN / len(people)
 
                     estimated_infected_rate.append(est_rate)
                     actual_infected_rate.append(act_rate)
 
                     infected_rate.append([est_rate, act_rate])
+
             # Plot the figure
             if gen_plot:
                 plt.figure()

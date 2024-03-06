@@ -237,8 +237,8 @@ def get_prevalence_percentage_error(sample_times,
     #  Iterate over the sample sizes
     for sample_size in log_sample_sizes:
 
-        ppes = []
-        total_error = np.zeros(len(sample_times))
+        total_differences = np.zeros(len(sample_times))
+        total_square_differences = total_differences.copy()
 
         # Run multiple iterations
         for _ in range(num_iterations):  # Change the number of iterations as needed
@@ -266,14 +266,30 @@ def get_prevalence_percentage_error(sample_times,
             est_infected = [r[0] * pop_size for r in result]      
             act_infected = [r[1] * pop_size for r in result]    
 
-            difference = [est_infected[i] - act_infected[i] for i in range(len(est_infected))]
+            difference = [abs(est_infected[i] - act_infected[i]) for i in range(len(est_infected))]
 
-            average_difference = np.ones(len(sample_times)) * (false_positive - false_negative) * pop_size
+            total_differences = [total_differences[i] + difference[i] for i in range(len(difference))]
 
-            plt.plot(sample_times, est_infected, label=f"Estimated, Sample Size: {sample_size}")
-            plt.plot(sample_times, act_infected, label=f"Actual, Sample Size: {sample_size}")
-            plt.plot(sample_times, difference, label="Estimated - Actual")
-            plt.plot(sample_times, average_difference, label="Expected 'Estimated - Actual'")
+            #average_difference = np.ones(len(sample_times)) * (abs(false_positive - false_negative)) * pop_size
+
+            square_difference = [(est_infected[i] - act_infected[i])**2 for i in range(len(est_infected))]
+
+            total_square_differences = [total_square_differences[i] + square_difference[i] for i in range(len(square_difference))]
+
+        av_difference = [total_differences[i] / num_iterations for i in range(len(total_differences))]
+
+        av_square_difference = [total_square_differences[i] / num_iterations for i in range(len(total_square_differences))]
+
+        absolute_difference = [abs(av_difference[i]) for i in range(len(av_difference))]
+
+        rmse = [np.sqrt(av_square_difference[i]) for i in range(len(av_square_difference))]
+
+
+        plt.plot(sample_times, est_infected, label=f"Estimated, Sample Size: {sample_size}")
+        plt.plot(sample_times, act_infected, label=f"Actual, Sample Size: {sample_size}")
+        plt.plot(sample_times, absolute_difference, label="Absolute Difference")
+        plt.plot(sample_times, rmse, label="RMSE")
+        #plt.plot(sample_times, average_difference, label="Expected Absolute Difference")
 
 
     plt.xlabel('Time')
@@ -292,11 +308,11 @@ sample_times = [t for t in range(0, 91)]
 prevalence_error = get_prevalence_percentage_error(sample_times=sample_times, 
                                                    sample_range=[450, 500], 
                                                    num_samples=1, 
-                                                   num_iterations=1, 
+                                                   num_iterations=10, 
                                                    filter_outliers=False, 
                                                    plot_prevalence=True,
-                                                   false_positive=0.89,
-                                                   false_negative=0.5)
+                                                   false_positive=0.034,
+                                                   false_negative=0.096)
 
 # get_rmse(sample_range, num_samples, num_iterations)
 #plot_mean_variance(sample_range, num_samples, num_iterations)
