@@ -658,16 +658,25 @@ class PostProcess():
                     for i in range(len(time_sample)):
 
                         #infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
-                        est_rate = ite.iloc[i].value_counts().get('[Positive, True]', 0) / len(people)
-                        est_rate += ite.iloc[i].value_counts().get('[Positive, False]', 0) / len(people)
+                        #est_rate = ite.iloc[i].value_counts().get('[Positive, True]', 0) / len(people)
+                        #est_rate += ite.iloc[i].value_counts().get('[Positive, False]', 0) / len(people)
 
-                        act_rate = ite.iloc[i].value_counts().get('[Positive, True]', 0) / len(people)
-                        act_rate += ite.iloc[i].value_counts().get('[Negative, False]', 0) / len(people)
+                        #act_rate = ite.iloc[i].value_counts().get('[Positive, True]', 0) / len(people)
+                        #act_rate += ite.iloc[i].value_counts().get('[Negative, False]', 0) / len(people)
 
-                        estimated_infected_rate.append(est_rate)
-                        actual_infected_rate.append(act_rate)
+                        #estimated_infected_rate.append(est_rate)
+                        #actual_infected_rate.append(act_rate)
 
-                        infected_rate.append([est_rate, act_rate])
+                        #infected_rate.append([est_rate, act_rate])
+
+                        TP = ite.iloc[i].value_counts().get('[Positive, True]', 0) / len(people)
+                        FP = ite.iloc[i].value_counts().get('[Positive, False]', 0) / len(people)
+                        TN = ite.iloc[i].value_counts().get('[Negative, True]', 0) / len(people)
+                        FN = ite.iloc[i].value_counts().get('[Negative, False]', 0) / len(people)
+
+                        #infected_rate.append([est_rate, act_rate])
+
+                        infected_rate.append([TP, FP, TN, FN])
 
                 elif sample_strategy == 'Random':  # Change people sampled at each sample time point
 
@@ -701,16 +710,23 @@ class PostProcess():
                         # Output the infected rate
                         #infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
 
-                        est_rate = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
-                        est_rate += ite.iloc[0].value_counts().get('[Positive, False]', 0) / len(people)
+                        #est_rate = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
+                        #est_rate += ite.iloc[0].value_counts().get('[Positive, False]', 0) / len(people)
 
-                        act_rate = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
-                        act_rate += ite.iloc[0].value_counts().get('[Negative, False]', 0) / len(people)
+                        #act_rate = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
+                        #act_rate += ite.iloc[0].value_counts().get('[Negative, False]', 0) / len(people)
 
-                        estimated_infected_rate.append(est_rate)
-                        actual_infected_rate.append(act_rate)
+                        #estimated_infected_rate.append(est_rate)
+                        #actual_infected_rate.append(act_rate)
 
-                        infected_rate.append([est_rate, act_rate])
+                        #infected_rate.append([est_rate, act_rate])
+
+                        TP = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
+                        FP = ite.iloc[0].value_counts().get('[Positive, False]', 0) / len(people)
+                        TN = ite.iloc[0].value_counts().get('[Negative, True]', 0) / len(people)
+                        FN = ite.iloc[0].value_counts().get('[Negative, False]', 0) / len(people)
+
+                        infected_rate.append([TP, FP, TN, FN])
 
             # Plot the figure
             if gen_plot:
@@ -777,23 +793,21 @@ class PostProcess():
 
                     #infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
 
-                    est_rate = ite.iloc[i].value_counts().get('[Positive, True]', 0) / len(people)
-                    est_rate += ite.iloc[i].value_counts().get('[Positive, False]', 0) / len(people)
+                    TP = ite.iloc[i].value_counts().get('[Positive, True]', 0) / len(people)
+                    FP = ite.iloc[i].value_counts().get('[Positive, False]', 0) / len(people)
+                    TN = ite.iloc[i].value_counts().get('[Negative, True]', 0) / len(people)
+                    FN = ite.iloc[i].value_counts().get('[Negative, False]', 0) / len(people)
 
-                    act_rate = ite.iloc[i].value_counts().get('[Positive, True]', 0) / len(people)
-                    act_rate += ite.iloc[i].value_counts().get('[Negative, False]', 0) / len(people)
+                    #infected_rate.append([est_rate, act_rate])
 
-                    estimated_infected_rate.append(est_rate)
-                    actual_infected_rate.append(act_rate)
-
-                    infected_rate.append([est_rate, act_rate])
+                    infected_rate.append([TP, FP, TN, FN])
 
 
 
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
                 infected_rate = []
-                estimated_infected_rate = []
-                actual_infected_rate = []
+                #estimated_infected_rate = []
+                #actual_infected_rate = []
 
                 for i in range(len(time_sample)):  # Sample at each sample time points
                     if i == 0:  # First time sampling, need pre_process
@@ -822,10 +836,10 @@ class PostProcess():
 
                     # Get # true positive, false positive, true negative and false negative
 
-                    TP = ite.iloc[0].value_counts().get('[Positive, True]', 0)
-                    FP = ite.iloc[0].value_counts().get('[Positive, False]', 0)
-                    TN = ite.iloc[0].value_counts().get('[Negative, True]', 0)
-                    FN = ite.iloc[0].value_counts().get('[Negative, False]', 0)
+                    TP = ite.iloc[0].value_counts().get('[Positive, True]', 0) / len(people)
+                    FP = ite.iloc[0].value_counts().get('[Positive, False]', 0) / len(people)
+                    TN = ite.iloc[0].value_counts().get('[Negative, True]', 0) / len(people)
+                    FN = ite.iloc[0].value_counts().get('[Negative, False]', 0) / len(people)
 
                     #print("TP: ", TP)
                     #print("FP: ", FP)
@@ -834,16 +848,18 @@ class PostProcess():
 
 
 
-                    est_rate = TP / len(people)
-                    est_rate += FP / len(people)
+                    #est_rate = TP / len(people)
+                    #est_rate += FP / len(people)
 
-                    act_rate = TP / len(people)
-                    act_rate += FN / len(people)
+                    #act_rate = TP / len(people)
+                    #act_rate += FN / len(people)
 
-                    estimated_infected_rate.append(est_rate)
-                    actual_infected_rate.append(act_rate)
+                    #estimated_infected_rate.append(est_rate)
+                    #actual_infected_rate.append(act_rate)
 
-                    infected_rate.append([est_rate, act_rate])
+                    #infected_rate.append([est_rate, act_rate])
+
+                    infected_rate.append([TP, FP, TN, FN])
 
             # Plot the figure
             if gen_plot:

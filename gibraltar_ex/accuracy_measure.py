@@ -240,6 +240,11 @@ def get_prevalence_percentage_error(sample_times,
         total_differences = np.zeros(len(sample_times))
         total_square_differences = total_differences.copy()
 
+
+        total_sensitivity = np.zeros(len(sample_times))
+        total_specificity = np.zeros(len(sample_times))
+        total_test_accuracy = np.zeros(len(sample_times))
+
         # Run multiple iterations
         for _ in range(num_iterations):  # Change the number of iterations as needed
 
@@ -263,8 +268,28 @@ def get_prevalence_percentage_error(sample_times,
 
             pop_size = len(demo_data) # get population size
 
-            est_infected = [r[0] * pop_size for r in result]      
-            act_infected = [r[1] * pop_size for r in result]    
+            TP =[r[0] * pop_size for r in result]
+            FP =[r[1] * pop_size for r in result]
+            TN =[r[2] * pop_size for r in result]
+            FN =[r[3] * pop_size for r in result]
+
+            est_infected = [TP[i] + FP[i] for i in range(len(TP))]
+            act_infected = [TP[i] + FN[i] for i in range(len(TP))]
+
+            
+        
+
+            sensitivity = [0 if TP[i] == 0 else TP[i] / (TP[i] + FN[i]) for i in range(len(TP))]
+            specificity = [0 if TP[i] == 0 else TN[i] / (TN[i] + FP[i]) for i in range(len(TP))]
+            test_accuracy = [(TP[i] + TN[i])/(TP[i] + TN[i] + FP[i] + FN[i]) for i in range(len(TP))]
+
+            total_sensitivity = [total_sensitivity[i] + sensitivity[i] for i in range(len(sensitivity))]
+            total_specificity = [total_specificity[i] + specificity[i] for i in range(len(specificity))]
+            total_test_accuracy = [total_test_accuracy[i] + test_accuracy[i] for i in range(len(test_accuracy))]
+
+
+            #est_infected = [r[0] * pop_size for r in result]      
+            #act_infected = [r[1] * pop_size for r in result]    
 
             difference = [abs(est_infected[i] - act_infected[i]) for i in range(len(est_infected))]
 
@@ -284,12 +309,29 @@ def get_prevalence_percentage_error(sample_times,
 
         rmse = [np.sqrt(av_square_difference[i]) for i in range(len(av_square_difference))]
 
+        av_sensitivity = [total_sensitivity[i] / num_iterations for i in range(len(total_sensitivity))]
+        av_specificity = [total_specificity[i] / num_iterations for i in range(len(total_specificity))]
+        av_test_accuracy = [total_test_accuracy[i] / num_iterations for i in range(len(total_test_accuracy))]
 
-        plt.plot(sample_times, est_infected, label=f"Estimated, Sample Size: {sample_size}")
-        plt.plot(sample_times, act_infected, label=f"Actual, Sample Size: {sample_size}")
-        plt.plot(sample_times, absolute_difference, label="Absolute Difference")
-        plt.plot(sample_times, rmse, label="RMSE")
-        #plt.plot(sample_times, average_difference, label="Expected Absolute Difference")
+        plot_time_graphs = False
+
+        if plot_time_graphs:
+
+            plt.plot(sample_times, est_infected, label=f"Estimated, Sample Size: {sample_size}")
+            plt.plot(sample_times, act_infected, label=f"Actual, Sample Size: {sample_size}")
+            plt.plot(sample_times, absolute_difference, label="Absolute Difference")
+            plt.plot(sample_times, rmse, label="RMSE")
+            #plt.plot(sample_times, average_difference, label="Expected Absolute Difference")
+
+        plot_test_statistics = True
+
+        if plot_test_statistics:
+
+            plt.plot(sample_times, av_sensitivity, label=f"Sensitivity, Sample Size: {sample_size}")
+            plt.plot(sample_times, av_specificity, label=f"Specificity, Sample Size: {sample_size}")
+            plt.plot(sample_times, av_test_accuracy, label=f"Accuracy, Sample Size: {sample_size}")
+
+
 
 
     plt.xlabel('Time')
