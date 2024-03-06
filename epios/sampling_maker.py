@@ -61,8 +61,8 @@ class SamplingMaker():
                  people,
                  keep_track=False,
                  post_proc=False,
-                 callback=None,
                  output=None,
+                 callback=None,
                  stratify=None):
 
         '''
@@ -70,24 +70,47 @@ class SamplingMaker():
 
         Inputs:
         -------
-            sampling_times : list
+            sampling_times: list
                 List of the planned times for tests in the same format as data.index.
-            people : list
-                If keep_track is True this is a list of IDs in the same
-                format as columns. Otherwise this is a list of the same
-                length as sampling_times. In this case all elements are
-                lists of IDs in the same format as columns.
+            people: list
+                If keep_track == True or callback != None, this is a list
+                of IDs in the same format as columns. Otherwise this is a
+                list of the same length as sampling_times. Any element is
+                a list of IDs in the same format as columns.
+            keep_track: bool,
+            post_proc: bool,
+            output: string,
+            callback: function
+                This update the sample each time, useful for additional sampling.
+            stratify: function
+                Takes one ID and returns its class in the stratification.
 
         Output:
 
+            result if output == None
+            result, observ if output == also_nums 
+            observ if output == nums_only (input you need for re_scaler)
+
+            result is a DataFrame if keep_track == False
+            in this case (observ = pos, neg) are lists
+            is a list of Series if keep_track == True and post_proc == False
+            in this case (observ = pos, neg) are lists
+            is a list of lists Series if keep_track == True and post_proc == True
+            in this case observ is a list of tuples of lists
+            moreover if pos, neg = observ[k], then len(pos) == len(neg) == k
+
+            If stratify is not None pos and neg are weighted averages depending on the stratification.
         '''
 
         assert not (keep_track and post_proc)
 
+        # count_positive has to return the number of positive in a Series
+        # count_negative has to return the number of negative in a Series
         if stratify is None:
             count_positive = lambda x: x.value_counts().get('Positive', 0)
             count_negative = lambda x: x.value_counts().get('Negative', 0)
         else:
+            # in this case we want to approximate the number of positive/negative people into each class
             classes = {stratify(id) for id in self.data.columns if id != 'time'}
             str_map = {x: {id for id in self.data.columns if id != 'time' and stratify(id) == x} for x in classes}
 
@@ -97,8 +120,12 @@ class SamplingMaker():
                     for strat_class in classes:
                         str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
                         tested = x.loc[str_map_temp].value_counts().get('Positive', 0)
+                        # compute the number of positive tests into a class and rescale it
                         obs.append(tested * len(str_map[strat_class]) / len(str_map_temp))
+                        # an estimate of the number of positive people into the same class
                     return array(obs).sum() * len(x.index) / len(self.data.columns)
+                    # rescale the estimate to be proportional to the number of sampled people
+                    # STATISTICALLY THIS IS NOT PROPER: IMPROVE THIS PART!
                 except ZeroDivisionError:
                     return nan
 
@@ -108,8 +135,12 @@ class SamplingMaker():
                     for strat_class in classes:
                         str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
                         tested = x.loc[str_map_temp].value_counts().get('Negative', 0)
+                        # compute the number of negative tests into a class and rescale it
                         obs.append(tested * len(str_map[strat_class]) / len(str_map_temp))
+                        # an estimate of the number of negative people into the same class
                     return array(obs).sum() * len(x.index) / len(self.data.columns)
+                    # rescale the estimate to be proportional to the number of sampled people
+                    # STATISTICALLY THIS IS NOT PROPER: IMPROVE THIS PART!
                 except ZeroDivisionError:
                     return nan
 
@@ -125,24 +156,30 @@ class SamplingMaker():
                 STATUSES = map(lambda t: self.data.loc[t[0], t[1]], times_people)  # list of Series
                 res = list(map(lambda x: x.apply(self._testresult), STATUSES))  # list of Series
             else:
-                next_people = people
+                # in this case you have to update the sample each time depending on res
+                # this in order to deal with nonresponders and with additional sampling
+                next_people = people # list
                 res = []
                 for sampling_time in sampling_times:
                     STATUSES = self.data.loc[sampling_time, next_people]  # Series
                     res.append(STATUSES.apply(self._testresult))  # list of Series
-                    next_people = callback(res[-1])
+                    next_people = callback(res[-1]) # list
             if post_proc:
+                # in this case we need a list of Series for each
+                # time, this list has to contain the information
+                # from previous samples.
                 result = []
                 observ = []
                 temp = []
                 for x in res:
                     for n, y in enumerate(temp):
+                        # dischard old tests that we updated to avoid redundancy
                         temp[n] = y.drop(labels=x.index, errors='ignore')
-                    temp.append(x)  # list of Series
-                    result.append(temp.copy())  # list of list of Series
-                    pos = list(map(count_positive, temp))
-                    neg = list(map(count_negative, temp))
-                    observ.append((pos, neg))
+                    temp.append(x)  # list of n + 1 Series
+                    result.append(temp.copy())  # list of lists of Series
+                    pos = list(map(count_positive, temp)) # list of n + 1 Series
+                    neg = list(map(count_negative, temp)) # list of n + 1 Series
+                    observ.append((pos, neg)) # list of lists of Series
             else:
                 result = res
                 pos = list(map(count_positive, res))
