@@ -42,8 +42,8 @@ def analyse_imperfect_testing(sample_times,
                               sample_range, 
                               num_samples, 
                               num_iterations, 
-                              false_positive=0,
-                              false_negative=0,
+                              false_positive=0.034,
+                              false_negative=0.096,
                               stats_start_time=0):
     """Function to produce graphs analysing the impact of imperfect testing
 
@@ -64,6 +64,7 @@ def analyse_imperfect_testing(sample_times,
         None
     """
 
+    # make sure start time is an appropiate number
     try:
 
         start_index = int(stats_start_time)
@@ -78,31 +79,37 @@ def analyse_imperfect_testing(sample_times,
         print("Must be a time within sample time range")
         return None
 
-    start_sample_size = sample_range[0]  # Starting sample size
-    end_sample_size = sample_range[1]  # Ending sample size
+    # get starting and ending sample sizes
+    start_sample_size = sample_range[0]
+    end_sample_size = sample_range[1]
 
-    # Generate logarithmically spaced sample sizes using natural logarithm
+    # generate logarithmically spaced sample sizes using natural logarithm
     log_sample_sizes = np.logspace(np.log(start_sample_size), np.log(end_sample_size), num=num_samples,
                                    endpoint=True, base=np.e, dtype=int)
 
-    #  Iterate over the sample sizes
+    #  iterate over the sample sizes
     for sample_size in log_sample_sizes:
 
-
+        # set-up plot pane figure
         fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(2, 2, figsize=(12, 8), tight_layout=True)
 
+        # initialise empty lists
         total_differences = np.zeros(len(sample_times))
         total_square_differences = total_differences.copy()
-
-
         total_sensitivity = np.zeros(len(sample_times))
         total_specificity = np.zeros(len(sample_times))
         total_test_accuracy = np.zeros(len(sample_times))
 
-        # Run multiple iterations
-        for _ in range(num_iterations):  # Change the number of iterations as needed
+        # initialise iteration count
+        iteration_count = 0
 
-            print(f"Performing Iteration Sample Size {sample_size}")
+        # run multiple iterations
+        for _ in range(num_iterations):
+
+            # display info to user on current iteration
+            print(f"Sample Size {sample_size} : Performing Iteration {iteration_count}")
+
+            # perform sampling in epios
             result = postprocess.predict.Base(sample_size=sample_size,
                                                 time_sample=sample_times,
                                                 comparison=False,
@@ -116,79 +123,86 @@ def analyse_imperfect_testing(sample_times,
                                                 false_positive=false_positive,
                                                 false_negative=false_negative)
 
-            
+            # filter result and remove sample times
             result = result[0]
-            result = result[1:][0] # remove sample times from list
+            result = result[1:][0]
 
-            pop_size = len(demo_data) # get population size
+            # recover population size
+            pop_size = len(demo_data)
 
+            # calculate number of people in each category
+            # TP: True Positive
+            # FP: False Positive
+            # TN: True Negative
+            # FN: False Negative
             TP =[r[0] * pop_size for r in result]
             FP =[r[1] * pop_size for r in result]
             TN =[r[2] * pop_size for r in result]
             FN =[r[3] * pop_size for r in result]
 
+            # calculate # people sampler believes are infected
             est_infected = [TP[i] + FP[i] for i in range(len(TP))]
+
+            # calculate # people who are actually infected
             act_infected = [TP[i] + FN[i] for i in range(len(TP))]
 
-            
-        
-
+            # calculate PCR test stats
             sensitivity = [0 if TP[i] == 0 else TP[i] / (TP[i] + FN[i]) for i in range(len(TP))]
             specificity = [0 if TP[i] == 0 else TN[i] / (TN[i] + FP[i]) for i in range(len(TP))]
             test_accuracy = [(TP[i] + TN[i])/(TP[i] + TN[i] + FP[i] + FN[i]) for i in range(len(TP))]
 
+            # add to the stat totals
             total_sensitivity = [total_sensitivity[i] + sensitivity[i] for i in range(len(sensitivity))]
             total_specificity = [total_specificity[i] + specificity[i] for i in range(len(specificity))]
             total_test_accuracy = [total_test_accuracy[i] + test_accuracy[i] for i in range(len(test_accuracy))]
-
-
-            #est_infected = [r[0] * pop_size for r in result]      
-            #act_infected = [r[1] * pop_size for r in result]    
-
-            difference = [abs(est_infected[i] - act_infected[i]) for i in range(len(est_infected))]
-
+   
+            # calculate differences between estimate and actual, and add to total
+            difference = [est_infected[i] - act_infected[i] for i in range(len(est_infected))]
             total_differences = [total_differences[i] + difference[i] for i in range(len(difference))]
 
+            # calculate expected difference from probabilities
             #average_difference = np.ones(len(sample_times)) * (abs(false_positive - false_negative)) * pop_size
 
+            # calculate square differences between estimate and actual, and add to total
             square_difference = [(est_infected[i] - act_infected[i])**2 for i in range(len(est_infected))]
-
             total_square_differences = [total_square_differences[i] + square_difference[i] for i in range(len(square_difference))]
 
+            # increment iteration count
+            iteration_count += 1
+
+        # calculate averages of the above quantities by dividing by num_iterations
         av_difference = [total_differences[i] / num_iterations for i in range(len(total_differences))]
-
         av_square_difference = [total_square_differences[i] / num_iterations for i in range(len(total_square_differences))]
-
         absolute_difference = [abs(av_difference[i]) for i in range(len(av_difference))]
-
-        rmse = [np.sqrt(av_square_difference[i]) for i in range(len(av_square_difference))]
-
         av_sensitivity = [total_sensitivity[i] / num_iterations for i in range(len(total_sensitivity))]
         av_specificity = [total_specificity[i] / num_iterations for i in range(len(total_specificity))]
         av_test_accuracy = [total_test_accuracy[i] / num_iterations for i in range(len(total_test_accuracy))]
 
+        # calculate rmse; root mean squared error
+        rmse = [np.sqrt(av_square_difference[i]) for i in range(len(av_square_difference))]
+
+        # plot graphs on respective figures
         ax1.plot(sample_times, act_infected, label=f"Actual, Sample Size: {sample_size}", color='cyan')
         ax1.plot(sample_times, est_infected, label=f"Estimated, Sample Size: {sample_size}", color='olive')
         ax3.plot(sample_times, absolute_difference, label=f"Absolute Difference, Sample Size: {sample_size}", color='blue')
         ax3.plot(sample_times, rmse, label=f"RMSE, Sample Size: {sample_size}", color='red')
-        #plt.plot(sample_times, average_difference, label="Expected Absolute Difference")
+        #ax3.plot(sample_times, average_difference, label="Expected Absolute Difference")
         ax2.plot(sample_times[start_index :], av_sensitivity[start_index :], label=f"Sensitivity, Sample Size: {sample_size}")
         ax2.plot(sample_times[start_index :], av_specificity[start_index :], label=f"Specificity, Sample Size: {sample_size}")
         ax2.plot(sample_times[start_index :], av_test_accuracy[start_index :], label=f"Accuracy, Sample Size: {sample_size}")
 
-
+        # add figure labels
         ax1.set_xlabel('Time (days)')
         ax2.set_xlabel('Time (days)')
         ax3.set_xlabel('Time (days)')
-
         ax1.set_ylabel('# Infected')
         ax2.set_ylabel('Percentage')
         ax3.set_ylabel('# Infected')
-
         ax1.set_title('# Infected: Estimated vs Actual')
         ax2.set_title('Test Statistics')
         ax3.set_title('#Infected: Estimated vs Actual')
 
+        # text on figure showing parameters
         parameters_text = f"""Parameters: \n
         Sample Size: {sample_size} \n
         Number of Iterations: {num_iterations} \n
@@ -196,42 +210,45 @@ def analyse_imperfect_testing(sample_times,
         Probability False Negatives: {false_negative}
         """
 
+        # add text to figure
         ax4.text(0.2, 0.6, parameters_text, horizontalalignment='left',
         verticalalignment='center', transform=ax4.transAxes)
 
-
+        # add plot legends
         ax1.legend()
         ax2.legend()
         ax3.legend()
 
+        # save figures
         plt.savefig(f'{path}/truefalsepos_samplesize_{sample_size}.png')
 
     return None
 
-# This assumes the python venv is installed under epios folder
-path = './gibraltar_ex'
-demo_data = pd.read_csv(f'{path}/demographics.csv')
-time_data = pd.read_csv(f'{path}/inf_status_history.csv')
 
-# Define the class instance
-postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
+if __name__ == "__main__":
 
-sample_times = [t for t in range(0, 91)]
+    # get demographic and time data for Gibraltar
+    path = './gibraltar_ex'
+    demo_data = pd.read_csv(f'{path}/demographics.csv')
+    time_data = pd.read_csv(f'{path}/inf_status_history.csv')
 
-r = calculate_imperfect_testing_rates()
+    # define the PostProcess class instance
+    postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
 
-print(r)
+    # get sample times
+    sample_times = [t for t in range(0, 91)]
 
-run_testing = False
+    # bool to turn-on analysis
+    run_analysis = True
 
-if run_testing:
+    if run_analysis:
 
-    test = analyse_imperfect_testing(sample_times=sample_times, 
-                                                sample_range=[100, 500], 
-                                                num_samples=2, 
-                                                num_iterations=4, 
-                                                false_positive=0.034,
-                                                false_negative=0.096,
-                                                stats_start_time=20)
-
+        # call analysis function
+        test = analyse_imperfect_testing(sample_times=sample_times, 
+                                                    sample_range=[100, 500], 
+                                                    num_samples=2, 
+                                                    num_iterations=3, 
+                                                    false_positive=0.034,
+                                                    false_negative=0.096,
+                                                    stats_start_time=20)
 
