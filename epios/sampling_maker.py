@@ -1,4 +1,5 @@
 from numpy.random import binomial
+import pandas as pd
 
 
 class SamplingMaker():
@@ -75,8 +76,10 @@ class SamplingMaker():
         if self.keep_track:
             STATUSES = self.data.loc[sampling_times, people]
             VIRAL_LOADS = self.inf_data.loc[sampling_times, people]
-            INFO = [STATUSES, VIRAL_LOADS]
-            return STATUSES.apply(lambda x: list(map(self._testresult, x, VIRAL_LOADS)))
+            #return STATUSES.apply(lambda x: list(map(self._testresult, x, VIRAL_LOADS)))
+
+            results = STATUSES.apply(lambda x: list(map(lambda s, v: self._testresult(s, v), x, VIRAL_LOADS[x.name])))
+            return results
         else:
             # STATUSES is an iterator that returns the loads of the next group of people selected for testing
             # SINGLETEST is a function that maps testresult on the loads of a group of people
@@ -84,7 +87,7 @@ class SamplingMaker():
             STATUSES = map(lambda t: self.data.loc[[t[0]], t[1]], times_people)
             VIRAL_LOADS = map(lambda t: self.inf_data.loc[[t[0]], t[1]], times_people)
             SINGLETEST = lambda x: x.apply(lambda x: list(map(self._testresult, x)))
-            return list(map(SINGLETEST, STATUSES, VIRAL_LOADS))
+            return list(map(SINGLETEST, STATUSES))
         
 
 
