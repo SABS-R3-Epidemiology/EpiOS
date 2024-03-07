@@ -2,6 +2,7 @@ from numpy.random import binomial
 import pandas as pd
 
 
+
 class SamplingMaker():
     '''
     Class to return the results of sampling
@@ -41,7 +42,7 @@ class SamplingMaker():
 
     def __init__(self, non_resp_rate=0, keep_track=False, data=None,
                  false_positive=0, false_negative=0, threshold=None,
-                 inf_data=None):
+                 inf_data=None, model=None):
         self.non_resp_rate = non_resp_rate
         self.recognised = [3, 4, 5, 6, 7, 8]
         self.threshold = threshold
@@ -50,6 +51,7 @@ class SamplingMaker():
         self.keep_track = keep_track
         self.data = data
         self.inf_data = inf_data
+        self.model = model
 
     def __call__(self, sampling_times, people):
 
@@ -100,7 +102,18 @@ class SamplingMaker():
         Possible outputs are 'NonResponder', 'Positive', 'Negative'.
         '''
 
-        print(infectiousness)
+        #print(infectiousness)
+
+        false_positive = self.false_positive
+        false_negative = self.false_negative
+        
+        if self.model is not None:
+
+            false_positive, false_negative = self.model(false_positive, false_negative, infectiousness)
+
+        #false_positive = (1 - infectiousness) * false_positive
+        #false_negative = (1 + infectiousness) * false_negative
+
 
         if bool(binomial(1, self.non_resp_rate)):
 
@@ -110,13 +123,13 @@ class SamplingMaker():
 
             if load in self.recognised: #infected
 
-                p = 1 - self.false_negative
+                p = 1 - false_negative
 
                 infected_flag = True
 
             else:
 
-                p = self.false_positive # not infected
+                p = false_positive # not infected
 
                 infected_flag = False
 
@@ -124,13 +137,13 @@ class SamplingMaker():
 
             if load > self.threshold:
 
-                p = 1 - self.false_negative
+                p = 1 - false_negative
 
                 infected_flag = True
 
             else:
 
-                p = self.false_positive
+                p = false_positive
 
                 infected_flag = False
 

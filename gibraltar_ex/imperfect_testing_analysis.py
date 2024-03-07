@@ -2,6 +2,7 @@ import epios
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
 
 
 def calculate_imperfect_testing_rates(sensitivity=0.7, specificity=0.95, test_accuracy=0.87):
@@ -225,6 +226,14 @@ def analyse_imperfect_testing(sample_times,
     return None
 
 
+def falseposneg_model(false_positive, false_negative, infectiousness):
+
+    false_positive = (1 - infectiousness) * false_positive
+    false_negative = (1 + infectiousness) * false_negative
+
+    return false_positive, false_negative
+
+
 if __name__ == "__main__":
 
     # get demographic and time data for Gibraltar
@@ -233,8 +242,12 @@ if __name__ == "__main__":
     time_data = pd.read_csv(f'{path}/inf_status_history.csv')
     inf_data = pd.read_csv(f'{path}/infectiousness_history.csv')
 
+    scaler = MinMaxScaler()
+
+    inf_data = pd.DataFrame(scaler.fit_transform(inf_data), columns=inf_data.columns)
+
     # define the PostProcess class instance
-    postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data, inf_data=inf_data)
+    postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data, inf_data=inf_data, model=falseposneg_model)
 
     # get sample times
     sample_times = [t for t in range(0, 91)]
