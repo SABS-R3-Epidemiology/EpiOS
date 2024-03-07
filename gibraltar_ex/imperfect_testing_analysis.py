@@ -227,13 +227,54 @@ def analyse_imperfect_testing(sample_times,
 
 
 def falseposneg_model(false_positive, false_negative, infectiousness):
+    """Function to model the false positive/negative probabilities as a function
+    of the infectiousness (viral load) of a person
 
-    false_positive = (1 - infectiousness) * false_positive
-    false_negative = (1 + infectiousness) * false_negative
+    Args:
+        false_positive (float): probability of a false positive
+        false_negative (float): probability of a false negative
+        infectiousness (float): viral load (normalised)
 
+    Returns:
+        float, float: updated probabilities
+    """
+
+    # selected model
+    model_name = "model 3"
+
+    # model 1
+    if model_name == "model 1":
+
+        # linear in infectiousness
+
+        false_positive = (1 - infectiousness) * false_positive
+        false_negative = (1 + infectiousness) * false_negative
+
+    # model 2
+    elif model_name == "model 2":
+
+
+        # quadratic in infectiousness
+        m = 2 * (infectiousness - 0.5)**2 + 0.5
+
+        false_positive = (1 + m) * false_positive
+        false_negative = (1 + m) * false_negative
+
+    #model 3
+    elif model_name == "model 3":
+
+
+        # linear for people with viral load
+        if infectiousness > 0:
+
+            false_positive = 0.8 * false_positive
+            false_negative = 1.2 * false_negative
+
+    # return probabilities
     return false_positive, false_negative
 
 
+# main script
 if __name__ == "__main__":
 
     # get demographic and time data for Gibraltar
@@ -261,7 +302,7 @@ if __name__ == "__main__":
         test = analyse_imperfect_testing(sample_times=sample_times, 
                                                     sample_range=[100, 500], 
                                                     num_samples=1, 
-                                                    num_iterations=1, 
+                                                    num_iterations=3, 
                                                     false_positive=0.034,
                                                     false_negative=0.096,
                                                     stats_start_time=0)
