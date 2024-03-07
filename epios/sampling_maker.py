@@ -39,7 +39,8 @@ class SamplingMaker():
     '''
 
     def __init__(self, non_resp_rate=0, keep_track=False, data=None,
-                 false_positive=0, false_negative=0, threshold=None):
+                 false_positive=0, false_negative=0, threshold=None,
+                 inf_data=None):
         self.non_resp_rate = non_resp_rate
         self.recognised = [3, 4, 5, 6, 7, 8]
         self.threshold = threshold
@@ -47,6 +48,7 @@ class SamplingMaker():
         self.false_negative = false_negative
         self.keep_track = keep_track
         self.data = data
+        self.inf_data = inf_data
 
     def __call__(self, sampling_times, people):
 
@@ -68,19 +70,25 @@ class SamplingMaker():
             A list of pandas.DataFrame objects otherwise.
 
         '''
+        
 
         if self.keep_track:
             STATUSES = self.data.loc[sampling_times, people]
-            return STATUSES.apply(lambda x: list(map(self._testresult, x)))
+            VIRAL_LOADS = self.inf_data.loc[sampling_times, people]
+            INFO = [STATUSES, VIRAL_LOADS]
+            return STATUSES.apply(lambda x: list(map(self._testresult, x, VIRAL_LOADS)))
         else:
             # STATUSES is an iterator that returns the loads of the next group of people selected for testing
             # SINGLETEST is a function that maps testresult on the loads of a group of people
             times_people = zip(sampling_times, people)
             STATUSES = map(lambda t: self.data.loc[[t[0]], t[1]], times_people)
+            VIRAL_LOADS = map(lambda t: self.inf_data.loc[[t[0]], t[1]], times_people)
             SINGLETEST = lambda x: x.apply(lambda x: list(map(self._testresult, x)))
-            return list(map(SINGLETEST, STATUSES))
+            return list(map(SINGLETEST, STATUSES, VIRAL_LOADS))
+        
 
-    def _testresult(self, load):
+
+    def _testresult(self, load, infectiousness):
         '''
         Method to return the result for one test
 
@@ -88,6 +96,8 @@ class SamplingMaker():
         Otherwise, it is the viral load of the tested person.
         Possible outputs are 'NonResponder', 'Positive', 'Negative'.
         '''
+
+        print(infectiousness)
 
         if bool(binomial(1, self.non_resp_rate)):
 

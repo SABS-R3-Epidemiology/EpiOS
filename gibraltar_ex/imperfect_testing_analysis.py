@@ -231,9 +231,10 @@ if __name__ == "__main__":
     path = './gibraltar_ex'
     demo_data = pd.read_csv(f'{path}/demographics.csv')
     time_data = pd.read_csv(f'{path}/inf_status_history.csv')
+    inf_data = pd.read_csv(f'{path}/infectiousness_history.csv')
 
     # define the PostProcess class instance
-    postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
+    postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data, inf_data=inf_data)
 
     # get sample times
     sample_times = [t for t in range(0, 91)]
@@ -246,8 +247,8 @@ if __name__ == "__main__":
         # call analysis function
         test = analyse_imperfect_testing(sample_times=sample_times, 
                                                     sample_range=[100, 500], 
-                                                    num_samples=2, 
-                                                    num_iterations=10, 
+                                                    num_samples=1, 
+                                                    num_iterations=1, 
                                                     false_positive=0.034,
                                                     false_negative=0.096,
                                                     stats_start_time=0)

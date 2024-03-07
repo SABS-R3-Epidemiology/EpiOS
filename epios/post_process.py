@@ -33,10 +33,11 @@ class PostProcess():
 
     '''
 
-    def __init__(self, demo_data: pd.DataFrame, time_data: pd.DataFrame):
+    def __init__(self, demo_data: pd.DataFrame, time_data: pd.DataFrame, inf_data: pd.DataFrame = None):
         self.demo_data = demo_data
         self.time_data = time_data
-        self.predict = self.Prediction(demo_data=demo_data, time_data=time_data)
+        self.inf_data = inf_data
+        self.predict = self.Prediction(demo_data=demo_data, time_data=time_data, inf_data=inf_data)
 
     class Prediction():
         '''
@@ -56,7 +57,7 @@ class PostProcess():
 
         '''
 
-        def __init__(self, demo_data: pd.DataFrame, time_data: pd.DataFrame):
+        def __init__(self, demo_data: pd.DataFrame, time_data: pd.DataFrame, inf_data: pd.DataFrame = None):
             '''
             This is to put the information within the PostProcess class into this sub-class.
 
@@ -64,6 +65,7 @@ class PostProcess():
             '''
             self.demo_data = demo_data
             self.time_data = time_data
+            self.inf_data = inf_data
 
         def AgeRegion(self, sample_size, time_sample, non_responder=False,
                       comparison=True, non_resp_rate=None, sample_strategy='Random',
@@ -525,7 +527,8 @@ class PostProcess():
 
                     # Get the results of people sampled
                     X = SamplingMaker(non_resp_rate=non_resp_rate, keep_track=True, data=self.time_data,
-                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None,
+                                      inf_data=self.inf_data)
                     ite = X([time_sample[i]], people)
 
                     # After each sample, now deal with the additional samples
@@ -651,7 +654,8 @@ class PostProcess():
 
                     # Get results of each people sampled
                     X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None,
+                                      inf_data=self.inf_data)
                     ite = X(time_sample, people)
 
                     # Output the infected rate
@@ -704,7 +708,8 @@ class PostProcess():
 
                         # Get the results of each people sampled
                         X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                          false_positive=false_positive, false_negative=false_negative, threshold=None)
+                                          false_positive=false_positive, false_negative=false_negative, threshold=None,
+                                          inf_data=self.inf_data)
                         ite = X([time_sample[i]], people)
 
                         # Output the infected rate
@@ -785,7 +790,8 @@ class PostProcess():
 
                 # Get results of each people sampled
                 X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                  false_positive=false_positive, false_negative=false_negative, threshold=None)
+                                  false_positive=false_positive, false_negative=false_negative, threshold=None,
+                                  inf_data=self.inf_data)
                 ite = X(time_sample, people)
 
                 # Output the infected rate
@@ -828,7 +834,8 @@ class PostProcess():
 
                     # Get the results of each people sampled
                     X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
-                                      false_positive=false_positive, false_negative=false_negative, threshold=None)
+                                      false_positive=false_positive, false_negative=false_negative, threshold=None,
+                                      inf_data=self.inf_data)
                     ite = X([time_sample[i]], people)
 
                     # Output the infected rate
