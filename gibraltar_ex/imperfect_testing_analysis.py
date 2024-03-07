@@ -247,8 +247,8 @@ if __name__ == "__main__":
         test = analyse_imperfect_testing(sample_times=sample_times, 
                                                     sample_range=[100, 500], 
                                                     num_samples=2, 
-                                                    num_iterations=3, 
+                                                    num_iterations=10, 
                                                     false_positive=0.034,
                                                     false_negative=0.096,
-                                                    stats_start_time=20)
-
+                                                    stats_start_time=0)
+        
