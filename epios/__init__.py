@@ -4,6 +4,5 @@ from .sampler_age import SamplerAge # noqa
 from .sampler_region import SamplerRegion # noqa
 from .sampler_age_region import SamplerAgeRegion # noqa
 from .sampling_maker import SamplingMaker # noqa
-from .post_process import PostProcess # noqa
 from .re_scaler import ReScaler # noqa
-from .post_process_update import PostProcessUpdate # noqa
+from .post_process import PostProcess # noqa

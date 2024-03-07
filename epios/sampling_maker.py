@@ -1,6 +1,5 @@
 from numpy.random import binomial
-from numpy import array, nan
-
+from numpy import array, nan, sqrt
 
 class SamplingMaker():
     '''
@@ -100,6 +99,7 @@ class SamplingMaker():
             moreover if pos, neg = observ[k], then len(pos) == len(neg) == k
 
             If stratify is not None pos and neg are weighted averages depending on the stratification.
+            They are multiplied by a factor to normalize their variance.
         '''
 
         assert not (keep_track and post_proc)
@@ -116,31 +116,35 @@ class SamplingMaker():
 
             def count_positive(x):
                 try:
-                    obs = []
+                    obs, var = [], []
                     for strat_class in classes:
                         str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
-                        tested = x.loc[str_map_temp].value_counts().get('Positive', 0)
+                        positive = x.loc[str_map_temp].value_counts().get('Positive', 0)
+                        negative = x.loc[str_map_temp].value_counts().get('Negative', 0)
                         # compute the number of positive tests into a class and rescale it
-                        obs.append(tested * len(str_map[strat_class]) / len(str_map_temp))
+                        obs.append(positive * len(str_map[strat_class]) / (positive + negative))
                         # an estimate of the number of positive people into the same class
-                    return array(obs).sum() * len(x.index) / len(self.data.columns)
-                    # rescale the estimate to be proportional to the number of sampled people
-                    # STATISTICALLY THIS IS NOT PROPER: IMPROVE THIS PART!
+                        var.append(positive * negative * len(str_map[strat_class])**2 / (positive + negative)**3)
+                        # an estimate of the variance of the computed value for this class
+                    obs = array(obs).sum() / sqrt(array(var).sum())
+                    # rescale the estimate to have unitary variance
                 except ZeroDivisionError:
                     return nan
 
             def count_negative(x):
                 try:
-                    obs = []
+                    obs, var = [], []
                     for strat_class in classes:
                         str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
-                        tested = x.loc[str_map_temp].value_counts().get('Negative', 0)
-                        # compute the number of negative tests into a class and rescale it
-                        obs.append(tested * len(str_map[strat_class]) / len(str_map_temp))
-                        # an estimate of the number of negative people into the same class
-                    return array(obs).sum() * len(x.index) / len(self.data.columns)
-                    # rescale the estimate to be proportional to the number of sampled people
-                    # STATISTICALLY THIS IS NOT PROPER: IMPROVE THIS PART!
+                        positive = x.loc[str_map_temp].value_counts().get('Positive', 0)
+                        negative = x.loc[str_map_temp].value_counts().get('Negative', 0)
+                        # compute the number of positive tests into a class and rescale it
+                        obs.append(negative * len(str_map[strat_class]) / (positive + negative))
+                        # an estimate of the number of positive people into the same class
+                        var.append(positive * negative * len(str_map[strat_class])**2 / (positive + negative)**3)
+                        # an estimate of the variance of the computed value for this class
+                    obs = array(obs).sum() / sqrt(array(var).sum())
+                    # rescale the estimate to have unitary variance
                 except ZeroDivisionError:
                     return nan
 

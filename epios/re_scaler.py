@@ -60,7 +60,7 @@ class ReScaler():
                 obs = array(pos) / (array(pos) + array(neg))
                 estimates = (obs - self.false_positive) / (1 - self.false_negative - self.false_positive)
                 temp = array([self.smoothing(times[n] - times[k]) for k in range(n + 1)], dtype=numpy.double)
-                temp *= obs * (1 - obs) * (array(pos) + array(neg))
+                temp *= array(pos) + array(neg)
                 try:
                     a = temp.sum()
                     b = (temp * times[0: n + 1]).sum()
