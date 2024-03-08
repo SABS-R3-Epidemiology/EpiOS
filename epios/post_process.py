@@ -569,7 +569,7 @@ class PostProcess():
 
                 infected_rate = list(ReScaler(false_positive=false_positive,
                                               false_negative=false_negative,
-                                              smoothing=smoothing)(observ))
+                                              smoothing=smoothing)(observ, times=time_sample))
 
             else:
                 if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
@@ -593,7 +593,7 @@ class PostProcess():
                                                                        output='nums_only')
                     # Output the infected rate
                     infected_rate = list(ReScaler(false_positive=false_positive,
-                                                  false_negative=false_negative)(observ))
+                                                  false_negative=false_negative)(observ, times=time_sample))
 
                 elif sample_strategy == 'Random':  # Change people sampled at each sample time point
 
@@ -629,7 +629,7 @@ class PostProcess():
                     # Output the infected rate
                     infected_rate = list(ReScaler(false_positive=false_positive,
                                                   false_negative=false_negative,
-                                                  smoothing=smoothing)(observ))
+                                                  smoothing=smoothing)(observ, times=time_sample))
 
             # Plot the figure
             if gen_plot:
@@ -696,7 +696,7 @@ class PostProcess():
                 # Output the infected rate
                 infected_rate = list(ReScaler(false_positive=false_positive,
                                               false_negative=false_negative,
-                                              smoothing=smoothing)(observ))
+                                              smoothing=smoothing)(observ, times=time_sample))
 
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
 
@@ -728,7 +728,7 @@ class PostProcess():
                 # Output the infected rate
                 infected_rate = list(ReScaler(false_positive=false_positive,
                                               false_negative=false_negative,
-                                              smoothing=smoothing)(observ))
+                                              smoothing=smoothing)(observ, times=time_sample))
 
             # Plot the figure
             if gen_plot:
