@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
+import os
 
 
 def calculate_imperfect_testing_rates(sensitivity=0.7, specificity=0.95, test_accuracy=0.87):
@@ -108,7 +109,7 @@ def analyse_imperfect_testing(sample_times,
         for _ in range(num_iterations):
 
             # display info to user on current iteration
-            print(f"Sample Size {sample_size} : Performing Iteration {iteration_count}")
+            print(f"Sample Size {sample_size} : Performing Iteration {iteration_count + 1}")
 
             # perform sampling in epios
             result = postprocess.predict.Base(sample_size=sample_size,
@@ -240,7 +241,7 @@ def falseposneg_model(false_positive, false_negative, infectiousness):
     """
 
     # selected model
-    model_name = "model 3"
+    model_name = "model 4"
 
     # model 1
     if model_name == "model 1":
@@ -270,8 +271,35 @@ def falseposneg_model(false_positive, false_negative, infectiousness):
             false_positive = 0.8 * false_positive
             false_negative = 1.2 * false_negative
 
+
+    elif model_name == "model 4":
+
+        if 0 < infectiousness <= 0.1:
+
+            false_negative = 3 * false_negative
+
+        elif infectiousness > 0.1:
+
+            false_positive = 3 * false_positive
+
     # return probabilities
     return false_positive, false_negative
+
+
+def normalise_inf_data(path):
+
+    if not os.path.exists(f'{path}/normalised_inf_data.csv'):
+        # Load the original data from inf_data.csv
+        inf_data = pd.read_csv(f'{path}/infectiousness_history.csv')
+
+        # Create a MinMaxScaler object
+        scaler = MinMaxScaler()
+
+        # Normalize each column individually
+        normalized_data = inf_data.apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+
+        # Save the normalized data to normalised_inf_data.csv
+        normalized_data.to_csv(f'{path}/normalised_inf_data.csv', index=False)
 
 
 # main script
@@ -281,11 +309,11 @@ if __name__ == "__main__":
     path = './gibraltar_ex'
     demo_data = pd.read_csv(f'{path}/demographics.csv')
     time_data = pd.read_csv(f'{path}/inf_status_history.csv')
-    inf_data = pd.read_csv(f'{path}/infectiousness_history.csv')
+    #inf_data = pd.read_csv(f'{path}/infectiousness_history.csv')
 
-    scaler = MinMaxScaler()
+    normalise_inf_data(path=path)
 
-    inf_data = pd.DataFrame(scaler.fit_transform(inf_data), columns=inf_data.columns)
+    inf_data = pd.read_csv(f'{path}/normalised_inf_data.csv')
 
     # define the PostProcess class instance
     postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data, inf_data=inf_data, model=falseposneg_model)
