@@ -42,7 +42,7 @@ class TestSM(TestCase):
         self.assertTrue((pd.DataFrame(X(t, [[0, 1], [0, 1]])) == pd.DataFrame({0: ['Negative', 'Positive'],
                                                                                1: ['Positive', 'Negative']},
                                                                               index=t)).all(axis=None))
-        res, ((pos0, neg0), (pos1, neg1)) = X(t, [[0, 1], [1]], post_proc=True, output='also_nums')
+        res, ((pos0, neg0, var0), (pos1, neg1, var1)) = X(t, [[0, 1], [1]], post_proc=True, output='also_nums')
         self.assertEqual(neg0[0], 1)
         self.assertEqual(neg1[0], 1)
         self.assertEqual(neg1[1], 1)

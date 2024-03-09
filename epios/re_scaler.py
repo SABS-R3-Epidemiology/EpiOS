@@ -1,5 +1,5 @@
 import numpy
-from numpy import array
+from numpy import array, sqrt
 
 
 class ReScaler():
@@ -48,19 +48,19 @@ class ReScaler():
 
     def __call__(self, observation, times=None):
         if self.smoothing is None:
-            pos, neg = observation
-            estimates = (array(pos) / (array(pos) + array(neg)) - self.false_positive)
-            estimates /= (1 - self.false_negative - self.false_positive)
+            pos, neg, var = observation
+            estimates = array(pos) / (array(pos) + array(neg)) - self.false_positive
+            estimates /= 1 - self.false_negative - self.false_positive
             return estimates
         elif times is None:
             raise Exception('please insert times of sampling')
         else:
             smooth_estimate = []
-            for n, (pos, neg) in enumerate(observation):
+            for n, (pos, neg, var) in enumerate(observation):
                 obs = array(pos) / (array(pos) + array(neg))
                 estimates = (obs - self.false_positive) / (1 - self.false_negative - self.false_positive)
                 temp = array([self.smoothing(times[n] - times[k]) for k in range(n + 1)], dtype=numpy.double)
-                temp *= array(pos) + array(neg)
+                temp /= sqrt(array(var))
                 try:
                     a = temp.sum()
                     b = (temp * times[0: n + 1]).sum()

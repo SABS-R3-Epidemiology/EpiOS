@@ -107,53 +107,44 @@ class SamplingMaker():
         # count_positive has to return the number of positive in a Series
         # count_negative has to return the number of negative in a Series
         if stratify is None:
-            count_positive = lambda x: x.value_counts().get('Positive', 0)
-            count_negative = lambda x: x.value_counts().get('Negative', 0)
+
+            def count(x):
+                positive = x.value_counts().get('Positive', 0)
+                negative = x.value_counts().get('Negative', 0)
+                variance = positive * negative / (positive + negative)
+                # rescale the estimate to have unitary variance
+                if positive + negative == 0: return 0
+                else: return positive, negative, variance
         else:
             # in this case we want to approximate the number of positive/negative people into each class
             classes = {stratify(id) for id in self.data.columns if id != 'time'}
             str_map = {x: {id for id in self.data.columns if id != 'time' and stratify(id) == x} for x in classes}
 
-            def count_positive(x):
-                try:
-                    obs, var = [], []
-                    for strat_class in classes:
-                        str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
-                        positive = x.loc[str_map_temp].value_counts().get('Positive', 0)
-                        negative = x.loc[str_map_temp].value_counts().get('Negative', 0)
-                        # compute the number of positive tests into a class and rescale it
-                        obs.append(positive * len(str_map[strat_class]) / (positive + negative))
+            def count(x):
+                pos, neg, var = [], [], []
+                for strat_class in classes:
+                    str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
+                    positive = x.loc[str_map_temp].value_counts().get('Positive', 0)
+                    negative = x.loc[str_map_temp].value_counts().get('Negative', 0)
+                    # compute the number of positive tests into a class and rescale it
+                    if positive + negative > 0:
+                        pos.append(positive * len(str_map[strat_class]) / (positive + negative))
+                        # an estimate of the number of positive people into the same class
+                        neg.append(negative * len(str_map[strat_class]) / (positive + negative))
                         # an estimate of the number of positive people into the same class
                         var.append(positive * negative * len(str_map[strat_class])**2 / (positive + negative)**3)
                         # an estimate of the variance of the computed value for this class
-                    obs = array(obs).sum() / sqrt(array(var).sum())
-                    # rescale the estimate to have unitary variance
-                except ZeroDivisionError:
-                    return nan
-
-            def count_negative(x):
-                try:
-                    obs, var = [], []
-                    for strat_class in classes:
-                        str_map_temp = [id for id in x.index if id != 'time' and stratify(id) == strat_class]
-                        positive = x.loc[str_map_temp].value_counts().get('Positive', 0)
-                        negative = x.loc[str_map_temp].value_counts().get('Negative', 0)
-                        # compute the number of positive tests into a class and rescale it
-                        obs.append(negative * len(str_map[strat_class]) / (positive + negative))
-                        # an estimate of the number of positive people into the same class
-                        var.append(positive * negative * len(str_map[strat_class])**2 / (positive + negative)**3)
-                        # an estimate of the variance of the computed value for this class
-                    obs = array(obs).sum() / sqrt(array(var).sum())
-                    # rescale the estimate to have unitary variance
-                except ZeroDivisionError:
-                    return nan
+                return array(pos).sum(), array(neg).sum(), array(var).sum()
+                # rescale the estimate to have unitary variance
 
         if keep_track:
             STATUSES = self.data.loc[sampling_times, people]
             result = STATUSES.apply(lambda x: x.apply(self._testresult))
-            pos = result.apply(count_positive, axis=1)
-            neg = result.apply(count_negative, axis=1)
-            observ = (pos.to_list(), neg.to_list())  # result is a DataFrame, pos, neg are lists
+            obs = result.apply(count, axis=1)
+            pos = obs.apply(lambda x: x[0])
+            neg = obs.apply(lambda x: x[1])
+            var = obs.apply(lambda x: x[2])
+            observ = (pos.to_list(), neg.to_list(), var.to_list())  # result is a DataFrame, pos, neg are lists
         else:
             if callback is None:
                 times_people = zip(sampling_times, people)
@@ -168,6 +159,7 @@ class SamplingMaker():
                     STATUSES = self.data.loc[sampling_time, next_people]  # Series
                     res.append(STATUSES.apply(self._testresult))  # list of Series
                     next_people = callback(res[-1]) # list
+
             if post_proc:
                 # in this case we need a list of Series for each
                 # time, this list has to contain the information
@@ -181,14 +173,19 @@ class SamplingMaker():
                         temp[n] = y.drop(labels=x.index, errors='ignore')
                     temp.append(x)  # list of n + 1 Series
                     result.append(temp.copy())  # list of lists of Series
-                    pos = list(map(count_positive, temp)) # list of n + 1 Series
-                    neg = list(map(count_negative, temp)) # list of n + 1 Series
-                    observ.append((pos, neg)) # list of lists of Series
+                    obs = list(map(count, temp))
+                    pos = list(map(lambda x: x[0], obs)) # list of n + 1 Series
+                    neg = list(map(lambda x: x[1], obs)) # list of n + 1 Series
+                    var = list(map(lambda x: x[2], obs)) # list of n + 1 Series
+                    observ.append((pos, neg, var)) # list of lists of Series
+
             else:
                 result = res
-                pos = list(map(count_positive, res))
-                neg = list(map(count_negative, res))
-                observ = (pos, neg)
+                obs = list(map(count, res))
+                pos = list(map(lambda x: x[0], obs))
+                neg = list(map(lambda x: x[1], obs))
+                var = list(map(lambda x: x[2], obs))
+                observ = (pos, neg, var)
 
         if output is None:
             return result

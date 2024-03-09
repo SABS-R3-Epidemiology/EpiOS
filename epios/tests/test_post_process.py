@@ -3,7 +3,7 @@ import pandas as pd
 import unittest
 from unittest import TestCase
 from unittest.mock import patch
-from post_process_update import PostProcessUpdate
+from post_process import PostProcess
 import os
 import sys
 # from numpy.testing import assert_array_equal
@@ -21,7 +21,7 @@ class TestDataProcessUpdate(TestCase):
         This function include some of the expected results
 
         '''
-        self.path = './testing_post_process_update_mod/'
+        self.path = './testing_post_process_mod/'
         try:
             os.mkdir(self.path[2:-1])
         except FileExistsError:
@@ -36,7 +36,7 @@ class TestDataProcessUpdate(TestCase):
                                        '0.1.0.0': [1, 1, 3, 3, 3, 3],
                                        '0.2.0.0': [1, 3, 3, 3, 3, 3],
                                        '1.0.0.0': [1, 1, 1, 1, 1, 3]})
-        self.processor = PostProcessUpdate(self.demo_data, self.time_data)
+        self.processor = PostProcess(self.demo_data, self.time_data)
         self.demo_data2 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                                '0.0.0.3', '0.0.0.4', '0.0.0.5'],
                                         'age': [1, 2, 1, 1, 1, 1]})
@@ -47,7 +47,7 @@ class TestDataProcessUpdate(TestCase):
                                         '0.0.0.3': [3] * 6,
                                         '0.0.0.4': [3] * 6,
                                         '0.0.0.5': [3] * 6})
-        self.processor_non_responder = PostProcessUpdate(self.demo_data2, self.time_data2)
+        self.processor_non_responder = PostProcess(self.demo_data2, self.time_data2)
         self.demo_data3 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                                '1.0.0.0', '1.0.0.1', '1.0.0.2'],
                                         'age': [1, 2, 1, 1, 1, 1]})
@@ -58,7 +58,7 @@ class TestDataProcessUpdate(TestCase):
                                         '1.0.0.0': [3] * 6,
                                         '1.0.0.1': [3] * 6,
                                         '1.0.0.2': [3] * 6})
-        self.processor_non_responder2 = PostProcessUpdate(self.demo_data3, self.time_data3)
+        self.processor_non_responder2 = PostProcess(self.demo_data3, self.time_data3)
         self.demo_data4 = pd.DataFrame({'id': ['0.0.0.0', '0.0.0.1', '0.0.0.2',
                                                '1.0.0.0', '1.0.0.1', '2.0.0.0'],
                                         'age': [1, 6, 11, 16, 21, 26]})
@@ -69,7 +69,7 @@ class TestDataProcessUpdate(TestCase):
                                         '1.0.0.0': [3] * 6,
                                         '1.0.0.1': [3] * 6,
                                         '2.0.0.0': [3] * 6})
-        self.processor_non_responder3 = PostProcessUpdate(self.demo_data4, self.time_data4)
+        self.processor_non_responder3 = PostProcess(self.demo_data4, self.time_data4)
         self.range6 = [i for i in range(6)]
         self.zero6 = [0] * 6
 
@@ -102,28 +102,48 @@ class TestDataProcessUpdate(TestCase):
         res = self.processor.predict.AgeRegion(6, self.range6, comparison=False, data_store_path=self.path,
                                                sample_strategy='Same', gen_plot=True,
                                                saving_path_sampling=self.path + 'sample.png')
-        self.assertEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+
+        try:
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        except AssertionError:
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]]))
+
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
         res = self.processor.predict.Age(6, self.range6, comparison=False, data_store_path=self.path,
                                          sample_strategy='Same', gen_plot=True,
                                          saving_path_sampling=self.path + 'sample.png')
-        self.assertEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+
+        try:
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        except AssertionError:
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]]))
+
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
         res = self.processor.predict.Region(6, self.range6, comparison=False, data_store_path=self.path,
                                             sample_strategy='Same', gen_plot=True,
                                             saving_path_sampling=self.path + 'sample.png')
-        self.assertEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+
+        try:
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        except AssertionError:
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]]))
+
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
         res = self.processor.predict.Base(6, self.range6, comparison=False, data_store_path=self.path,
                                           sample_strategy='Same', gen_plot=True,
                                           saving_path_sampling=self.path + 'sample.png')
-        self.assertEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+
+        try:
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        except AssertionError:
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]]))
+
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
 
     def test_sampled_result_r(self):
@@ -133,28 +153,47 @@ class TestDataProcessUpdate(TestCase):
         res = self.processor.predict.AgeRegion(6, self.range6, comparison=False, data_store_path=self.path,
                                                sample_strategy='Random', gen_plot=True,
                                                saving_path_sampling=self.path + 'sample.png')
-        self.assertEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        try:
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        except AssertionError:
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]]))
+
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
         res = self.processor.predict.Age(6, self.range6, comparison=False, data_store_path=self.path,
                                          sample_strategy='Random', gen_plot=True,
                                          saving_path_sampling=self.path + 'sample.png')
-        self.assertEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+
+        try:
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        except AssertionError:
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]]))
+
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
         res = self.processor.predict.Region(6, self.range6, comparison=False, data_store_path=self.path,
                                             sample_strategy='Random', gen_plot=True,
                                             saving_path_sampling=self.path + 'sample.png')
-        self.assertEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        
+        try:
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        except AssertionError:
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]]))
+
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
         if os.path.exists(self.path + 'sample.png'):
             os.remove(self.path + 'sample.png')
         res = self.processor.predict.Base(6, self.range6, comparison=False, data_store_path=self.path,
                                           sample_strategy='Random', gen_plot=True, seed=1,
                                           saving_path_sampling=self.path + 'sample.png')
-        self.assertEqual(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+
+        try:
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
+        except AssertionError:
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]]))
+
         assert os.path.exists(self.path + 'sample.png'), "Plot file was not saved"
 
     def test_sampled_non_responder(self):
@@ -199,9 +238,9 @@ class TestDataProcessUpdate(TestCase):
                                             gen_plot=True, non_resp_rate=0.1, non_responder=True,
                                             saving_path_sampling=self.path + 'sample_nonResp.png')
         try:
-            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 0.4, 0.6, 1, 0.8, 1]])
+            np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 5 / 12, 5 / 8, 1, 5 / 6, 1]])
         except AssertionError:
-            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 0.4, 0.6, 1, 0.8, 1]]))
+            self.fail(str(res[0]) + ' is not ' + str([self.range6, [1 / 6, 5 / 12, 5 / 8, 1, 5 / 6, 1]]))
         assert os.path.exists(self.path + 'sample_nonResp.png'), "Plot file was not saved"
         res = self.processor.predict.Region(6, self.range6, comparison=False, data_store_path=self.path,
                                             gen_plot=True, non_resp_rate=0.9, non_responder=True,

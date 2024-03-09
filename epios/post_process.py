@@ -593,7 +593,7 @@ class PostProcess():
                                                                        output='nums_only')
                     # Output the infected rate
                     infected_rate = list(ReScaler(false_positive=false_positive,
-                                                  false_negative=false_negative)(observ, times=time_sample))
+                                                  false_negative=false_negative)(observ))
 
                 elif sample_strategy == 'Random':  # Change people sampled at each sample time point
 
@@ -695,8 +695,7 @@ class PostProcess():
                                                                    output='nums_only')
                 # Output the infected rate
                 infected_rate = list(ReScaler(false_positive=false_positive,
-                                              false_negative=false_negative,
-                                              smoothing=smoothing)(observ, times=time_sample))
+                                              false_negative=false_negative)(observ))
 
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
 
