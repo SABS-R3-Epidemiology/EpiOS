@@ -311,6 +311,8 @@ class SamplerAgeRegion(Sampler):
                     # Testing whether it hits region cap
                     if current_region[pos_region] + 1 > cap_region[0][pos_region]:
                         # Similar to the above
+                        if len(prob) == 0:
+                            break
                         prob_exceed = prob[pos_region, :].sum()
                         if i < n - 1:
                             if prob_exceed == prob.sum():
