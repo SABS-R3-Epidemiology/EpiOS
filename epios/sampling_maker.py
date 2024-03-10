@@ -86,7 +86,7 @@ class SamplingMaker():
                 Takes one ID and returns its class in the stratification.
         Output:
             result if output == None
-            result, observ if output == also_nums 
+            result, observ if output == also_nums
             observ if output == nums_only (input you need for re_scaler)
 
             result is a DataFrame if keep_track == False
@@ -112,8 +112,10 @@ class SamplingMaker():
                 negative = x.value_counts().get('Negative', 0)
                 variance = positive * negative / (positive + negative)
                 # rescale the estimate to have unitary variance
-                if positive + negative == 0: return 0
-                else: return positive, negative, variance
+                if positive + negative == 0:
+                    return 0
+                else:
+                    return positive, negative, variance
         else:
             # in this case we want to approximate the number of positive/negative people into each class
             classes = {stratify(id) for id in self.data.columns if id != 'time'}
@@ -152,12 +154,12 @@ class SamplingMaker():
             else:
                 # in this case you have to update the sample each time depending on res
                 # this in order to deal with nonresponders and with additional sampling
-                next_people = people # list
+                next_people = people  # list
                 res = []
                 for sampling_time in sampling_times:
                     STATUSES = self.data.loc[sampling_time, next_people]  # Series
                     res.append(STATUSES.apply(self._testresult))  # list of Series
-                    next_people = callback(res[-1]) # list
+                    next_people = callback(res[-1])  # list
 
             if post_proc:
                 # in this case we need a list of Series for each
