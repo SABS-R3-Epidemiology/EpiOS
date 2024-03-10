@@ -1,5 +1,6 @@
 from numpy.random import binomial
-from numpy import array, nan, sqrt
+from numpy import array
+
 
 class SamplingMaker():
     '''
@@ -83,9 +84,7 @@ class SamplingMaker():
                 This update the sample each time, useful for additional sampling.
             stratify: function
                 Takes one ID and returns its class in the stratification.
-
         Output:
-
             result if output == None
             result, observ if output == also_nums 
             observ if output == nums_only (input you need for re_scaler)
@@ -174,10 +173,10 @@ class SamplingMaker():
                     temp.append(x)  # list of n + 1 Series
                     result.append(temp.copy())  # list of lists of Series
                     obs = list(map(count, temp))
-                    pos = list(map(lambda x: x[0], obs)) # list of n + 1 Series
-                    neg = list(map(lambda x: x[1], obs)) # list of n + 1 Series
-                    var = list(map(lambda x: x[2], obs)) # list of n + 1 Series
-                    observ.append((pos, neg, var)) # list of lists of Series
+                    pos = list(map(lambda x: x[0], obs))  # list of n + 1 Series
+                    neg = list(map(lambda x: x[1], obs))  # list of n + 1 Series
+                    var = list(map(lambda x: x[2], obs))  # list of n + 1 Series
+                    observ.append((pos, neg, var))  # list of lists of Series
 
             else:
                 result = res

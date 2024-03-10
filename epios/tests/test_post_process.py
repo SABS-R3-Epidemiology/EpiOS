@@ -176,7 +176,7 @@ class TestDataProcessUpdate(TestCase):
         res = self.processor.predict.Region(6, self.range6, comparison=False, data_store_path=self.path,
                                             sample_strategy='Random', gen_plot=True,
                                             saving_path_sampling=self.path + 'sample.png')
-        
+
         try:
             np.testing.assert_almost_equal(res[0], [self.range6, [1 / 6, 2 / 6, 4 / 6, 5 / 6, 5 / 6, 6 / 6]])
         except AssertionError:
