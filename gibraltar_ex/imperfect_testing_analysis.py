@@ -97,6 +97,7 @@ def analyse_imperfect_testing(sample_times,
 
         # set-up plot pane figure
         fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(2, 2, figsize=(12, 8), tight_layout=True)
+        fig2, ax21 = plt.subplots()
 
         # initialise empty lists
         total_differences = np.zeros(len(sample_times))
@@ -104,6 +105,8 @@ def analyse_imperfect_testing(sample_times,
         total_sensitivity = np.zeros(len(sample_times))
         total_specificity = np.zeros(len(sample_times))
         total_test_accuracy = np.zeros(len(sample_times))
+        total_sens_ratio = np.zeros(len(sample_times))
+        total_spec_ratio = np.zeros(len(sample_times))
 
         # initialise iteration count
         iteration_count = 0
@@ -182,10 +185,18 @@ def analyse_imperfect_testing(sample_times,
             # calculate # people who are actually infected
             act_infected = [TP[i] + FN[i] for i in range(len(TP))]
 
+            # ratios to test behaviour of sensitivity, specificity
+            sens_ratio = [0 if TP[i] == 0 else TP[i] / FN[i] for i in range(len(TP))]
+            spec_ratio = [0 if TP[i] == 0 else TN[i] / FP[i] for i in range(len(TP))]
+
             # calculate PCR test stats
             sensitivity = [0 if TP[i] == 0 else TP[i] / (TP[i] + FN[i]) for i in range(len(TP))]
             specificity = [0 if TP[i] == 0 else TN[i] / (TN[i] + FP[i]) for i in range(len(TP))]
             test_accuracy = [(TP[i] + TN[i])/(TP[i] + TN[i] + FP[i] + FN[i]) for i in range(len(TP))]
+
+            # add to the ratio totals
+            total_sens_ratio = [total_sens_ratio[i] + sens_ratio[i] for i in range(len(sens_ratio))]
+            total_spec_ratio = [total_spec_ratio[i] + spec_ratio[i] for i in range(len(spec_ratio))]
 
             # add to the stat totals
             total_sensitivity = [total_sensitivity[i] + sensitivity[i] for i in range(len(sensitivity))]
@@ -213,6 +224,8 @@ def analyse_imperfect_testing(sample_times,
         av_sensitivity = [total_sensitivity[i] / num_iterations for i in range(len(total_sensitivity))]
         av_specificity = [total_specificity[i] / num_iterations for i in range(len(total_specificity))]
         av_test_accuracy = [total_test_accuracy[i] / num_iterations for i in range(len(total_test_accuracy))]
+        av_sens_ratio = [total_sens_ratio[i] / num_iterations for i in range(len(total_sens_ratio))]
+        av_spec_ratio = [total_spec_ratio[i] / num_iterations for i in range(len(total_spec_ratio))]
 
         # calculate rmse; root mean squared error
         rmse = [np.sqrt(av_square_difference[i]) for i in range(len(av_square_difference))]
@@ -243,7 +256,8 @@ def analyse_imperfect_testing(sample_times,
         Sample Size: {sample_size} \n
         Number of Iterations: {num_iterations} \n
         Probability False Positive: {false_positive} \n
-        Probability False Negatives: {false_negative}
+        Probability False Negatives: {false_negative} \n
+        Sampler Method: {method}
         """
 
         # add text to figure
@@ -257,6 +271,13 @@ def analyse_imperfect_testing(sample_times,
 
         # save figures
         plt.savefig(f'{path}/truefalsepos_samplesize_{sample_size}.png')
+
+        ax21.plot(sample_times[start_index :], av_sens_ratio[start_index :], label=f"TP/FN, Sample Size: {sample_size}")
+        ax21.plot(sample_times[start_index :], av_spec_ratio[start_index :], label=f"TN/FP, Sample Size: {sample_size}")
+        ax21.set_xlabel('Time (days)')
+        ax21.set_ylabel('Ratios')
+        ax21.set_title('Ratios over time')
+        ax21.legend()
 
     return None
 
