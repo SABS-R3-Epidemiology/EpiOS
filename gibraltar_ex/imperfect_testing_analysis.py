@@ -48,7 +48,8 @@ def analyse_imperfect_testing(sample_times,
                               false_positive=0.034,
                               false_negative=0.096,
                               stats_start_time=0,
-                              method="Base"):
+                              method="Base",
+                              plots="Analysis"):
     """Function to produce graphs analysing the impact of imperfect testing
 
     Args:
@@ -64,6 +65,7 @@ def analyse_imperfect_testing(sample_times,
         false_negative (float): probability of false negatives
         stats_start_time (int): the time from which the statistics are plotted
         method (string): the sampler method used ("Base","Age","Region")
+        plots (string): the plots produced ("Analysis","Ratios)
 
     Returns:
         None
@@ -95,9 +97,7 @@ def analyse_imperfect_testing(sample_times,
     #  iterate over the sample sizes
     for sample_size in log_sample_sizes:
 
-        # set-up plot pane figure
-        fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(2, 2, figsize=(12, 8), tight_layout=True)
-        fig2, ax21 = plt.subplots()
+
 
         # initialise empty lists
         total_differences = np.zeros(len(sample_times))
@@ -230,54 +230,67 @@ def analyse_imperfect_testing(sample_times,
         # calculate rmse; root mean squared error
         rmse = [np.sqrt(av_square_difference[i]) for i in range(len(av_square_difference))]
 
-        # plot graphs on respective figures
-        ax1.plot(sample_times, act_infected, label=f"Actual, Sample Size: {sample_size}", color='cyan')
-        ax1.plot(sample_times, est_infected, label=f"Estimated, Sample Size: {sample_size}", color='olive')
-        ax3.plot(sample_times, absolute_difference, label=f"Absolute Difference, Sample Size: {sample_size}", color='blue')
-        ax3.plot(sample_times, rmse, label=f"RMSE, Sample Size: {sample_size}", color='red')
-        #ax3.plot(sample_times, average_difference, label="Expected Absolute Difference")
-        ax2.plot(sample_times[start_index :], av_sensitivity[start_index :], label=f"Sensitivity, Sample Size: {sample_size}")
-        ax2.plot(sample_times[start_index :], av_specificity[start_index :], label=f"Specificity, Sample Size: {sample_size}")
-        ax2.plot(sample_times[start_index :], av_test_accuracy[start_index :], label=f"Accuracy, Sample Size: {sample_size}")
+        if plots == "Analysis":
 
-        # add figure labels
-        ax1.set_xlabel('Time (days)')
-        ax2.set_xlabel('Time (days)')
-        ax3.set_xlabel('Time (days)')
-        ax1.set_ylabel('# Infected')
-        ax2.set_ylabel('Percentage')
-        ax3.set_ylabel('# Infected')
-        ax1.set_title('# Infected: Estimated vs Actual')
-        ax2.set_title('Test Statistics')
-        ax3.set_title('#Infected: Estimated vs Actual')
+            # set-up plot pane figure
+            fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(2, 2, figsize=(12, 8), tight_layout=True)
 
-        # text on figure showing parameters
-        parameters_text = f"""Parameters: \n
-        Sample Size: {sample_size} \n
-        Number of Iterations: {num_iterations} \n
-        Probability False Positive: {false_positive} \n
-        Probability False Negatives: {false_negative} \n
-        Sampler Method: {method}
-        """
+            # plot graphs on respective figures
+            ax1.plot(sample_times, act_infected, label=f"Actual, Sample Size: {sample_size}", color='cyan')
+            ax1.plot(sample_times, est_infected, label=f"Estimated, Sample Size: {sample_size}", color='olive')
+            ax3.plot(sample_times, absolute_difference, label=f"Absolute Difference, Sample Size: {sample_size}", color='blue')
+            ax3.plot(sample_times, rmse, label=f"RMSE, Sample Size: {sample_size}", color='red')
+            #ax3.plot(sample_times, average_difference, label="Expected Absolute Difference")
+            ax2.plot(sample_times[start_index :], av_sensitivity[start_index :], label=f"Sensitivity, Sample Size: {sample_size}")
+            ax2.plot(sample_times[start_index :], av_specificity[start_index :], label=f"Specificity, Sample Size: {sample_size}")
+            ax2.plot(sample_times[start_index :], av_test_accuracy[start_index :], label=f"Accuracy, Sample Size: {sample_size}")
 
-        # add text to figure
-        ax4.text(0.2, 0.6, parameters_text, horizontalalignment='left',
-        verticalalignment='center', transform=ax4.transAxes)
+            # add figure labels
+            ax1.set_xlabel('Time (days)')
+            ax2.set_xlabel('Time (days)')
+            ax3.set_xlabel('Time (days)')
+            ax1.set_ylabel('# Infected')
+            ax2.set_ylabel('Percentage')
+            ax3.set_ylabel('# Infected')
+            ax1.set_title('# Infected: Estimated vs Actual')
+            ax2.set_title('Test Statistics')
+            ax3.set_title('#Infected: Estimated vs Actual')
 
-        # add plot legends
-        ax1.legend()
-        ax2.legend()
-        ax3.legend()
+            # text on figure showing parameters
+            parameters_text = f"""Parameters: \n
+            Sample Size: {sample_size} \n
+            Number of Iterations: {num_iterations} \n
+            Probability False Positive: {false_positive} \n
+            Probability False Negatives: {false_negative} \n
+            Sampler Method: {method}
+            """
 
-        # save figures
-        plt.savefig(f'{path}/truefalsepos_samplesize_{sample_size}.png')
+            # add text to figure
+            ax4.text(0.2, 0.6, parameters_text, horizontalalignment='left',
+            verticalalignment='center', transform=ax4.transAxes)
 
-        ax21.plot(sample_times[start_index :], av_sens_ratio[start_index :], label=f"TP/FN, Sample Size: {sample_size}")
-        ax21.plot(sample_times[start_index :], av_spec_ratio[start_index :], label=f"TN/FP, Sample Size: {sample_size}")
-        ax21.set_xlabel('Time (days)')
-        ax21.set_ylabel('Ratios')
-        ax21.set_title('Ratios over time')
-        ax21.legend()
+            # add plot legends
+            ax1.legend()
+            ax2.legend()
+            ax3.legend()
+
+            # save figures
+            plt.savefig(f'{path}/truefalsepos_samplesize_{sample_size}.png')
+
+
+        elif plots == "Ratios":
+
+            fig2, ax21 = plt.subplots()
+
+            ax21.plot(sample_times[start_index :], av_sens_ratio[start_index :], label=f"TP/FN, Sample Size: {sample_size}")
+            ax21.plot(sample_times[start_index :], av_spec_ratio[start_index :], label=f"TN/FP, Sample Size: {sample_size}")
+            ax21.set_xlabel('Time (days)')
+            ax21.set_ylabel('Ratios')
+            ax21.set_title('Ratios over time')
+            ax21.legend()
+
+            plt.savefig(f'{path}/truefalsepos_ratios_samplesize_{sample_size}.png')
+
 
     return None
 
@@ -300,7 +313,7 @@ def falseposneg_model(false_positive, false_negative, infectiousness):
 
     #print(infectiousness)
     # selected model
-    model_name = "model 5"
+    model_name = "None"
 
     # model 1
     if model_name == "model 1":
@@ -406,5 +419,6 @@ if __name__ == "__main__":
                                                     false_positive=0.034,
                                                     false_negative=0.096,
                                                     stats_start_time=0,
-                                                    method="Region")
+                                                    method="Base",
+                                                    plots="Analysis")
         
