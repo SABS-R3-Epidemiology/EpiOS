@@ -337,7 +337,7 @@ class PostProcess():
                 Default = None
 
             '''
-            res, diff = self._wrapper_Age_Base(
+            res, diff, get_true_result = self._wrapper_Age_Base(
                 sampling_method='Age',
                 sample_size=sample_size,
                 time_sample=time_sample,
@@ -355,7 +355,7 @@ class PostProcess():
                 false_positive=false_positive,
                 false_negative=false_negative
             )
-            return res, diff
+            return res, diff, None
 
         def Base(self, sample_size, time_sample,
                  comparison=True, non_resp_rate=None, sample_strategy='Random',

@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 import os
+import math
 
 
 def calculate_imperfect_testing_rates(sensitivity=0.7, specificity=0.95, test_accuracy=0.87):
@@ -46,7 +47,8 @@ def analyse_imperfect_testing(sample_times,
                               num_iterations, 
                               false_positive=0.034,
                               false_negative=0.096,
-                              stats_start_time=0):
+                              stats_start_time=0,
+                              method="Base"):
     """Function to produce graphs analysing the impact of imperfect testing
 
     Args:
@@ -61,6 +63,7 @@ def analyse_imperfect_testing(sample_times,
         false_positive (float): probability of false positives
         false_negative (float): probability of false negatives
         stats_start_time (int): the time from which the statistics are plotted
+        method (string): the sampler method used ("Base","Age","Region")
 
     Returns:
         None
@@ -111,20 +114,51 @@ def analyse_imperfect_testing(sample_times,
             # display info to user on current iteration
             print(f"Sample Size {sample_size} : Performing Iteration {iteration_count + 1}")
 
-            # perform sampling in epios
-            result = postprocess.predict.Base(sample_size=sample_size,
-                                                time_sample=sample_times,
-                                                comparison=False,
-                                                gen_plot=False,
-                                                sample_strategy='Random',
-                                                saving_path_sampling=
-                                                    './output/sample_plot',
-                                                saving_path_compare=
-                                                    './output/compare_plot',
-                                                get_true_result=False,
-                                                false_positive=false_positive,
-                                                false_negative=false_negative)
+            if method == "Base":
 
+                # perform sampling in epios
+                result = postprocess.predict.Base(sample_size=sample_size,
+                                                    time_sample=sample_times,
+                                                    comparison=False,
+                                                    gen_plot=False,
+                                                    sample_strategy='Random',
+                                                    saving_path_sampling=
+                                                        './output/sample_plot',
+                                                    saving_path_compare=
+                                                        './output/compare_plot',
+                                                    get_true_result=False,
+                                                    false_positive=false_positive,
+                                                    false_negative=false_negative)
+
+            elif method == "Age":
+
+                # perform sampling in epios
+                result = postprocess.predict.Age(sample_size=sample_size,
+                                                    time_sample=sample_times,
+                                                    comparison=False,
+                                                    gen_plot=False,
+                                                    sample_strategy='Random',
+                                                    saving_path_sampling=
+                                                        './output/sample_plot',
+                                                    saving_path_compare=
+                                                        './output/compare_plot',
+                                                    false_positive=false_positive,
+                                                    false_negative=false_negative)
+
+            elif method == "Region":
+
+                # perform sampling in epios
+                result = postprocess.predict.Region(sample_size=sample_size,
+                                                    time_sample=sample_times,
+                                                    comparison=False,
+                                                    gen_plot=False,
+                                                    sample_strategy='Random',
+                                                    saving_path_sampling=
+                                                        './output/sample_plot',
+                                                    saving_path_compare=
+                                                        './output/compare_plot',
+                                                    false_positive=false_positive,
+                                                    false_negative=false_negative)
             # filter result and remove sample times
             result = result[0]
             result = result[1:][0]
@@ -239,9 +273,13 @@ def falseposneg_model(false_positive, false_negative, infectiousness):
     Returns:
         float, float: updated probabilities
     """
+    if math.isnan(infectiousness):
 
+        infectiousness = 0
+
+    #print(infectiousness)
     # selected model
-    model_name = "model 4"
+    model_name = "model 5"
 
     # model 1
     if model_name == "model 1":
@@ -281,6 +319,19 @@ def falseposneg_model(false_positive, false_negative, infectiousness):
         elif infectiousness > 0.1:
 
             false_positive = 3 * false_positive
+
+
+    elif model_name == "model 5":
+
+        #' https://royalsocietypublishing.org/doi/10.1098/rsif.2020.0947'
+        alpha1 = 0
+        beta1 = 1
+        false_positive = 0.9 / (1 + math.exp(-alpha1 -beta1 * infectiousness)) * false_positive
+
+        alpha2 = -0.1
+        beta2 = 2
+        false_negative = np.exp(alpha2) * math.pow(infectiousness, beta2) * false_negative
+        #print(false_positive)
 
     # return probabilities
     return false_positive, false_negative
@@ -329,9 +380,10 @@ if __name__ == "__main__":
         # call analysis function
         test = analyse_imperfect_testing(sample_times=sample_times, 
                                                     sample_range=[100, 500], 
-                                                    num_samples=1, 
+                                                    num_samples=2, 
                                                     num_iterations=3, 
                                                     false_positive=0.034,
                                                     false_negative=0.096,
-                                                    stats_start_time=0)
+                                                    stats_start_time=0,
+                                                    method="Region")
         
