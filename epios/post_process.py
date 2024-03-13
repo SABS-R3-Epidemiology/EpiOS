@@ -471,6 +471,10 @@ class PostProcess():
             '''
             if seed is not None:
                 np.random.seed(seed)
+            predicted_total_age = [[] for _ in range(num_age_group)]
+            last_row = self.demo_data.iloc[-1]
+            region_id = int(last_row['id'].split('.')[0])
+            infected_proportion_region = [[] for _ in range(region_id + 1)]
 
             if non_responder:  # For non-responders enabled
                 if non_resp_rate is None:
@@ -627,6 +631,13 @@ class PostProcess():
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X(time_sample, people)
 
+                    infected_proportion_region = self.get_infections_by_region(ite, infected_proportion_region,
+                                                                               sample_strategy, time_sample)
+
+                    # For the IDs, locate their age from the data
+                    predicted_total_age = self.get_infection_by_groups(people, ite, num_age_group, age_group_width,
+                                                                      predicted_total_age, sample_strategy, time_sample)
+
                     # Output the infected rate
                     for i in range(len(time_sample)):
                         infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
@@ -644,16 +655,24 @@ class PostProcess():
                         else:  # After the data process, we can directly read files processed at the first time
                             if sampling_method == 'AgeRegion':
                                 sampler_class = SamplerAgeRegion(data=self.demo_data, data_store_path=data_store_path,
-                                                                 num_age_group=num_age_group,
+                                                                 num_age_group=num_age_group, pre_process=False,
                                                                  age_group_width=age_group_width)
                             else:
-                                sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path)
+                                sampler_class = SamplerRegion(data=self.demo_data, data_store_path=data_store_path,
+                                                              pre_process=False)
                         people = sampler_class.sample(sample_size=sample_size)
 
                         # Get the results of each people sampled
                         X = SamplingMaker(non_resp_rate=0, keep_track=True, data=self.time_data,
                                           false_positive=0, false_negative=0, threshold=None)
                         ite = X([time_sample[i]], people)
+
+                        infected_proportion_region = self.get_infections_by_region(ite, infected_proportion_region,
+                                                                                   sample_strategy, time_sample)
+
+                        # For the IDs, locate their age from the data
+                        predicted_total_age = self.get_infection_by_groups(people, ite, num_age_group, age_group_width,
+                                                                           predicted_total_age, sample_strategy, time_sample)
 
                         # Output the infected rate
                         infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
@@ -675,6 +694,8 @@ class PostProcess():
             res.append(infected_rate)
             # Output the results for comparison use
             self.result = infected_rate
+            self.result_ages = predicted_total_age
+            self.result_regions = infected_proportion_region
 
             if comparison:
                 diff = self._compare(time_sample=time_sample, gen_plot=gen_plot, scale_method=scale_method,
@@ -699,6 +720,11 @@ class PostProcess():
             if seed is not None:
                 np.random.seed(seed)
 
+            predicted_total_age = [[] for _ in range(num_age_group)]
+            last_row = self.demo_data.iloc[-1]
+            region_id = int(last_row['id'].split('.')[0])
+            infected_proportion_region = [[] for _ in range(region_id + 1)]
+
             if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
                 infected_rate = []
 
@@ -715,12 +741,16 @@ class PostProcess():
                                   false_positive=0, false_negative=0, threshold=None)
                 ite = X(time_sample, people)
 
+                infected_proportion_region = self.get_infections_by_region(ite, infected_proportion_region,
+                                                                           sample_strategy, time_sample)
+                predicted_total_age = self.get_infection_by_groups(people, ite, num_age_group, age_group_width,
+                                                                      predicted_total_age, sample_strategy, time_sample)
+
                 # Output the infected rate
                 for i in range(len(time_sample)):
                     infected_rate.append(ite.iloc[i].value_counts().get('Positive', 0) / len(people))
             elif sample_strategy == 'Random':  # Change people sampled at each sample time point
                 infected_rate = []
-                predicted_total_age = [[] for _ in range(num_age_group)]
 
                 for i in range(len(time_sample)):  # Sample at each sample time points
                     if i == 0:  # First time sampling, need pre_process
@@ -744,30 +774,12 @@ class PostProcess():
                                       false_positive=0, false_negative=0, threshold=None)
                     ite = X([time_sample[i]], people)
 
+                    infected_proportion_region = self.get_infections_by_region(ite, infected_proportion_region,
+                                                                               sample_strategy, time_sample)
+
                     # For the IDs, locate their age from the data
                     predicted_total_age = self.get_infection_by_groups(people, ite, num_age_group, age_group_width,
-                                                                      predicted_total_age)
-                    # ite_age = []
-                    # for id in people:
-                    #     age_value = self.demo_data[self.demo_data['id'] == id]['age'].values[0]
-                    #     age_pos = min(num_age_group - 1, math.floor(age_value / age_group_width))
-                    #     ite_age.append(age_pos)
-                    # ite_age = np.array([[person, age] for person, age in zip(people, ite_age)])
-
-                    # # For the age group within age coloumn of ite_age, use value_counts to get the number of people postive in each age group
-                    # ite_age = pd.DataFrame(ite_age, columns=['id', 'age'])
-
-                    # for a in range(num_age_group):
-                    #     ite_age_group = ite_age[ite_age['age'] == f'{a}']['id']
-                    #     # For this series, use value_counts to get the number of people postive in each age group from ite
-                    #     ite_age_group_results = ite[ite_age_group]
-
-                    #     if ite_age_group_results.empty:
-                    #         predicted_total_age[a].append(0.0)
-                    #     else:
-                    #         if len(ite_age_group) != 0:
-                    #             infected_rate_age_group = ite_age_group_results.iloc[0].value_counts().get('Positive', 0) / len(ite_age_group)
-                    #             predicted_total_age[a].append(infected_rate_age_group)
+                                                                      predicted_total_age, sample_strategy, time_sample)
 
                     # Output the infected rate
                     infected_rate.append(ite.iloc[0].value_counts().get('Positive', 0) / len(people))
@@ -790,6 +802,7 @@ class PostProcess():
             # Output the results for comparison use
             self.result = infected_rate
             self.result_ages = predicted_total_age
+            self.result_regions = infected_proportion_region
 
             if comparison:
                 diff = self._compare(time_sample=time_sample, gen_plot=gen_plot, scale_method=scale_method,
@@ -798,25 +811,30 @@ class PostProcess():
             else:
                 return res, None
             
-        def get_infection_by_groups(self, people, ite, num_age_group, age_group_width, predicted_total_age):
+        def get_infection_by_groups(self, people, ite, num_age_group, age_group_width, predicted_total_age, sample_strategy, time_sample):
             """Method to get the proportion of infected individuals in each age group.
 
             Parameters
             ----------
-            people : list
+            people: list
                 A list of people's IDs
-            ite : pandas.DataFrame
+            ite: pandas.DataFrame
                 The result of the people sampled
-            num_age_group : int
-                Indicating how many age groups are there. Default = 17
-            age_group_width : int
-                Indicating the width of each age group(except for the last group). Default = 5
-            predicted_total_age : list[list, ...]
+            num_age_group: int
+                How many age groups are there
+            age_group_width: int
+                The width of each age group
+            predicted_total_age: list[list, ...]
                 An empty list containing num_age_group lists
+            sample_strategy: str
+                A specific string indicating whether want to change sampled people
+                between each sampling
+            time_sample: list
+                A list of time points to sample the population
 
             Returns
             -------
-            predicted_total_age : list[list, ...]
+            predicted_total_age: list[list, ...]
                 A list of lists, each list contains the infection proportion of each age group at each time step
 
             """
@@ -826,23 +844,68 @@ class PostProcess():
                 age_pos = min(num_age_group - 1, math.floor(age_value / age_group_width))
                 ite_age.append(age_pos)
             ite_age = np.array([[person, age] for person, age in zip(people, ite_age)])
-
-            # For the age group within age coloumn of ite_age, use value_counts to get the number of people postive in each age group
             ite_age = pd.DataFrame(ite_age, columns=['id', 'age'])
 
+            # For the age group within age coloumn of ite_age, use value_counts to get the number of people postive in each age group
             for a in range(num_age_group):
                 ite_age_group = ite_age[ite_age['age'] == f'{a}']['id']
                 # For this series, use value_counts to get the number of people postive in each age group from ite
                 ite_age_group_results = ite[ite_age_group]
-
-                if ite_age_group_results.empty:
-                    predicted_total_age[a].append(0.0)
-                else:
-                    if len(ite_age_group) != 0:
-                        infected_rate_age_group = ite_age_group_results.iloc[0].value_counts().get('Positive', 0) / len(ite_age_group)
-                        predicted_total_age[a].append(infected_rate_age_group)
+                if sample_strategy == 'Random':
+                    if ite_age_group_results.empty:
+                        predicted_total_age[a].append(0.0)
+                    else:
+                        if len(ite_age_group) != 0:
+                            infected_rate_age_group = ite_age_group_results.iloc[0].value_counts().get('Positive', 0) / len(ite_age_group)
+                            predicted_total_age[a].append(infected_rate_age_group)
+                elif sample_strategy == 'Same':
+                    for i in range(len(time_sample)):
+                        if ite_age_group_results.empty:
+                            predicted_total_age[a].append(0.0)
+                        else:
+                            infected_rate_age_group = ite_age_group_results.iloc[i].value_counts().get('Positive', 0) / len(ite_age_group_results.columns)
+                            predicted_total_age[a].append(infected_rate_age_group)
 
             return predicted_total_age
+        
+        def get_infections_by_region(self, ite, infected_proportion_region, sample_strategy, time_sample):
+            """Method to get the proportion of infected individuals in each region.
+
+            Parameters
+            ----------
+            ite: pandas.DataFrame
+                The result of the people sampled
+            infected_proportion_region: list[list, ...]
+                An empty list containing num_cells lists
+            sample_strategy: str
+                A specific string indicating whether want to change sampled people
+                between each sampling
+            time_sample: list
+                A list of time points to sample the population
+
+            Returns
+            -------
+            infected_proportion_region: list[list, ...]
+                A list of lists, each list contains the infection proportion of each region at each time step
+
+            """
+            for r in range(len(infected_proportion_region)):
+                # Modify ite so that only contains IDs that start with a certain cell number
+                ite_cells = ite[ite.columns[ite.columns.str.startswith(f'{r}.')]]
+
+                if sample_strategy == 'Random':
+                    if ite_cells.empty:
+                        infected_proportion_region[r].append(0.0)
+                    else:
+                        infected_proportion_region[r].append(ite_cells.iloc[0].value_counts().get('Positive', 0) / len(ite_cells.columns))
+                elif sample_strategy == 'Same':
+                    for i in range(len(time_sample)):
+                        if ite_cells.empty:
+                            infected_proportion_region[r].append(0.0)
+                        else:
+                            infected_proportion_region[r].append(ite_cells.iloc[i].value_counts().get('Positive', 0) / len(ite_cells.columns))
+
+            return infected_proportion_region
 
     def __call__(self, sampling_method, sample_size, time_sample, non_responder=False, comparison=True,
                  non_resp_rate=None, data_store_path='./input/', **kwargs):
