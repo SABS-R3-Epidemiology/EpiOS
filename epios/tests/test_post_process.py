@@ -3,7 +3,8 @@ import pandas as pd
 import unittest
 from unittest import TestCase
 from unittest.mock import patch
-from post_process import PostProcess
+#from post_process import PostProcess
+from epios import PostProcess
 import os
 import sys
 # from numpy.testing import assert_array_equal
@@ -206,6 +207,74 @@ class TestDataProcess(TestCase):
                                                               sampling_percentage=1,
                                                               saving_path_sampling=self.path + 'sample_nonResp.png')
         self.assertEqual(res[0], [self.range6, [np.nan, 1.0, 1.0, 1.0, np.nan, 1.0]])
+
+    def test_get_infection_by_groups(self):
+        processor = PostProcess(self.demo_data, self.time_data)
+
+        people = ['0.0.0.0', '0.0.0.1', '0.2.0.0']
+        ite = pd.DataFrame({'0.0.0.0': 'Negative',
+               '0.0.0.1': 'Negative',
+               '0.2.0.0': 'Negative'}, index=[0])
+        num_age_group = 3
+        age_group_width = 20
+        predicted_total_age = [[] for _ in range(num_age_group)]
+        result = processor.predict.get_infection_by_groups(people, ite, num_age_group,
+                                                           age_group_width, predicted_total_age,
+                                                           sample_strategy='Random', time_sample=self.time_data['time'])
+
+        expected_result = [[0.0], [0.0], [0.0]]
+        self.assertEqual(result, expected_result)
+
+    def test_get_infection_by_groups_same_strategy(self):
+        processor = PostProcess(self.demo_data, self.time_data)
+
+        people = ['0.0.0.0', '0.0.0.1', '0.2.0.0']
+        ite = pd.DataFrame({'0.0.0.0': 'Positive',
+                            '0.0.0.1': 'Negative',
+                            '0.2.0.0': 'Positive'}, index=[0, 1, 2, 3, 4, 5])
+        num_age_group = 3
+        age_group_width = 20
+        predicted_total_age = [[] for _ in range(num_age_group)]
+
+        predicted_result = processor.predict.get_infection_by_groups(people, ite, num_age_group, age_group_width,
+                                                                     predicted_total_age, sample_strategy='Same',
+                                                                     time_sample=[0, 1, 2, 3, 4, 5])
+
+        expected_result = [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                           [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                           [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
+        self.assertEqual(predicted_result, expected_result)
+
+    def test_get_infections_by_region(self):
+        processor = PostProcess(self.demo_data, self.time_data)
+
+        last_row = self.demo_data.iloc[-1]
+        region_id = int(last_row['id'].split('.')[0])
+        infected_proportion_region = [[] for _ in range(region_id + 1)]
+        ite = pd.DataFrame({'0.0.0.0': 'Negative',
+                           '0.0.0.1': 'Negative',
+                           '1.0.0.0': 'Negative'}, index=[0])
+
+        result = processor.predict.get_infections_by_region(ite, infected_proportion_region,
+                                                            sample_strategy='Random',
+                                                            time_sample=self.time_data['time'])
+        self.assertEqual(result, [[0.0], [0.0]])
+
+    def test_get_infections_by_region_same_strategy(self):
+        processor = PostProcess(self.demo_data, self.time_data)
+
+        ite = pd.DataFrame({'0.0.0.0': ['Positive'] * 6,
+                    '0.0.0.1': ['Negative', 'Negative', 'Negative', 'Positive', 'Positive', 'Positive'],
+                    '1.0.0.0': ['Negative', 'Negative', 'Negative', 'Negative', 'Negative', 'Positive']})
+
+        infected_proportion_region = [[] for _ in range(2)]
+
+        result = processor.predict.get_infections_by_region(ite, infected_proportion_region,
+                                                            sample_strategy='Same',
+                                                            time_sample=self.time_data['time'])
+
+        expected_result = [[1/2, 1/2, 1/2, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0]]
+        self.assertEqual(result, expected_result)
 
     def test_compare(self):
         _, diff = self.processor.predict.AgeRegion(6, self.range6, comparison=True,
