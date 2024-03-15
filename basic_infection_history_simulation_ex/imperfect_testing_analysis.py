@@ -434,7 +434,7 @@ def normalise_inf_data(path):
 if __name__ == "__main__":
 
     # get demographic and time data for Gibraltar
-    path = './gibraltar_ex'
+    path = './basic_infection_history_simulation_ex'
     demo_data = pd.read_csv(f'{path}/demographics.csv')
     time_data = pd.read_csv(f'{path}/inf_status_history.csv')
     #inf_data = pd.read_csv(f'{path}/infectiousness_history.csv')
@@ -447,7 +447,7 @@ if __name__ == "__main__":
     postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data, inf_data=inf_data, model=falseposneg_model)
 
     # get sample times
-    sample_times = [t for t in range(0, 91)]
+    sample_times = [t for t in range(0, 61)]
 
     # bool to turn-on analysis
     run_analysis = True
@@ -456,9 +456,9 @@ if __name__ == "__main__":
 
         # call analysis function
         test = analyse_imperfect_testing(sample_times=sample_times, 
-                                                    sample_range=[100, 500], 
-                                                    num_samples=2, 
-                                                    num_iterations=10, 
+                                                    sample_range=[5, 100], 
+                                                    num_samples=3, 
+                                                    num_iterations=100, 
                                                     false_positive=0.034,
                                                     false_negative=0.096,
                                                     stats_start_time=20,
