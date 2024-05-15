@@ -1,5 +1,5 @@
 from numpy.random import binomial
-from numpy import array
+from numpy import array, nan
 
 
 class SamplingMaker():
@@ -111,9 +111,8 @@ class SamplingMaker():
                 positive = x.value_counts().get('Positive', 0)
                 negative = x.value_counts().get('Negative', 0)
                 variance = positive * negative / (positive + negative)
-                # rescale the estimate to have unitary variance
                 if positive + negative == 0:
-                    return 0
+                    return 0, 0, nan
                 else:
                     return positive, negative, variance
         else:
@@ -135,8 +134,11 @@ class SamplingMaker():
                         # an estimate of the number of positive people into the same class
                         var.append(positive * negative * len(str_map[strat_class])**2 / (positive + negative)**3)
                         # an estimate of the variance of the computed value for this class
-                return array(pos).sum(), array(neg).sum(), array(var).sum()
-                # rescale the estimate to have unitary variance
+                positive, negative, variance = array(pos).sum(), array(neg).sum(), array(var).sum()
+                if positive + negative == 0:
+                    return 0, 0, nan
+                else:
+                    return positive, negative, variance
 
         if keep_track:
             STATUSES = self.data.loc[sampling_times, people]
@@ -198,6 +200,7 @@ class SamplingMaker():
             raise Exception('no valid output, output can be nums_only or also_nums or None')
 
     def _testresult(self, load):
+
         '''
         Method to return the result for one test
 
