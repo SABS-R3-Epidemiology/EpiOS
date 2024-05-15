@@ -20,13 +20,13 @@ time_data = pd.read_csv('./example/inf_status_history.csv')
 # Define the class instance
 postprocess = epios.PostProcess(time_data=time_data, demo_data=demo_data)
 
-# Do prediction and comparison based age-region stratification
-result, diff = postprocess.predict.AgeRegion(sample_size=3,
-                                             time_sample=[0, 1, 2, 3],
-                                             comparison=True,
-                                             non_responder=False,
-                                             gen_plot=True,
-                                             sample_strategy='Random')
+# # Do prediction and comparison based age-region stratification
+# result, diff = postprocess.predict.AgeRegion(sample_size=3,
+#                                              time_sample=[0, 1, 2, 3],
+#                                              comparison=True,
+#                                              non_responder=False,
+#                                              gen_plot=True,
+#                                              sample_strategy='Random')
 
 # Define the input keywards for finding the best method
 if __name__ == '__main__':
@@ -40,13 +40,13 @@ if __name__ == '__main__':
     }
     postprocess.best_method(
         methods=[
-            # 'Base-Same',
-            # 'Base-Random',
-            # 'Region-Random',
+            'Base-Same',
+            'Base-Random',
+            'Region-Random',
             'AgeRegion-Random'
         ],
         sample_size=3,
-        hyperparameter_autotune=False,
+        hyperparameter_autotune=True,
         non_responder=False,
         sampling_interval=1,
         iteration=10,
