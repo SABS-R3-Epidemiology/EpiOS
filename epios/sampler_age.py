@@ -37,6 +37,7 @@ class SamplerAge(Sampler):
         ageinfo_path = data_store_path + 'pop_dist.json'
         self.ageinfo = ageinfo_path
         self.age_group_width = age_group_width
+        self.num_sample = None
 
     def get_age_dist(self):
         '''
@@ -204,6 +205,7 @@ class SamplerAge(Sampler):
         size = sample_size
         num_sample = self.multinomial_draw(size, ar_dist)
         num_sample = np.array(num_sample)
+        self.num_sample = num_sample
 
         # After we have the information of how many people we should draw from each age-region group,
         # Draw them using np.choice, which means completely at random
