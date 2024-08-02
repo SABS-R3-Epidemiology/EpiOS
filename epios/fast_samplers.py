@@ -96,13 +96,13 @@ class AgeFastSampler(BaseFastSampler):
         # age_dist = self.data['age'].value_counts(normalize=True)
         ar_cap = np.zeros(self.num_age_group)
         id_list = {}
-        for _, row in self.data.iterrows():
-            age = row['age']
+        for row in self.data.itertuples():
+            age = row.age
             age_group = int(age // self.age_group_width)
             if age_group >= self.num_age_group:
                 age_group = self.num_age_group - 1
             ar_cap[age_group] += 1
-            id_list[age_group] = id_list.get(age_group, []) + [row['id']]
+            id_list[age_group] = id_list.get(age_group, []) + [row.id]
         ar_dist = ar_cap / n
         num_samples = np.floor(sample_size * ar_dist)
         num_samples = num_samples.astype(int)
@@ -149,10 +149,10 @@ class RegionFastSampler(BaseFastSampler):
         num_region = max(region_holder) + 1
         ar_cap = np.zeros(num_region)
         id_list = {}
-        for _, row in self.data.iterrows():
-            region = int(row['id'].split('.')[0])
+        for row in self.data.itertuples():
+            region = int(row.id.split('.')[0])
             ar_cap[region] += 1
-            id_list[region] = id_list.get(region, []) + [row['id']]
+            id_list[region] = id_list.get(region, []) + [row.id]
         ar_dist = ar_cap / n
         num_samples = np.floor(sample_size * ar_dist)
         num_samples = num_samples.astype(int)
@@ -763,8 +763,9 @@ class FastPostProcess():
             """
             ite_age = []
             ages_sampled = [0] * num_age_group
+            demo_data_dict = self.demo_data.set_index('id')['age'].to_dict()
             for id in people:
-                age_value = self.demo_data[self.demo_data['id'] == id]['age'].values[0]
+                age_value = demo_data_dict.get(id, 0)
                 age_pos = min(num_age_group - 1, math.floor(age_value / age_group_width))
                 ite_age.append(age_pos)
                 ages_sampled[age_pos] += 1
