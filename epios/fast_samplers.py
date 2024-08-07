@@ -136,7 +136,7 @@ class RegionFastSampler(BaseFastSampler):
 
         super().__init__(data)
     
-    def sample(self, sample_size: int, sampling_seed: int = None) -> list:
+    def sample_old(self, sample_size: int, sampling_seed: int = None) -> list:
 
         n = len(self.data)
         if sample_size > n:
@@ -179,6 +179,40 @@ class RegionFastSampler(BaseFastSampler):
             if num_samples[i] > 0:
                 sample_list += np.random.choice(id_list[i], num_samples[i], replace=False).tolist()
         return sample_list
+
+    def sample(self, sample_size: int, sampling_seed: int = None) -> list:
+        # KG - Uses builtin pandas methods to hopefully speed up the previous version
+
+        if sampling_seed is not None:
+            np.random.seed(sampling_seed)
+        
+        # Extract region numbers directly using pandas operations
+        self.data['region'] = self.data['id'].str.split('.').str[0].astype(int)
+        
+        # Calculate the count of each region
+        region_counts = self.data['region'].value_counts().sort_index()
+        total_count = len(self.data)
+        
+        # Determine the number of samples per region proportionally
+        region_proportions = region_counts / total_count
+        num_samples = (region_proportions * sample_size).astype(int)
+        
+        # Handle remaining samples due to flooring
+        remaining_samples = sample_size - num_samples.sum()
+        if remaining_samples > 0:
+            extra_samples_regions = region_counts[region_counts > num_samples].index
+            extra_samples_allocation = np.random.choice(extra_samples_regions, remaining_samples, replace=False)
+            num_samples.loc[extra_samples_allocation] += 1
+        
+        # Sample the required number of IDs from each region
+        sampled_ids = []
+        for region, count in num_samples.items():
+            if count > 0:
+                region_ids = self.data[self.data['region'] == region]['id']
+                sampled_ids.extend(region_ids.sample(n=count, replace=False).tolist())
+        
+        return sampled_ids
+
     
 
 class FastPostProcess():
