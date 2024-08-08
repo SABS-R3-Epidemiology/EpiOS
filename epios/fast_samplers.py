@@ -135,7 +135,7 @@ class RegionFastSampler(BaseFastSampler):
     def __init__(self, data: pd.DataFrame) -> None:
 
         super().__init__(data)
-    
+
     def sample_old(self, sample_size: int, sampling_seed: int = None) -> list:
 
         n = len(self.data)
@@ -185,18 +185,15 @@ class RegionFastSampler(BaseFastSampler):
 
         if sampling_seed is not None:
             np.random.seed(sampling_seed)
-        
-        # Extract region numbers directly using pandas operations
-        self.data['region'] = self.data['id'].str.split('.').str[0].astype(int)
-        
+
         # Calculate the count of each region
         region_counts = self.data['region'].value_counts().sort_index()
         total_count = len(self.data)
-        
+
         # Determine the number of samples per region proportionally
         region_proportions = region_counts / total_count
         num_samples = (region_proportions * sample_size).astype(int)
-        
+
         # Handle remaining samples due to flooring
         remaining_samples = sample_size - num_samples.sum()
         if remaining_samples > 0:
@@ -220,7 +217,6 @@ class RegionFastSampler(BaseFastSampler):
         sampled_ids = sampled_data['id'].tolist()
         
         return sampled_ids
-
     
 
 class FastPostProcess():
@@ -630,12 +626,7 @@ class FastPostProcess():
             # Get the true result from self.time_data
             true_result_plot = []
             for t in range(max(time_sample) + 1):
-                num = self.time_data.iloc[t, 1:].value_counts().get(3, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(4, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(5, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(6, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(7, 0)
-                num += self.time_data.iloc[t, 1:].value_counts().get(8, 0)
+                num = self.time_data.iloc[t, 1:].isin([3, 4, 5, 6, 7, 8]).sum()
                 true_result_plot.append(num)
             
             true_result = []
@@ -775,7 +766,7 @@ class FastPostProcess():
                 return res, diff
             else:
                 return res, None
-            
+    
         def get_infection_by_groups(self, people, ite, num_age_group, age_group_width, predicted_total_age, sample_strategy, time_sample):
             """Method to get the proportion of infected individuals in each age group.
 
@@ -835,7 +826,7 @@ class FastPostProcess():
                             predicted_total_age[a].append(infected_rate_age_group)
 
             return predicted_total_age, ages_sampled
-        
+
         def get_infections_by_region(self, ite, infected_proportion_region, sample_strategy, time_sample):
             """Method to get the proportion of infected individuals in each region.
 
@@ -844,7 +835,7 @@ class FastPostProcess():
             ite: pandas.DataFrame
                 The result of the people sampled
             infected_proportion_region: list[list, ...]
-                A list containing num_cells lists
+                A list containing num_cells empty lists
             sample_strategy: str
                 A specific string indicating whether want to change sampled people
                 between each sampling
@@ -855,25 +846,41 @@ class FastPostProcess():
             -------
             infected_proportion_region: list[list, ...]
                 A list of lists, each list contains the infection proportion of each region at each time step
+            regions_sampled: list
+                A list of integers, each integer represents the number of people sampled in each region
 
             """
+            # Extract region numbers from ids
+            region_ids = ite.columns.str.split('.').str[0].astype(int)
+            
+            # Create a DataFrame with the regions as the index
+            ite_new = ite.copy()
+            ite_new.columns = region_ids
+            
             regions_sampled = [0] * len(infected_proportion_region)
+
+            # Group by the region ids
+            grouped = ite_new.T.groupby(by=ite_new.columns)
+
             for r in range(len(infected_proportion_region)):
-                # Modify ite so that only contains IDs that start with a certain cell number
-                ite_cells = ite[ite.columns[ite.columns.str.startswith(f'{r}.')]]
+                if r in grouped.groups:
+                    # Select only columns corresponding to region r
+                    ite_cells = grouped.get_group(r)
 
-                regions_sampled[r] += len(ite_cells.columns)
+                    # Update the region sampled count
+                    regions_sampled[r] += ite_cells.shape[1]
 
-                if sample_strategy == 'Random':
-                    if ite_cells.empty:
-                        infected_proportion_region[r].append(0.0)
-                    else:
-                        infected_proportion_region[r].append(ite_cells.iloc[0].value_counts().get('Positive', 0) / len(ite_cells.columns))
-                elif sample_strategy == 'Same':
-                    for i in range(len(time_sample)):
-                        if ite_cells.empty:
-                            infected_proportion_region[r].append(0.0)
-                        else:
-                            infected_proportion_region[r].append(ite_cells.iloc[i].value_counts().get('Positive', 0) / len(ite_cells.columns))
+                    if sample_strategy == 'Random':
+                        positive_counts = ite_cells.iloc[0].value_counts().get('Positive', 0)
+                        infected_proportion_region[r].append(positive_counts / ite_cells.shape[1])
+
+                    elif sample_strategy == 'Same':
+                        for i in range(len(time_sample)):
+                            positive_counts = ite_cells.iloc[i].value_counts().get('Positive', 0)
+                            infected_proportion_region[r].append(positive_counts / ite_cells.shape[1])
+                else:
+                    regions_sampled[r] += 0
+                    # If no columns for the region, add 0.0 to infected_proportion_region
+                    infected_proportion_region[r].append(0.0)
 
             return infected_proportion_region, regions_sampled
