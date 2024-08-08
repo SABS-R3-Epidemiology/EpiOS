@@ -204,12 +204,20 @@ class RegionFastSampler(BaseFastSampler):
             extra_samples_allocation = np.random.choice(extra_samples_regions, remaining_samples, replace=False)
             num_samples.loc[extra_samples_allocation] += 1
         
-        # Sample the required number of IDs from each region
-        sampled_ids = []
-        for region, count in num_samples.items():
-            if count > 0:
-                region_ids = self.data[self.data['region'] == region]['id']
-                sampled_ids.extend(region_ids.sample(n=count, replace=False).tolist())
+        # # Sample the required number of IDs from each region
+        # sampled_ids = []
+        # for region, count in num_samples.items():
+        #     if count > 0:
+        #         region_ids = self.data[self.data['region'] == region]['id']
+        #         sampled_ids.extend(region_ids.sample(n=count, replace=False).tolist())
+
+        # Alternative sampling method - Hopefully faster (KG)
+        sampling_plan = pd.DataFrame({'region': num_samples.index, 'num_samples': num_samples.values})
+        
+        #   Merge the sampling plan with the original data
+        merged_data = self.data.merge(sampling_plan, on='region')
+        sampled_data = merged_data.groupby('region').apply(lambda x: x.sample(n=x['num_samples'].iloc[0], replace=False))
+        sampled_ids = sampled_data['id'].tolist()
         
         return sampled_ids
 
