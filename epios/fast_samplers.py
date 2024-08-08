@@ -27,7 +27,7 @@ class AgeRegionFastSampler(BaseFastSampler):
         self.num_age_group = num_age_group
         self.age_group_width = age_group_width
     
-    def sample(self, sample_size: int, sampling_seed: int = None) -> list:
+    def sample_old(self, sample_size: int, sampling_seed: int = None) -> list:
 
         n = len(self.data)
         if sample_size > n:
@@ -76,6 +76,54 @@ class AgeRegionFastSampler(BaseFastSampler):
                 if num_samples[i, j] > 0:
                     sample_list += np.random.choice(id_list[(i, j)], num_samples[i, j], replace=False).tolist()
         return sample_list
+    
+    def sample(self, sample_size: int, sampling_seed: int = None) -> list:
+
+        # These checks are ran each time, so you could move them to a separate function
+        if sample_size > len(self.data):
+            raise ValueError('Sample size is larger than the input data size.')
+        if sampling_seed is not None:
+            np.random.seed(sampling_seed)
+        
+        # THESE METHODS WON'T BE NECESSARY IF THESE ARE COMPUTED WHEN THE DATA IS READ IN
+        self.data['region'] = self.data['id'].str.split('.').str[0].astype(int)
+        self.data['age_group'] = (self.data['age'] // self.age_group_width).clip(upper=self.num_age_group - 1)
+        
+        # Create a pivot table to count occurrences of each (region, age_group) pair
+        region_age_group_counts = self.data.pivot_table(index='region', columns='age_group', aggfunc='size', fill_value=0)
+        ar_cap = region_age_group_counts.values.flatten()
+        total_count = ar_cap.sum()
+        
+        # Calculate the number of samples for each (region, age_group) pair
+        ar_dist = ar_cap / total_count
+        num_samples = (ar_dist * sample_size).astype(int)
+        
+        # Handle remaining samples due to flooring - this code is repeated throughout so you could also make this into a separate helper method
+        remaining_samples = sample_size - num_samples.sum()
+        if remaining_samples > 0:
+            extra_sample_indices = np.where(ar_cap > num_samples)[0]
+            extra_samples_allocation = np.random.choice(extra_sample_indices, remaining_samples, replace=False)
+            num_samples[extra_samples_allocation] += 1
+        num_samples = num_samples.reshape(region_age_group_counts.shape)
+        
+        # # Sample IDs for each (region, age_group) pair - SIMPLE VERSION
+        # sample_list = []
+        # for (region, age_group), count in np.ndenumerate(num_samples):
+        #     if count > 0:
+        #         subset = self.data[(self.data['region'] == region) & (self.data['age_group'] == age_group)]
+        #         sample_list.extend(subset['id'].sample(n=count, replace=False).tolist())
+        # return sample_list
+    
+        # Efficient sampling of IDs using groupby and apply
+        sampling_plan = pd.DataFrame({
+            'region': np.repeat(region_age_group_counts.index, region_age_group_counts.shape[1]),
+            'age_group': np.tile(region_age_group_counts.columns, len(region_age_group_counts)),
+            'num_samples': num_samples.flatten()
+        })
+        
+        merged_data = self.data.merge(sampling_plan, on=['region', 'age_group'])
+        sampled_data = merged_data.groupby(['region', 'age_group'], group_keys=False).apply(lambda x: x.sample(n=x['num_samples'].iloc[0], replace=False))
+        return sampled_data['id'].tolist()
 
 
 class AgeFastSampler(BaseFastSampler):
@@ -86,7 +134,7 @@ class AgeFastSampler(BaseFastSampler):
         self.num_age_group = num_age_group
         self.age_group_width = age_group_width
     
-    def sample(self, sample_size: int, sampling_seed: int = None) -> list:
+    def sample_old(self, sample_size: int, sampling_seed: int = None) -> list:
 
         n = len(self.data)
         if sample_size > n:
@@ -128,6 +176,39 @@ class AgeFastSampler(BaseFastSampler):
             if num_samples[j] > 0:
                 sample_list += np.random.choice(id_list[j], num_samples[j], replace=False).tolist()
         return sample_list
+    
+    def sample(self, sample_size: int, sampling_seed: int = None) -> list:
+        if sample_size > len(self.data):
+            raise ValueError('Sample size is larger than the input data size.')
+        if sampling_seed is not None:
+            np.random.seed(sampling_seed)
+        
+        # Assign age groups - NOTE:: Again move this code to where the data is read in, so it is only ran once
+        self.data['age_group'] = (self.data['age'] // self.age_group_width).clip(upper=self.num_age_group - 1)
+        
+        # Calculate the count of each age group
+        age_group_counts = self.data['age_group'].value_counts().sort_index()
+        total_count = len(self.data)
+        
+        # Determine the number of samples per age group proportionally
+        age_group_proportions = age_group_counts / total_count
+        num_samples = (age_group_proportions * sample_size).astype(int)
+        
+        # Handle remaining samples due to flooring
+        remaining_samples = sample_size - num_samples.sum()
+        if remaining_samples > 0:
+            extra_samples_groups = age_group_counts[age_group_counts > num_samples].index
+            extra_samples_allocation = np.random.choice(extra_samples_groups, remaining_samples, replace=False)
+            num_samples.loc[extra_samples_allocation] += 1
+        
+        # Sample the required number of IDs from each age grou
+        sampling_plan = pd.DataFrame({'age_group': num_samples.index, 'num_samples': num_samples.values})
+        merged_data = self.data.merge(sampling_plan, on='age_group')
+        
+        sampled_data = merged_data.groupby('age_group').apply(lambda x: x.sample(n=x['num_samples'].iloc[0], replace=False))
+        sampled_ids = sampled_data['id'].tolist()
+        
+        return sampled_ids
 
 
 class RegionFastSampler(BaseFastSampler):
