@@ -272,28 +272,19 @@ class RegionFastSampler(BaseFastSampler):
         region_proportions = region_counts / total_count
         num_samples = (region_proportions * sample_size).astype(int)
 
-        # Handle remaining samples due to flooring
-        remaining_samples = sample_size - num_samples.sum()
-        print(remaining_samples)
-        if remaining_samples > 0:
-            extra_samples_regions = region_counts[region_counts > num_samples].index
-            extra_samples_allocation = np.random.choice(extra_samples_regions, remaining_samples, replace=False)
-            num_samples.loc[extra_samples_allocation] += 1
-        
-        # # Sample the required number of IDs from each region
-        # sampled_ids = []
-        # for region, count in num_samples.items():
-        #     if count > 0:
-        #         region_ids = self.data[self.data['region'] == region]['id']
-        #         sampled_ids.extend(region_ids.sample(n=count, replace=False).tolist())
-
-        # Alternative sampling method - Hopefully faster (KG)
         sampling_plan = pd.DataFrame({'region': num_samples.index, 'num_samples': num_samples.values})
         
-        #   Merge the sampling plan with the original data
+        # Merge the sampling plan with the original data
         merged_data = self.data.merge(sampling_plan, on='region')
         sampled_data = merged_data.groupby('region').apply(lambda x: x.sample(n=x['num_samples'].iloc[0], replace=False))
         sampled_ids = sampled_data['id'].tolist()
+
+        # Handle remaining samples due to flooring
+        remaining_samples = sample_size - num_samples.sum()
+        if remaining_samples > 0:
+            remaining_id = self.data.loc[~self.data['id'].isin(sampled_ids), 'id']
+            sample_list = np.random.choice(remaining_id, remaining_samples, replace=False).tolist()
+            sampled_ids += sample_list
         
         return sampled_ids
     
