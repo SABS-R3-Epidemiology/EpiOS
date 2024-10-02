@@ -9,7 +9,6 @@ class BaseFastSampler():
     def __init__(self, data: pd.DataFrame) -> None:
 
         self.data = data
-    
     def sample(self, sample_size: int, sampling_seed: int =None) -> list:
 
         if sample_size > len(self.data):
@@ -87,7 +86,7 @@ class AgeRegionFastSampler(BaseFastSampler):
         
         # THESE METHODS WON'T BE NECESSARY IF THESE ARE COMPUTED WHEN THE DATA IS READ IN
         self.data['region'] = self.data['id'].str.split('.').str[0].astype(int)
-        self.data['age_group'] = (self.data['age'] // self.age_group_width).clip(upper=self.num_age_group - 1)
+        self.data['age_group'] = (self.data['age'] // self.age_group_width).clip(upper=self.num_age_group)
         
         # Create a pivot table to count occurrences of each (region, age_group) pair
         region_age_group_counts = self.data.pivot_table(index='region', columns='age_group', aggfunc='size', fill_value=0)
@@ -176,7 +175,6 @@ class AgeFastSampler(BaseFastSampler):
             if num_samples[j] > 0:
                 sample_list += np.random.choice(id_list[j], num_samples[j], replace=False).tolist()
         return sample_list
-    
     def sample(self, sample_size: int, sampling_seed: int = None) -> list:
         if sample_size > len(self.data):
             raise ValueError('Sample size is larger than the input data size.')
@@ -184,7 +182,7 @@ class AgeFastSampler(BaseFastSampler):
             np.random.seed(sampling_seed)
         
         # Assign age groups - NOTE:: Again move this code to where the data is read in, so it is only ran once
-        self.data['age_group'] = (self.data['age'] // self.age_group_width).clip(upper=self.num_age_group - 1)
+        # self.data['age_group'] = (self.data['age'] // self.age_group_width).clip(upper=self.num_age_group - 1)
         
         # Calculate the count of each age group
         age_group_counts = self.data['age_group'].value_counts().sort_index()
@@ -262,7 +260,6 @@ class RegionFastSampler(BaseFastSampler):
         return sample_list
 
     def sample(self, sample_size: int, sampling_seed: int = None) -> list:
-        # KG - Uses builtin pandas methods to hopefully speed up the previous version
 
         if sampling_seed is not None:
             np.random.seed(sampling_seed)
@@ -277,6 +274,7 @@ class RegionFastSampler(BaseFastSampler):
 
         # Handle remaining samples due to flooring
         remaining_samples = sample_size - num_samples.sum()
+        print(remaining_samples)
         if remaining_samples > 0:
             extra_samples_regions = region_counts[region_counts > num_samples].index
             extra_samples_allocation = np.random.choice(extra_samples_regions, remaining_samples, replace=False)
@@ -749,7 +747,10 @@ class FastPostProcess():
             predicted_total_age = [[] for _ in range(num_age_group)]
             last_row = self.demo_data.iloc[-1]
             region_id = int(last_row['id'].split('.')[0])
-            infected_proportion_region = [[] for _ in range(region_id + 1)]
+            #region_counts = self.demo_data['region'].value_counts().sort_index()
+            #region_id = len(region_counts)
+            infected_proportion_region = [[] for _ in range(region_id+1)]
+            print(len(infected_proportion_region))
 
             if sample_strategy == 'Same':  # Do not change people sampled at each sample time point
                 infected_rate = []
@@ -839,6 +840,10 @@ class FastPostProcess():
             # Output the results for comparison use
             self.result = infected_rate
             self.result_ages = predicted_total_age
+            empty = [i for i, x in enumerate(infected_proportion_region) if x == []]
+            infected_proportion_region = [x for x in infected_proportion_region if x != []]
+            # Remove the values from each sublist in region_sampled that are at the places in empty
+            self.region_sampled = [[x for i, x in enumerate(sublist) if i not in empty] for sublist in self.region_sampled]
             self.result_regions = infected_proportion_region
 
             if comparison:
@@ -943,7 +948,12 @@ class FastPostProcess():
             # Group by the region ids
             grouped = ite_new.T.groupby(by=ite_new.columns)
 
-            for r in range(len(infected_proportion_region)):
+            # Calculate the average prevalence of the sampled population
+            average_prev = ite_new.apply(lambda x: x.value_counts().get('Positive', 0) / len(x), axis=1).values[0]
+
+            region_counts = self.demo_data['region'].value_counts().sort_index().index
+
+            for r in region_counts:
                 if r in grouped.groups:
                     # Select only columns corresponding to region r
                     ite_cells = grouped.get_group(r)
@@ -961,7 +971,12 @@ class FastPostProcess():
                             infected_proportion_region[r].append(positive_counts / ite_cells.shape[1])
                 else:
                     regions_sampled[r] += 0
-                    # If no columns for the region, add 0.0 to infected_proportion_region
-                    infected_proportion_region[r].append(0.0)
+                    # If no columns for the region, add the sampled average prevalence to infected_proportion_region
+                    infected_proportion_region[r].append(average_prev)
+
+            # regions_sampled = [x for i, x in enumerate(regions_sampled) if i in region_counts]
+
+            # Remove empty lists
+            # infected_proportion_region = [x for x in infected_proportion_region if x != []]
 
             return infected_proportion_region, regions_sampled
